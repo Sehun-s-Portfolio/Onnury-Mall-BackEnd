@@ -1,0 +1,39 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  Deploy:
+    runs-on: linux
+    steps:
+      - name: SSH(원격 접속) 운영 서버 접속
+        uses: appleboy/ssh-action@v1
+        env:
+          APPLICATION_PROPERTIES: ${{ secrets.APPLICATION_PROPERTIES }}
+          APPLICATION_DEV_PROPERTIES: ${{ secrets.APPLICATION_DEV_PROPERTIES }}
+          APPLICATION_PROD_PROPERTIES: ${{ secrets.APPLICATION_PROD_PROPERTIES }}
+          APPLICATION_YML: ${{ secrets.APPLICATION_YML }}
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER_NAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          envs: APPLICATION_PROPERTIES, APPLICATION_DEV_PROPERTIES, APPLICATION_PROD_PROPERTIES, APPLICATION_YML
+          script_stop: true
+          script: |
+            cd /home/onnury/web/Onnury-Mall-BackEnd
+            rm -rf src/main/resources/application.properties
+            rm -rf src/main/resources/application-dev.properties
+            rm -rf src/main/resources/application-prod.properties
+            rm -rf src/main/resources/application.yml
+            git pull origin dev
+            echo "$APPLICATION_PROPERTIES" > src/main/resources/application.properties
+            echo "$APPLICATION_DEV_PROPERTIES" > src/main/resources/application-dev.properties
+            echo "$APPLICATION_PROD_PROPERTIES" > src/main/resources/application-prod.properties
+            echo "$APPLICATION_YML" > src/main/resources/application.yml
+            ./gradlew clean build
+            sudo fuser -k -n tcp 8090 || true
+            nohup java -jar -server -Xmx5g -XX:+UseG1GC -Djava.awt.headless=true -Dspring.profiles.active=dev -Dsvr.nm=ONNURY_DEV -Dfile.encoding=UTF-8 build/libs/*SNAPSHOT.jar 1> /dev/null 2>&1 &
