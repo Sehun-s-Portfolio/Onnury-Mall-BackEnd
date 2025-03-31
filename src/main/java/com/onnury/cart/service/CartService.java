@@ -3,7 +3,8 @@ package com.onnury.cart.service;
 import com.onnury.cart.request.CartAddRequestDto;
 import com.onnury.cart.response.CartAddResponseDto;
 import com.onnury.cart.response.CartDataResponseDto;
-import com.onnury.exception.token.JwtTokenExceptionInterface;
+import com.onnury.common.util.LogUtil;
+import com.onnury.exception.token.JwtTokenException;
 import com.onnury.jwt.JwtTokenProvider;
 import com.onnury.member.domain.Member;
 import com.onnury.query.cart.CartQueryData;
@@ -20,10 +21,9 @@ import java.util.List;
 @Service
 public class CartService {
 
-    private final JwtTokenExceptionInterface jwtTokenExceptionInterface;
+    private final JwtTokenException jwtTokenException;
     private final JwtTokenProvider jwtTokenProvider;
     private final CartQueryData cartQueryData;
-
 
     // 장바구니 담기 service
     @Transactional
@@ -31,8 +31,9 @@ public class CartService {
         log.info("장바구니 담기 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
@@ -49,8 +50,9 @@ public class CartService {
         log.info("장바구니 제품 삭제 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return "FAIL";
         }
 
@@ -67,8 +69,9 @@ public class CartService {
         log.info("장바구니 리스트 호출 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 

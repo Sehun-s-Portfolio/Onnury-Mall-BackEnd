@@ -5,12 +5,13 @@ import com.onnury.brand.repository.BrandRepository;
 import com.onnury.brand.request.BrandCreateRequestDto;
 import com.onnury.brand.request.BrandUpdateRequestDto;
 import com.onnury.brand.response.*;
-import com.onnury.exception.brand.BrandExceptioInterface;
-import com.onnury.exception.token.JwtTokenExceptionInterface;
+import com.onnury.common.util.LogUtil;
+import com.onnury.exception.brand.BrandException;
+import com.onnury.exception.token.JwtTokenException;
 import com.onnury.jwt.JwtTokenProvider;
 import com.onnury.media.domain.Media;
 import com.onnury.media.repository.MediaRepository;
-import com.onnury.media.service.MediaUploadInterface;
+import com.onnury.media.service.MediaUpload;
 import com.onnury.member.domain.Member;
 import com.onnury.query.brand.BrandQueryData;
 import lombok.RequiredArgsConstructor;
@@ -30,26 +31,28 @@ import java.util.List;
 @Service
 public class BrandService {
 
-    private final JwtTokenExceptionInterface jwtTokenExceptionInterface;
-    private final BrandExceptioInterface brandExceptioInterface;
+    private final JwtTokenException jwtTokenException;
+    private final BrandException brandException;
     private final BrandRepository brandRepository;
     private final BrandQueryData brandQueryData;
-    private final MediaUploadInterface mediaUploadInterface;
+    private final MediaUpload mediaUpload;
     private final MediaRepository mediaRepository;
     private final JwtTokenProvider jwtTokenProvider;
 
     // 브랜드 생성
-    public BrandCreateResponseDto createBrand(HttpServletRequest request, BrandCreateRequestDto brandInfo, MultipartFile brandImage) throws IOException {
+    public BrandCreateResponseDto createBrand(HttpServletRequest request, BrandCreateRequestDto brandInfo, MultipartFile brandImage, HashMap<String, String> requestParam) throws IOException {
         log.info("브랜드 생성 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
         // 생성하고자 하는 브랜드 정보가 옳바른지 확인
-        if (brandExceptioInterface.checkCreateBrandInfo(brandInfo)) {
+        if (brandException.checkCreateBrandInfo(brandInfo)) {
             log.info("브랜드 생성 요청 정보가 옳바르지 않음");
+            LogUtil.logError("브랜드 생성 요청 정보가 옳바르지 않음", request, brandInfo);
             return null;
         }
 
@@ -66,7 +69,7 @@ public class BrandService {
         brandImagesInfo.put("brand", brandImage);
 
         // 브랜드 관련 이미지들 업로드 후 List 화
-        List<HashMap<String, String>> uploadBrandImages = mediaUploadInterface.uploadBrandImage(brandImagesInfo);
+        List<HashMap<String, String>> uploadBrandImages = mediaUpload.uploadBrandImage(brandImagesInfo);
         List<BrandMediaResponseDto> brandImages = new ArrayList<>();
 
         // 업로드된 브랜드 이미지들마다 데이터 처리
@@ -106,18 +109,20 @@ public class BrandService {
 
 
     // 브랜드 수정
-    public BrandUpdateResponseDto updateBrand(HttpServletRequest request, Long brandId, BrandUpdateRequestDto brandInfo, MultipartFile updateBrandImage) throws IOException {
+    public BrandUpdateResponseDto updateBrand(HttpServletRequest request, Long brandId, BrandUpdateRequestDto brandInfo, MultipartFile updateBrandImage, HashMap<String, String> requestParam) throws IOException {
         log.info("공급사 수정 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
         // 수정하고자 하는 공급사의 정보가 옳바른지 확인
-        if (brandExceptioInterface.checkUpdateBrandInfo(brandInfo)) {
+        if (brandException.checkUpdateBrandInfo(brandInfo)) {
             log.info("공급사 수정 요청 정보가 옳바르지 않음");
+            LogUtil.logError("공급사 수정 요청 정보가 옳바르지 않음", request, requestParam, brandInfo);
             return null;
         }
 
@@ -128,12 +133,13 @@ public class BrandService {
 
     // 브랜드 삭제
     @Transactional
-    public boolean deleteBrand(HttpServletRequest request, Long brandid) {
+    public boolean deleteBrand(HttpServletRequest request, Long brandid, HashMap<String, String> requestParam) {
         log.info("브랜드 삭제 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return true;
         }
 
@@ -142,12 +148,13 @@ public class BrandService {
 
 
     // 관리자 브랜드 페이지 리스트업
-    public BrandListUpResponseDto listUpBrand(HttpServletRequest request, int page) {
+    public BrandListUpResponseDto listUpBrand(HttpServletRequest request, int page, HashMap<String, String> requestParam) {
         log.info("관리자 브랜드 리스트업 페이지 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
@@ -160,8 +167,9 @@ public class BrandService {
         log.info("관리자 브랜드 리스트업 페이지 service");
         if(request.getHeader("RefreshToken") != null) {
             // 정합성이 검증된 토큰인지 확인
-            if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+            if (jwtTokenException.checkAccessToken(request)) {
                 log.info("토큰 정합성 검증 실패");
+                LogUtil.logError("토큰 정합성 검증 실패", request);
                 return null;
             }
 

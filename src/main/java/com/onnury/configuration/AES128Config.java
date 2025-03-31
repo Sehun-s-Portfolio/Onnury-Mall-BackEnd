@@ -19,7 +19,7 @@ import java.security.*;
 import java.util.Base64;
 
 @Slf4j
-@Component
+@Configuration
 public class AES128Config {
 
     private static final Charset ENCODING_TYPE = StandardCharsets.UTF_8;

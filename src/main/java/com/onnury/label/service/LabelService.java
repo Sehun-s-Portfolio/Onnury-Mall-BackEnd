@@ -1,7 +1,8 @@
 package com.onnury.label.service;
 
-import com.onnury.exception.label.LabelExceptioInterface;
-import com.onnury.exception.token.JwtTokenExceptionInterface;
+import com.onnury.common.util.LogUtil;
+import com.onnury.exception.label.LabelException;
+import com.onnury.exception.token.JwtTokenException;
 import com.onnury.label.domain.Label;
 import com.onnury.label.repository.LabelRepository;
 import com.onnury.label.request.LabelCreateRequestDto;
@@ -12,8 +13,7 @@ import com.onnury.label.response.LabelListUpResponseDto;
 import com.onnury.label.response.LabelUpdateResponseDto;
 import com.onnury.media.domain.Media;
 import com.onnury.media.repository.MediaRepository;
-import com.onnury.media.service.MediaUploadInterface;
-import com.onnury.query.banner.BannerQueryData;
+import com.onnury.media.service.MediaUpload;
 import com.onnury.query.label.LabelQueryData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,31 +33,33 @@ import java.util.List;
 @Service
 public class LabelService {
 
-    private final JwtTokenExceptionInterface jwtTokenExceptionInterface;
-    private final LabelExceptioInterface labelExceptioInterface;
+    private final JwtTokenException jwtTokenException;
+    private final LabelException labelException;
     private final LabelRepository labelRepository;
     private final MediaRepository mediaRepository;
-    private final MediaUploadInterface mediaUploadInterface;
+    private final MediaUpload mediaUpload;
     private final LabelQueryData labelQueryData;
 
     // 라벨 생성 service
-    public LabelCreateResponseDto createLabel(HttpServletRequest request, MultipartFile labelImg, LabelCreateRequestDto labelInfo) throws IOException {
+    public LabelCreateResponseDto createLabel(HttpServletRequest request, MultipartFile labelImg, LabelCreateRequestDto labelInfo, HashMap<String, String> requestParam) throws IOException {
         log.info("라벨 생성 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
         // 생성하고자 하는 라벨의 정보가 옳바른지 확인
-        if (labelExceptioInterface.checkCreateLabelInfo(labelImg, labelInfo)) {
+        if (labelException.checkCreateLabelInfo(labelImg, labelInfo)) {
             log.info("라벨 생성 요청 정보가 옳바르지 않음");
+            LogUtil.logError("라벨 생성 요청 정보가 옳바르지 않음", request, requestParam, labelInfo);
             return null;
         }
 
         // 업로드한 배너 이미지 정보
-        HashMap<String, String> uploadBannerImg = mediaUploadInterface.uploadLabelImage(labelImg);
+        HashMap<String, String> uploadBannerImg = mediaUpload.uploadLabelImage(labelImg);
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // 날짜와 시간 포맷 형식
         LocalDateTime startPostDate = LocalDateTime.parse(labelInfo.getStartPostDate() + " 00:00:00", formatter); // 추출한 날짜 데이터에 포맷 형식 적용
@@ -105,8 +107,9 @@ public class LabelService {
         log.info("라벨 수정 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
@@ -130,8 +133,9 @@ public class LabelService {
         log.info("라벨 삭제 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return true;
         }
 
@@ -144,8 +148,9 @@ public class LabelService {
         log.info("관리자 라벨 리스트업 페이지 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
@@ -157,7 +162,12 @@ public class LabelService {
     public List<LabelDataResponseDto> topExpressionLabelList(HttpServletRequest request){
         log.info("상위 노출 라벨 리스트 호출 service");
 
-
+        // 정합성이 검증된 토큰인지 확인
+        if (jwtTokenException.checkAccessToken(request)) {
+            log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
+            return null;
+        }
 
         return labelQueryData.topExpressionLabelList();
     }

@@ -1,7 +1,8 @@
 package com.onnury.mypage.service;
 
-import com.onnury.exception.mypage.MyPageExceptionInterface;
-import com.onnury.exception.token.JwtTokenExceptionInterface;
+import com.onnury.common.util.LogUtil;
+import com.onnury.exception.mypage.MyPageException;
+import com.onnury.exception.token.JwtTokenException;
 import com.onnury.jwt.JwtTokenProvider;
 import com.onnury.member.domain.Member;
 import com.onnury.mypage.request.ConfirmPaymentRequestDto;
@@ -14,29 +15,28 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
-import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class MyPageService{
 
-    private final JwtTokenExceptionInterface jwtTokenExceptionInterface;
+    private final JwtTokenException jwtTokenException;
     private final JwtTokenProvider jwtTokenProvider;
     private final MyPageQueryData myPageQueryData;
-    private final MyPageExceptionInterface myPageExceptionInterface;
+    private final MyPageException myPageException;
 
     // 마이페이지 회원 정보 service
     public MyPageInfoResponseDto getMyPageInfo(HttpServletRequest request){
         log.info("마이페이지 회원 정보 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
@@ -66,15 +66,16 @@ public class MyPageService{
         log.info("마이페이지 비밀번호 재설정 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
         // 마이페이지 정보를 조회할 로그인 고객
         Member authMember = jwtTokenProvider.getMemberFromAuthentication();
 
-        if(myPageExceptionInterface.checkChangePasswordInfo(authMember, myPageChangePasswordRequestDto)){
+        if(myPageException.checkChangePasswordInfo(authMember, myPageChangePasswordRequestDto)){
             return null;
         }else{
             return myPageQueryData.chageMyPassword(authMember, myPageChangePasswordRequestDto);
@@ -88,8 +89,9 @@ public class MyPageService{
         log.info("마이페이지 회원 탈퇴 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
@@ -107,8 +109,9 @@ public class MyPageService{
         log.info("마이페이지 회원 정보 수정 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
@@ -124,8 +127,9 @@ public class MyPageService{
         log.info("마이페이지 문의 내역 리스트 조회 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
@@ -141,8 +145,9 @@ public class MyPageService{
         log.info("마이페이지 자신이 작성한 문의 내용 상세 조회 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
@@ -158,8 +163,9 @@ public class MyPageService{
         log.info("마이페이지 구매 이력 리스트 조회 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
@@ -173,8 +179,9 @@ public class MyPageService{
         log.info("마이페이지 취소 이력 리스트 조회 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
@@ -182,11 +189,11 @@ public class MyPageService{
 
         return myPageQueryData.getMyCancleList(authMember, page, startDate, endDate);
     }
+
+
     // 마이페이지 구매 이력 리스트 조회 service
     public JSONObject getMyCancleRequest(UserCancleRequestDto userCancleRequestDto) {
         log.info("마이페이지 구매 이력 리스트 조회 service");
-
-
 
         return myPageQueryData.getMyCancleRequest(userCancleRequestDto);
     }
@@ -199,8 +206,9 @@ public class MyPageService{
         log.info("마이페이지 결제 주문 확정 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 

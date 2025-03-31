@@ -30,12 +30,9 @@ public class SchedulerConfig {
 
     private final JobLauncher jobLauncher;
     private final BatchConfig batchConfig;
-    private final JPAQueryFactory jpaQueryFactory;
-    private final EntityManager entityManager;
 
     // 스케줄링 Job 파라미터 Bean 등록
     public JobParameters setJobParameter() {
-
         Map<String, JobParameter> confMap = new HashMap<>();
         confMap.put("time", new JobParameter(System.currentTimeMillis()));
 

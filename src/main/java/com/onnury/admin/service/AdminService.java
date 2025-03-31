@@ -3,11 +3,12 @@ package com.onnury.admin.service;
 import com.onnury.admin.domain.AdminAccount;
 import com.onnury.admin.response.AdminAccountLoginResponseDto;
 import com.onnury.admin.response.DashBoardResponseDto;
-import com.onnury.exception.admin.AdminExecptionInterface;
+import com.onnury.common.util.LogUtil;
+import com.onnury.exception.admin.AdminException;
 import com.onnury.admin.repository.AdminRepository;
 import com.onnury.admin.request.AdminAccountRegisterRequestDto;
 import com.onnury.admin.response.AdminAccountRegisterResponseDto;
-import com.onnury.exception.token.JwtTokenExceptionInterface;
+import com.onnury.exception.token.JwtTokenException;
 import com.onnury.jwt.JwtToken;
 import com.onnury.jwt.JwtTokenDto;
 import com.onnury.jwt.JwtTokenProvider;
@@ -15,7 +16,6 @@ import com.onnury.jwt.JwtTokenRepository;
 import com.onnury.member.domain.Member;
 import com.onnury.query.admin.AdminQueryData;
 import com.onnury.query.member.MemberQueryData;
-import com.onnury.query.token.JwtTokenQueryData;
 import com.onnury.share.MailService;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -39,8 +39,8 @@ import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.onnury.admin.domain.QAdminAccount.adminAccount;
 import static com.onnury.member.domain.QMember.member;
@@ -53,15 +53,14 @@ import static com.onnury.supplier.domain.QSupplier.supplier;
 @Service
 public class AdminService {
 
-    private final AdminExecptionInterface adminExecptionInterface;
+    private final AdminException adminException;
     private final PasswordEncoder passwordEncoder;
     private final AdminRepository adminRepository;
     private final AdminQueryData adminQueryData;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtTokenRepository jwtTokenRepository;
-    private final JwtTokenQueryData jwtTokenQueryData;
-    private final JwtTokenExceptionInterface jwtTokenExceptionInterface;
+    private final JwtTokenException jwtTokenException;
     private final MemberQueryData memberQueryData;
     private final JPAQueryFactory jpaQueryFactory;
     private final MailService mailService;
@@ -72,14 +71,16 @@ public class AdminService {
         log.info("관리자 계정 회원가입 service");
 
         // 회원가입 정보 확인 후 옳바르지 않은 정보라면 예외 처리
-        if(adminExecptionInterface.checkAdminRegisterInfo(adminAccountRegisterRequestDto)){
+        if(adminException.checkAdminRegisterInfo(adminAccountRegisterRequestDto)){
             log.info("회원가입 시도 정보들이 옳바르지 않음");
+            LogUtil.logError("회원가입 시도 정보들이 옳바르지 않음", adminAccountRegisterRequestDto);
             return null;
         }
 
         // 이미 동일한 계정이 존재할 경우 예외 처리
         if(adminQueryData.checkDuplicateAdminLoginId(adminAccountRegisterRequestDto.getLoginId()) != null){
             log.info("이미 존재한 계정");
+            LogUtil.logError("이미 존재한 계정", adminAccountRegisterRequestDto);
             return null;
         }
 
@@ -107,11 +108,12 @@ public class AdminService {
 
     // 관리자 계정 로그인
     @Transactional
-    public AdminAccountLoginResponseDto adminLogin(HttpServletResponse response, String loginId, String password) throws InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException {
+    public AdminAccountLoginResponseDto adminLogin(HttpServletResponse response, String loginId, String password, HashMap<String, String> requestParam) throws InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException {
         log.info("관리자 계정 로그인 service");
 
-        if(adminExecptionInterface.checkLoginInfo(loginId, password)){
+        if(adminException.checkLoginInfo(loginId, password)){
             log.info("로그인 시도 시 해당 계정 아이디를 가진 계정이 존재하지 않음");
+            LogUtil.logError("로그인 시도 시 해당 계정 아이디를 가진 계정이 존재하지 않음", requestParam);
             return null;
         }
 
@@ -122,6 +124,8 @@ public class AdminService {
                 .fetchOne();
 
         if(account == null){
+            log.info("관리자 계정이 존재하지 않습니다.");
+            LogUtil.logError("관리자 계정이 존재하지 않습니다.", requestParam);
             return null;
         }
 
@@ -129,9 +133,6 @@ public class AdminService {
 
         // 토큰을 구분할 mappingAccount 변수 저장
         String mappingAccount = account.getAdminAccountId() + ":" + account.getLoginId();;
-
-        // 기존에 이전 토큰이 존재하면 삭제
-        //jwtTokenQueryData.deletePrevToken(mappingAccount, account.getType().equals("supplier") ? "S" : "A");
 
         // 토큰을 발급하고 Dto 개체에 저장하는 과정
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(account.getType().equals("supplier") ? "S-" + loginId : "A-" + loginId, password);
@@ -169,12 +170,13 @@ public class AdminService {
 
 
     // 대시 보드 service
-    public DashBoardResponseDto adminDashBoard(HttpServletRequest request, String startDate, String endDate, List<Long> brandIdList, List<Long> supplierIdList){
+    public DashBoardResponseDto adminDashBoard(HttpServletRequest request, String startDate, String endDate, List<Long> brandIdList, List<Long> supplierIdList, HashMap<String, String> requestParam){
         log.info("대시 보드 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request, requestParam);
             return null;
         }
 
@@ -185,12 +187,13 @@ public class AdminService {
 
 
     // 관리자 유저 비밀번호 재설정 service
-    public String adminChangeUserPassword(HttpServletRequest request, Long memberId){
+    public String adminChangeUserPassword(HttpServletRequest request, Long memberId, HashMap<String, String> requestParam){
         log.info("관리자 유저 비밀번호 재설정 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request, requestParam);
             return null;
         }
 
@@ -209,7 +212,8 @@ public class AdminService {
 
             return "비밀번호 재설정이 완료되었습니다.";
         }else{
-            return "비밀번호 재설정이 실패하였습니다.";
+            LogUtil.logError("비밀번호 재설정이 실패하였습니다.", request, requestParam);
+            return null;
         }
 
     }

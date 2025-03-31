@@ -1,5 +1,6 @@
 package com.onnury.product.request;
 
+import com.onnury.common.base.AbstractVO;
 import lombok.Getter;
 
 import javax.validation.constraints.Min;
@@ -7,7 +8,7 @@ import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 @Getter
-public class ProductCreateRequestDto {
+public class ProductCreateRequestDto extends AbstractVO {
 
     private Long supplierId; // 공급사 id
 

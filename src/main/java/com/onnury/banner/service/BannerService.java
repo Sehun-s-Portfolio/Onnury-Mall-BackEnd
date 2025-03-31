@@ -5,22 +5,15 @@ import com.onnury.banner.repository.BannerRepository;
 import com.onnury.banner.request.BannerCreateRequestDto;
 import com.onnury.banner.request.BannerUpdateRequestDto;
 import com.onnury.banner.response.*;
-import com.onnury.configuration.BatchConfig;
-import com.onnury.exception.banner.BannerExceptioInterface;
-import com.onnury.exception.token.JwtTokenExceptionInterface;
+import com.onnury.common.util.LogUtil;
+import com.onnury.exception.banner.BannerException;
+import com.onnury.exception.token.JwtTokenException;
 import com.onnury.media.domain.Media;
 import com.onnury.media.repository.MediaRepository;
-import com.onnury.media.service.MediaUploadInterface;
+import com.onnury.media.service.MediaUpload;
 import com.onnury.query.banner.BannerQueryData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.batch.core.JobParameter;
-import org.springframework.batch.core.JobParameters;
-import org.springframework.batch.core.JobParametersInvalidException;
-import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
-import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
-import org.springframework.batch.core.repository.JobRestartException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,42 +25,42 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class BannerService {
 
-    private final JwtTokenExceptionInterface jwtTokenExceptionInterface;
-    private final BannerExceptioInterface bannerExceptioInterface;
+    private final JwtTokenException jwtTokenException;
+    private final BannerException bannerException;
     private final BannerRepository bannerRepository;
     private final MediaRepository mediaRepository;
-    private final MediaUploadInterface mediaUploadInterface;
+    private final MediaUpload mediaUpload;
     private final BannerQueryData bannerQueryData;
-    private final JobLauncher jobLauncher;
-    private final BatchConfig batchConfig;
 
     // 배너 생성
     public BannerCreateResponseDto createBanner(
-            HttpServletRequest request, MultipartFile appBannerImg, MultipartFile webBannerImg, MultipartFile slideBannerImg, BannerCreateRequestDto bannerInfo) throws IOException {
+            HttpServletRequest request, MultipartFile appBannerImg, MultipartFile webBannerImg, MultipartFile slideBannerImg, BannerCreateRequestDto bannerInfo, HashMap<String, String> requestParam) throws IOException {
         log.info("배너 생성 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
         // 배너 등록 이미지 검증
         if(appBannerImg == null || webBannerImg == null){
             log.info("배너 이미지 정보가 옳바르지 않음");
+            LogUtil.logError("배너 이미지 정보가 옳바르지 않음", request, requestParam);
             return null;
         }
 
         // 생성하고자 하는 배너의 정보가 옳바른지 확인
-        if (bannerExceptioInterface.checkCreateBannerInfo(bannerInfo)) {
+        if (bannerException.checkCreateBannerInfo(bannerInfo)) {
             log.info("배너 생성 요청 정보가 옳바르지 않음");
+            LogUtil.logError("배너 생성 요청 정보가 옳바르지 않음", request, bannerInfo);
             return null;
         }
 
@@ -77,7 +70,7 @@ public class BannerService {
         bannerCreateInfo.put("slide", slideBannerImg);
 
         // 업로드한 배너 이미지 정보
-        List<HashMap<String, String>> uploadBannerImg = mediaUploadInterface.uploadBannerImage(bannerCreateInfo);
+        List<HashMap<String, String>> uploadBannerImg = mediaUpload.uploadBannerImage(bannerCreateInfo);
 
         // 일자 포맷
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // 날짜와 시간 포맷 형식
@@ -137,7 +130,6 @@ public class BannerService {
             );
         }
 
-
         return BannerCreateResponseDto.builder()
                 .title(banner.getTitle())
                 .linkUrl(banner.getLinkUrl())
@@ -152,12 +144,13 @@ public class BannerService {
     // 배너 수정
     @Transactional
     public BannerUpdateResponseDto updateBanner(
-            HttpServletRequest request, Long bannerId, MultipartFile updateAppBannerImg, MultipartFile updateWebBannerImg, MultipartFile updateSlideBannerImg, BannerUpdateRequestDto updateBannerInfo) throws IOException {
+            HttpServletRequest request, Long bannerId, MultipartFile updateAppBannerImg, MultipartFile updateWebBannerImg, MultipartFile updateSlideBannerImg, BannerUpdateRequestDto updateBannerInfo, HashMap<String, String> requestParam) throws IOException {
         log.info("배너 수정 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
@@ -168,12 +161,13 @@ public class BannerService {
 
     // 배너 삭제
     @Transactional
-    public boolean deleteBanner(HttpServletRequest request, Long deleteBannerId) {
+    public boolean deleteBanner(HttpServletRequest request, Long deleteBannerId, HashMap<String, String> requestParam) {
         log.info("배너 삭제 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request, requestParam);
             return true;
         }
 
@@ -182,12 +176,13 @@ public class BannerService {
 
 
     // 관리자 배너 페이지 리스트업
-    public TotalBannerResponseDto listUpBanner(HttpServletRequest request, int page) {
+    public TotalBannerResponseDto listUpBanner(HttpServletRequest request, int page, HashMap<String, String> requestParam) {
         log.info("관리자 배너 리스트업 페이지 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
@@ -198,7 +193,6 @@ public class BannerService {
     // 메인 페이지 배너 리스트 service
     public TotalMainPageBannerResponseDto mainPageBannerList(HttpServletRequest request){
         log.info("메인 페이지 배너 리스트 service");
-
         log.info("접속 중인 플랫폼 : {}", request.getHeader("user-agent"));
 
         return bannerQueryData.listUpBanner(request);
@@ -206,24 +200,27 @@ public class BannerService {
 
 
     // 프로모션 배너 생성 service
-    public PromotionBannerCreateResponseDto createPromotionBanner(HttpServletRequest request, MultipartFile bannerImg, BannerCreateRequestDto bannerInfo) throws IOException {
+    public PromotionBannerCreateResponseDto createPromotionBanner(HttpServletRequest request, MultipartFile bannerImg, BannerCreateRequestDto bannerInfo, HashMap<String, String> requestParam) throws IOException {
         log.info("프로모션 배너 생성 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
         // 배너 등록 이미지 검증
         if(bannerImg == null){
             log.info("배너 이미지 정보가 옳바르지 않음");
+            LogUtil.logError("배너 이미지 정보가 옳바르지 않음", request, requestParam);
             return null;
         }
 
         // 생성하고자 하는 배너의 정보가 옳바른지 확인
-        if (bannerExceptioInterface.checkCreateBannerInfo(bannerInfo)) {
+        if (bannerException.checkCreateBannerInfo(bannerInfo)) {
             log.info("배너 생성 요청 정보가 옳바르지 않음");
+            LogUtil.logError("배너 생성 요청 정보가 옳바르지 않음", request, bannerInfo);
             return null;
         }
 
@@ -232,7 +229,7 @@ public class BannerService {
         bannerCreateInfo.put("promotion", bannerImg);
 
         // 업로드한 배너 이미지 정보
-        List<HashMap<String, String>> uploadBannerImg = mediaUploadInterface.uploadBannerImage(bannerCreateInfo);
+        List<HashMap<String, String>> uploadBannerImg = mediaUpload.uploadBannerImage(bannerCreateInfo);
 
         // 일자 포맷
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // 날짜와 시간 포맷 형식
@@ -304,12 +301,13 @@ public class BannerService {
 
     // 프로모션 배너 수정 service
     @Transactional
-    public PromotionBannerUpdateResponseDto updatePromotionBanner(HttpServletRequest request, Long bannerId, MultipartFile updateBannerImg, BannerUpdateRequestDto updateBannerInfo) throws IOException {
+    public PromotionBannerUpdateResponseDto updatePromotionBanner(HttpServletRequest request, Long bannerId, MultipartFile updateBannerImg, BannerUpdateRequestDto updateBannerInfo, HashMap<String, String> requestParam) throws IOException {
         log.info("프로모션 배너 수정 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
@@ -328,12 +326,13 @@ public class BannerService {
 
     // 프로모션 배너 삭제 service
     @Transactional
-    public boolean deletePromotionBanner(HttpServletRequest request, Long deleteBannerId) {
+    public boolean deletePromotionBanner(HttpServletRequest request, Long deleteBannerId, HashMap<String, String> requestParam) {
         log.info("배너 삭제 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request, requestParam);
             return true;
         }
 

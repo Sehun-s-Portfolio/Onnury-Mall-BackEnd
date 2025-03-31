@@ -30,7 +30,9 @@ public class FileConfig implements WebMvcConfigurer {
                         "file:///datanas/", "file:///10.28.102.9:/dntnas/",
                         "file:///home/onnury/web/image/", "file:///home/onnury/web/image/banner/",
                         "file:///home/onnury/web/image/label/", "file:///home/onnury/web/image/product/",
-                        "file:///home/onnury/web/image/product/detail/", "file:///home/onnury/web/image/category/");
+                        "file:///home/onnury/web/image/product/detail/", "file:///home/onnury/web/image/category/",
+                        "file:///home/onnury/web/image/brand/", "file:///home/onnury/web/image/faq/",
+                        "file:///home/onnury/web/image/notices/", "file:///home/onnury/web/image/inquiry/");
 
         // 이후 배포 서버를 변경하게 될 때 그에 맞춰서 실제 이미지가 업로드될 경로를 지정하는 addResourceLocations 를 다시 지정해주어야 하고,
         // 마찬가지로 실제 배포 서버에서도 업로드 경로에 맞게끔 폴더 경로들을 생성해주어야 한다.

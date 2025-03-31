@@ -1,53 +1,23 @@
 package com.onnury.excel.service;
 
-import com.onnury.banner.domain.Banner;
-import com.onnury.banner.repository.BannerRepository;
-import com.onnury.banner.request.BannerCreateRequestDto;
-import com.onnury.banner.request.BannerUpdateRequestDto;
-import com.onnury.banner.response.*;
+
 import com.onnury.category.response.CategoryDataExcelResponseDto;
-import com.onnury.category.response.UpCategoryInfoResponseDto;
-import com.onnury.configuration.BatchConfig;
 import com.onnury.excel.response.BannerExcelResponseDto;
 import com.onnury.excel.response.FaqExcelResponseDto;
 import com.onnury.excel.response.InquiryExcelResponseDto;
 import com.onnury.excel.response.LabelExcelResponseDto;
-import com.onnury.exception.banner.BannerExceptioInterface;
-import com.onnury.exception.token.JwtTokenExceptionInterface;
-import com.onnury.inquiry.domain.Faq;
-import com.onnury.inquiry.domain.Inquiry;
-import com.onnury.inquiry.response.InquiryDataResponseDto;
-import com.onnury.label.domain.Label;
-import com.onnury.media.domain.Media;
-import com.onnury.media.repository.MediaRepository;
-import com.onnury.media.service.MediaUploadInterface;
 import com.onnury.member.domain.Member;
 import com.onnury.payment.response.AdminSupplierPaymentResponseExcelQDto;
 import com.onnury.product.request.ProductSearchRequestDto;
 import com.onnury.product.response.ProductExcelResponseDto;
-import com.onnury.query.banner.BannerQueryData;
 import com.onnury.query.excel.ExcelQueryData;
 import com.onnury.supplier.domain.Supplier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONObject;
-import org.springframework.batch.core.JobParameter;
-import org.springframework.batch.core.JobParameters;
-import org.springframework.batch.core.JobParametersInvalidException;
-import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
-import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
-import org.springframework.batch.core.repository.JobRestartException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor

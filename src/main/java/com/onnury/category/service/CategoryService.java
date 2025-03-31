@@ -5,12 +5,13 @@ import com.onnury.category.repository.CategoryRepository;
 import com.onnury.category.request.CategoryCreateRequestDto;
 import com.onnury.category.request.CategoryUpdateRequestDto;
 import com.onnury.category.response.*;
-import com.onnury.exception.category.CategoryExceptioInterface;
-import com.onnury.exception.token.JwtTokenExceptionInterface;
+import com.onnury.common.util.LogUtil;
+import com.onnury.exception.category.CategoryException;
+import com.onnury.exception.token.JwtTokenException;
 import com.onnury.jwt.JwtTokenProvider;
 import com.onnury.media.domain.Media;
 import com.onnury.media.repository.MediaRepository;
-import com.onnury.media.service.MediaUploadInterface;
+import com.onnury.media.service.MediaUpload;
 import com.onnury.member.domain.Member;
 import com.onnury.query.category.CategoryQueryData;
 import lombok.RequiredArgsConstructor;
@@ -30,30 +31,32 @@ import java.util.UUID;
 @Service
 public class CategoryService {
 
-    private final JwtTokenExceptionInterface jwtTokenExceptionInterface;
-    private final CategoryExceptioInterface categoryExceptioInterface;
+    private final JwtTokenException jwtTokenException;
+    private final CategoryException categoryException;
     private final CategoryRepository categoryRepository;
     private final MediaRepository mediaRepository;
-    private final MediaUploadInterface mediaUploadInterface;
+    private final MediaUpload mediaUpload;
     private final CategoryQueryData categoryQueryData;
     private final JwtTokenProvider jwtTokenProvider;
 
 
     // 카테고리 생성
-    public CategoryCreateResponseDto createCategory(HttpServletRequest request, MultipartFile categoryImg, CategoryCreateRequestDto categoryInfo) throws IOException {
+    public CategoryCreateResponseDto createCategory(HttpServletRequest request, MultipartFile categoryImg, CategoryCreateRequestDto categoryInfo, HashMap<String, String> requestParam) throws IOException {
         log.info("대분류 생성 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
 
         if( categoryInfo.getCategoryGroup() == 0){
             // 생성하고자 하는 대분류의 정보가 옳바른지 확인
-            if (categoryExceptioInterface.checkCreateCategoryInfo(categoryImg, categoryInfo)) {
+            if (categoryException.checkCreateCategoryInfo(categoryImg, categoryInfo)) {
                 log.info("대분류 생성 요청 정보가 옳바르지 않음");
+                LogUtil.logError("대분류 생성 요청 정보가 옳바르지 않음", request, requestParam, categoryInfo);
                 return null;
             }
             String motherCode = "";
@@ -61,7 +64,7 @@ public class CategoryService {
                 motherCode = categoryInfo.getMotherCode();
             }
             // 업로드한 대분류 이미지 정보
-            HashMap<String, String> uploadCategoryImg = mediaUploadInterface.uploadCategoryImage(categoryImg);
+            HashMap<String, String> uploadCategoryImg = mediaUpload.uploadCategoryImage(categoryImg);
             String uuid = UUID.randomUUID().toString();
             // 배너 정보 저장
             Category category = Category.builder()
@@ -97,8 +100,9 @@ public class CategoryService {
                     .build();
         }else {
             // 생성하고자 하는 소분류의 정보가 옳바른지 확인
-            if (categoryExceptioInterface.checkCreateCategoryInfo2(categoryInfo)) {
+            if (categoryException.checkCreateCategoryInfo2(categoryInfo)) {
                 log.info("소분류 생성 요청 정보가 옳바르지 않음");
+                LogUtil.logError("소분류 생성 요청 정보가 옳바르지 않음", request, categoryInfo);
                 return null;
             }
 
@@ -130,18 +134,20 @@ public class CategoryService {
 
     // 카테고리 수정
     @Transactional
-    public CategoryUpdateResponseDto updateCategory(HttpServletRequest request, Long categoryId, MultipartFile categoryImg, CategoryUpdateRequestDto updatecaegoryInfo) throws IOException {
+    public CategoryUpdateResponseDto updateCategory(HttpServletRequest request, Long categoryId, MultipartFile categoryImg, CategoryUpdateRequestDto updatecaegoryInfo, HashMap<String, String> requestParam) throws IOException {
         log.info("카테고리 수정 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
         // 수정하고자 하는 정보가 옳바른지 확인
-        if (categoryExceptioInterface.checkUpdateCategoryInfo(updatecaegoryInfo)) {
+        if (categoryException.checkUpdateCategoryInfo(updatecaegoryInfo)) {
             log.info("카테고리 수정 요청 정보가 옳바르지 않음");
+            LogUtil.logError("카테고리 수정 요청 정보가 옳바르지 않음", request, updatecaegoryInfo, requestParam);
             return null;
         }
 
@@ -164,10 +170,12 @@ public class CategoryService {
         log.info("카테고리 삭제 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return true;
         }
+
         // 상품 개발후 해당 카테고리 상품이 있는지 검증!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         return categoryQueryData.deleteCategory(deleteCategoryId);
     }
@@ -178,8 +186,9 @@ public class CategoryService {
         log.info("관리자 대분류 리스트업 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
@@ -192,8 +201,9 @@ public class CategoryService {
         log.info("관리자 중분류 리스트업 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
@@ -206,8 +216,9 @@ public class CategoryService {
         log.info("관리자 소분류 리스트업 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
@@ -220,8 +231,9 @@ public class CategoryService {
         log.info("네비게이션 카테고리 리스트 service");
         if(request.getHeader("RefreshToken") != null) {
             // 정합성이 검증된 토큰인지 확인
-            if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+            if (jwtTokenException.checkAccessToken(request)) {
                 log.info("토큰 정합성 검증 실패");
+                LogUtil.logError("토큰 정합성 검증 실패", request);
                 return null;
             }
 

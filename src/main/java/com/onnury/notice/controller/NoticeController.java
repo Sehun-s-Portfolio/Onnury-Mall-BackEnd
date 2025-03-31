@@ -1,5 +1,6 @@
 package com.onnury.notice.controller;
 
+import com.onnury.common.util.LogUtil;
 import com.onnury.notice.request.NoticeRequestDto;
 import com.onnury.notice.request.NoticeUpdateRequestDto;
 import com.onnury.notice.response.NoticeDetailResponseDto;
@@ -27,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 
 import static com.onnury.notice.domain.QNotice.notice;
@@ -56,12 +58,18 @@ public class NoticeController {
             @Parameter(description = "작성 공지사항 내용") @RequestPart NoticeRequestDto noticeRequestDto) {
         log.info("관리자 공지사항 작성 api");
 
-        NoticeResponseDto notice = noticeService.writeNotice(request, noticeRequestDto);
+        try{
+            NoticeResponseDto notice = noticeService.writeNotice(request, noticeRequestDto);
 
-        if (notice == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_ADMIN_ACCOUNT_FOR_NOTICE, "공지사항 작성 가능한 계정 정보가 아닙니다."), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, notice), HttpStatus.OK);
+            if (notice == null) {
+                LogUtil.logError(StatusCode.NOT_ADMIN_ACCOUNT_FOR_NOTICE.getMessage(), request, noticeRequestDto);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_ADMIN_ACCOUNT_FOR_NOTICE, "공지사항 작성 가능한 계정 정보가 아닙니다."), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, notice), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request, noticeRequestDto);
+            return null;
         }
     }
 
@@ -82,12 +90,21 @@ public class NoticeController {
             @Parameter(description = "페이지 번호") @RequestParam(required = false, defaultValue = "1") int page) {
         log.info("고객 측 공지사항 리스트 조회 api");
 
-        TotalNoticeResponseDto noticeList = noticeService.getNoticeList(request, page);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("페이지 번호", Integer.toString(page));
 
-        if (noticeList == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_GET_NOTICES, "공지사항 데이터를 불러올 수 없습니다."), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, noticeList), HttpStatus.OK);
+        try{
+            TotalNoticeResponseDto noticeList = noticeService.getNoticeList(request, page);
+
+            if (noticeList == null) {
+                LogUtil.logError(StatusCode.CANT_GET_NOTICES.getMessage(), request, requestParam);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_GET_NOTICES, "공지사항 데이터를 불러올 수 없습니다."), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, noticeList), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request, requestParam);
+            return null;
         }
     }
 
@@ -108,12 +125,18 @@ public class NoticeController {
             @Parameter(description = "수정 공지사항 내용") @RequestPart NoticeUpdateRequestDto noticeUpdateRequestDto) {
         log.info("관리자 공지사항 수정 api");
 
-        NoticeResponseDto notice = noticeService.updateNotice(request, noticeUpdateRequestDto);
+        try{
+            NoticeResponseDto notice = noticeService.updateNotice(request, noticeUpdateRequestDto);
 
-        if (notice == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_ADMIN_ACCOUNT_FOR_NOTICE, "공지사항 작성 가능한 계정 정보가 아닙니다."), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, notice), HttpStatus.OK);
+            if (notice == null) {
+                LogUtil.logError(StatusCode.CANT_UPDATE_NOTICE.getMessage(), request, noticeUpdateRequestDto);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_UPDATE_NOTICE, "공지사항을 수정할 수 없습니다."), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, notice), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request, noticeUpdateRequestDto);
+            return null;
         }
     }
 
@@ -134,12 +157,21 @@ public class NoticeController {
             @Parameter(description = "페이지 번호") @RequestParam(required = false, defaultValue = "1") int page) {
         log.info("관리자 공지사항 리스트 호출 api");
 
-        TotalNoticeResponseDto noticeList = noticeService.getAdminNoticeList(request, page);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("페이지 번호", Integer.toString(page));
 
-        if (noticeList == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_GET_NOTICES, "공지사항 데이터를 불러올 수 없습니다."), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, noticeList), HttpStatus.OK);
+        try{
+            TotalNoticeResponseDto noticeList = noticeService.getAdminNoticeList(request, page);
+
+            if (noticeList == null) {
+                LogUtil.logError(StatusCode.CANT_GET_NOTICES.getMessage(), request, requestParam);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_GET_NOTICES, "공지사항 데이터를 불러올 수 없습니다."), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, noticeList), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request, requestParam);
+            return null;
         }
     }
 
@@ -160,12 +192,21 @@ public class NoticeController {
             @Parameter(description = "삭제할 공지사항 id") @RequestParam Long noticeId) {
         log.info("관리자 공지사항 삭제 api");
 
-        String deleteCheck = noticeService.deleteNotice(request, noticeId);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("삭제할 공지사항 id", Long.toString(noticeId));
 
-        if (deleteCheck == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_ADMIN_ACCOUNT_FOR_NOTICE, "공지사항 작성 가능한 계정 정보가 아닙니다."), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, deleteCheck), HttpStatus.OK);
+        try{
+            String deleteCheck = noticeService.deleteNotice(request, noticeId);
+
+            if (deleteCheck == null) {
+                LogUtil.logError(StatusCode.CANT_DELETE_NOTICE.getMessage(), request, requestParam);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_DELETE_NOTICE, "공지사항을 삭제할 수 없습니다."), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, deleteCheck), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request, requestParam);
+            return null;
         }
     }
 
@@ -186,12 +227,21 @@ public class NoticeController {
             @Parameter(description = "조회할 공지사항 id") @RequestParam Long noticeId) {
         log.info("공지사항 상세 조회 api");
 
-        NoticeDetailResponseDto noticeDetail = noticeService.getNoticeDetail(request, noticeId);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("조회할 공지사항 id", Long.toString(noticeId));
 
-        if (noticeDetail == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_GET_NOTICES, "공지사항 데이터를 불러올 수 없습니다."), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, noticeDetail), HttpStatus.OK);
+        try{
+            NoticeDetailResponseDto noticeDetail = noticeService.getNoticeDetail(request, noticeId);
+
+            if (noticeDetail == null) {
+                LogUtil.logError(StatusCode.CANT_GET_NOTICES.getMessage(), request, requestParam);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_GET_NOTICES, "공지사항 데이터를 불러올 수 없습니다."), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, noticeDetail), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request, requestParam);
+            return null;
         }
     }
 
@@ -212,14 +262,30 @@ public class NoticeController {
             @Parameter(description = "등록할 공지사항 상세 정보 이미지 파일 리스트") @RequestPart List<MultipartFile> detailImages) throws IOException {
         log.info("재품 상세 정보 이미지 링크 반환 api");
 
-        List<ProductDetailImageInfoResponseDto> detailInfoImages = noticeService.saveDetailImage(request, detailImages);
+        HashMap<String, String> requestParam = new HashMap<>();
 
-        if (detailInfoImages == null || detailInfoImages.isEmpty()) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_SAVE_DETAIL_INFO_IMAGES, "공지사항 이미지를 생성하지 못하였습니다."), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, detailInfoImages), HttpStatus.OK);
+        if(detailImages == null || detailImages.isEmpty()){
+            LogUtil.logError("등록할 공지사항 상세 정보 이미지가 존재하지 않습니다.", request);
+            return null;
         }
 
+        detailImages.forEach(eachNoticeDetailImage -> {
+            requestParam.put(detailImages.indexOf(eachNoticeDetailImage) + "번째 공지사항 상세 정보 이미지", eachNoticeDetailImage.getOriginalFilename() + " : " + eachNoticeDetailImage.getContentType());
+        });
+
+        try{
+            List<ProductDetailImageInfoResponseDto> detailInfoImages = noticeService.saveDetailImage(request, detailImages);
+
+            if (detailInfoImages == null || detailInfoImages.isEmpty()) {
+                LogUtil.logError(StatusCode.NOT_SAVE_DETAIL_INFO_IMAGES.getMessage(), request, requestParam);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_SAVE_DETAIL_INFO_IMAGES, "공지사항 이미지를 생성하지 못하였습니다."), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, detailInfoImages), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request, requestParam);
+            return null;
+        }
     }
 
 

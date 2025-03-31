@@ -1,7 +1,8 @@
 package com.onnury.inquiry.service;
 
-import com.onnury.exception.inquiry.FaqExceptioInterface;
-import com.onnury.exception.token.JwtTokenExceptionInterface;
+import com.onnury.common.util.LogUtil;
+import com.onnury.exception.inquiry.FaqException;
+import com.onnury.exception.token.JwtTokenException;
 import com.onnury.inquiry.domain.Faq;
 import com.onnury.inquiry.repository.FaqRepository;
 import com.onnury.inquiry.request.FaqCreateRequestDto;
@@ -10,10 +11,9 @@ import com.onnury.inquiry.response.FaqCreateResponseDto;
 import com.onnury.inquiry.response.FaqListUpResponseDto;
 import com.onnury.inquiry.response.FaqUpdateResponseDto;
 import com.onnury.inquiry.response.TotalFaqListResponseDto;
-import com.onnury.jwt.JwtTokenProvider;
 import com.onnury.media.domain.Media;
 import com.onnury.media.repository.MediaRepository;
-import com.onnury.media.service.MediaUploadInterface;
+import com.onnury.media.service.MediaUpload;
 import com.onnury.product.response.ProductDetailImageInfoResponseDto;
 import com.onnury.query.inquiry.FaqQueryData;
 import lombok.RequiredArgsConstructor;
@@ -34,24 +34,27 @@ import java.util.stream.Collectors;
 @Service
 public class FaqService {
 
-    private final JwtTokenExceptionInterface jwtTokenExceptionInterface;
-    private final FaqExceptioInterface faqExceptioInterface;
+    private final JwtTokenException jwtTokenException;
+    private final FaqException faqException;
     private final FaqRepository faqRepository;
     private final FaqQueryData faqQueryData;
-    private final MediaUploadInterface mediaUploadInterface;
+    private final MediaUpload mediaUpload;
     private final MediaRepository mediaRepository;
+
     //FAQ 생성
     public FaqCreateResponseDto createFaq(HttpServletRequest request, FaqCreateRequestDto faqInfo) {
         log.info("FAQ 생성 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
         // 생성하고자 하는 FAQ 정보가 옳바른지 확인
-        if (faqExceptioInterface.checkCreateFaqInfo(faqInfo)) {
+        if (faqException.checkCreateFaqInfo(faqInfo)) {
             log.info("FAQ 생성 요청 정보가 옳바르지 않음");
+            LogUtil.logError("FAQ 생성 요청 정보가 옳바르지 않음", request, faqInfo);
             return null;
         }
         //브랜드 정보 저장
@@ -76,13 +79,15 @@ public class FaqService {
         log.info("FAQ 수정 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
         // 수정하고자 하는 공급사의 정보가 옳바른지 확인
-        if (faqExceptioInterface.checkUpdateFaqInfo(faqInfo)) {
+        if (faqException.checkUpdateFaqInfo(faqInfo)) {
             log.info("FAQ 수정 요청 정보가 옳바르지 않음");
+            LogUtil.logError("FAQ 수정 요청 정보가 옳바르지 않음", request, faqInfo);
             return null;
         }
         //수정한 공급사 정보 추출
@@ -104,8 +109,9 @@ public class FaqService {
         log.info("FAQ 삭제 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return true;
         }
 
@@ -117,8 +123,9 @@ public class FaqService {
         log.info("관리자 브랜드 리스트업 페이지 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
@@ -131,8 +138,9 @@ public class FaqService {
         log.info("고객 FAQ 리스트 조회 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
@@ -143,13 +151,14 @@ public class FaqService {
         log.info("공지사항 이미지 링크 반환 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
         // 전달받은 이미지 파일들을 기준으로 이미지 업로드 처리 후 정보들을 추출하여 HashMap 리스트로 전달
-        List<HashMap<String, String>> saveProductDetailInfoImages = mediaUploadInterface.uploadFaqDetailInfoImage(detailImages);
+        List<HashMap<String, String>> saveProductDetailInfoImages = mediaUpload.uploadFaqDetailInfoImage(detailImages);
         List<Media> saveMediaList = new ArrayList<>();
 
         // 업로드한 이미지들의 정보들을 조회하여 Media 데이터 저장 처리

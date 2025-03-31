@@ -5,6 +5,7 @@ import com.onnury.admin.response.AdminAccountLoginResponseDto;
 import com.onnury.admin.response.AdminAccountRegisterResponseDto;
 import com.onnury.admin.response.DashBoardResponseDto;
 import com.onnury.admin.service.AdminService;
+import com.onnury.common.util.LogUtil;
 import com.onnury.share.ResponseBody;
 import com.onnury.share.StatusCode;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
 import java.util.List;
 
 @Slf4j
@@ -55,12 +57,17 @@ public class AdminController {
     ) {
         log.info("관리자 계정 회원가입 api - {} / {}", adminAccountRegisterRequestDto.getLoginId(), adminAccountRegisterRequestDto.getPassword());
 
-        AdminAccountRegisterResponseDto adminAccountRegisterResponseDto = adminService.adminRegister(adminAccountRegisterRequestDto);
+        try{
+            AdminAccountRegisterResponseDto adminAccountRegisterResponseDto = adminService.adminRegister(adminAccountRegisterRequestDto);
 
-        if (adminAccountRegisterResponseDto == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_REGISTER_ADMIN_ACCOUNT, null), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, adminAccountRegisterResponseDto), HttpStatus.OK);
+            if (adminAccountRegisterResponseDto == null) {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_REGISTER_ADMIN_ACCOUNT, null), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, adminAccountRegisterResponseDto), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, adminAccountRegisterRequestDto);
+            return null;
         }
     }
 
@@ -81,12 +88,21 @@ public class AdminController {
             @Parameter(description = "관리자(공급사) 계정 로그인 비밀번호") @RequestParam String password) throws InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException {
         log.info("관리자 계정 로그인 api");
 
-        AdminAccountLoginResponseDto loginSuccess = adminService.adminLogin(response, loginId, password);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("관리자(공급사) 계정 로그인 아이디", loginId);
+        requestParam.put("관리자(공급사) 계정 로그인 비밀번호", password);
 
-        if (loginSuccess == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_ADMIN_LOGIN, null), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, loginSuccess), HttpStatus.OK);
+        try{
+            AdminAccountLoginResponseDto loginSuccess = adminService.adminLogin(response, loginId, password, requestParam);
+
+            if (loginSuccess == null) {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_ADMIN_LOGIN, null), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, loginSuccess), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, requestParam);
+            return null;
         }
     }
 
@@ -109,12 +125,24 @@ public class AdminController {
             @Parameter(description = "대시보드 공급사 id 리스트") @RequestParam(required = false, defaultValue = "") List<Long> supplierIdList) {
         log.info("대시 보드 api");
 
-        DashBoardResponseDto dashBoardResponse = adminService.adminDashBoard(request, startDate, endDate, brandIdList, supplierIdList);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("대시보드 조회 범위 시작 일자 (YYYY-MM-DD)", startDate);
+        requestParam.put("대시보드 조회 범위 끝 일자 (YYYY-MM-DD)", endDate);
+        requestParam.put("대시보드 브랜드 id 리스트", brandIdList.toString());
+        requestParam.put("대시보드 공급사 id 리스트", supplierIdList.toString());
 
-        if(dashBoardResponse == null){
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_GET_DASHBOARD_DATA, null), HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, dashBoardResponse), HttpStatus.OK);
+        try{
+            DashBoardResponseDto dashBoardResponse = adminService.adminDashBoard(request, startDate, endDate, brandIdList, supplierIdList, requestParam);
+
+            if(dashBoardResponse == null){
+                LogUtil.logError(StatusCode.CANT_GET_DASHBOARD_DATA.getMessage(), request, requestParam);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_GET_DASHBOARD_DATA, null), HttpStatus.OK);
+            }else{
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, dashBoardResponse), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request, requestParam);
+            return null;
         }
     }
 
@@ -124,7 +152,21 @@ public class AdminController {
     public ResponseEntity<ResponseBody> adminChangeUserPassword(HttpServletRequest request, @RequestParam Long memberId){
         log.info("유저 비밀번호 재설정 api");
 
-        return new ResponseEntity<>(new ResponseBody(StatusCode.OK, adminService.adminChangeUserPassword(request, memberId)), HttpStatus.OK);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("비밀번호 재설정할 회원 id", Long.toString(memberId));
+
+        try{
+            String changePasswordCheck = adminService.adminChangeUserPassword(request, memberId, requestParam);
+
+            if(changePasswordCheck == null){
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_CHANGE_USER_PASSWORD, null), HttpStatus.OK);
+            }else{
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, changePasswordCheck), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request, requestParam);
+            return null;
+        }
     }
 
     // 계정 비밀번호 수정 (어드민 관리자 경우)
@@ -132,7 +174,17 @@ public class AdminController {
     public ResponseEntity<ResponseBody> testChangePassword(@RequestParam String password){
         log.info("관리자 유저 비밀번호 재설정 api");
 
-        return new ResponseEntity<>(new ResponseBody(StatusCode.OK, passwordEncoder.encode(password)), HttpStatus.OK);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("관리자 계정 수정 비밀번호", password);
+
+        try{
+            String encodeUpdatePassword = passwordEncoder.encode(password);
+
+            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, encodeUpdatePassword), HttpStatus.OK);
+        }catch(Exception e){
+            LogUtil.logException(e, requestParam);
+            return null;
+        }
     }
 
     // 주문 이력 긴급 최종 확정 api

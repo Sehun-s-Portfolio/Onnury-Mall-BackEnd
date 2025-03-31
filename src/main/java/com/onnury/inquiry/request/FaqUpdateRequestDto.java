@@ -1,9 +1,10 @@
 package com.onnury.inquiry.request;
 
+import com.onnury.common.base.AbstractVO;
 import lombok.Getter;
 
 @Getter
-public class FaqUpdateRequestDto {
+public class FaqUpdateRequestDto extends AbstractVO {
     private String type; // FAQ타입
     private String question; // 질문
     private String answer; // 답변

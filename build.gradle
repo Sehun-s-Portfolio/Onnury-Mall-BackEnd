@@ -84,6 +84,14 @@ dependencies {
 
 	// Swagger
 	implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.7'
+
+	// Actuator / Prometheus
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
+	implementation("io.micrometer:micrometer-registry-prometheus")
+
+	// httpclient
+	implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.14'
+	implementation group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.14'
 }
 
 tasks.named('bootBuildImage') {

@@ -1,12 +1,8 @@
 package com.onnury.inquiry.service;
 
-import com.onnury.banner.domain.Banner;
-import com.onnury.banner.repository.BannerRepository;
-import com.onnury.banner.request.BannerCreateRequestDto;
-import com.onnury.banner.response.BannerCreateResponseDto;
-import com.onnury.exception.banner.BannerExceptioInterface;
-import com.onnury.exception.inquiry.InquiryExceptioInterface;
-import com.onnury.exception.token.JwtTokenExceptionInterface;
+import com.onnury.common.util.LogUtil;
+import com.onnury.exception.inquiry.InquiryException;
+import com.onnury.exception.token.JwtTokenException;
 import com.onnury.inquiry.domain.Inquiry;
 import com.onnury.inquiry.request.InquiryAnswerRequestDto;
 import com.onnury.inquiry.request.InquiryRequestDto;
@@ -31,8 +27,8 @@ import java.util.List;
 @Service
 public class InquiryService {
 
-    private final JwtTokenExceptionInterface jwtTokenExceptionInterface;
-    private final InquiryExceptioInterface inquiryExceptioInterface;
+    private final JwtTokenException jwtTokenException;
+    private final InquiryException inquiryException;
     private final InquiryQueryData inquiryQueryData;
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -42,14 +38,16 @@ public class InquiryService {
         log.info("배너 수정 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
         // 수정하고자 하는 정보가 옳바른지 확인
-        if (inquiryExceptioInterface.checkUpdateInquiryInfo(inquiryAnswerRequestDto.getAnswer())) {
+        if (inquiryException.checkUpdateInquiryInfo(inquiryAnswerRequestDto.getAnswer())) {
             log.info("문의 답변 요청 정보가 옳바르지 않음");
+            LogUtil.logError("문의 답변 요청 정보가 옳바르지 않음", request, inquiryAnswerRequestDto);
             return null;
         }
 
@@ -73,8 +71,9 @@ public class InquiryService {
         log.info("관리자 문의 리스트업 페이지 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
@@ -87,8 +86,9 @@ public class InquiryService {
         log.info("고객 문의 작성 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 

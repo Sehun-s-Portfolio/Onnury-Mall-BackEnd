@@ -1,5 +1,6 @@
 package com.onnury.member.controller;
 
+import com.onnury.common.util.LogUtil;
 import com.onnury.member.request.MemberLoginRequestDto;
 import com.onnury.member.request.MemberRegistRequestDto;
 import com.onnury.member.response.MemberDashboardResponseDto;
@@ -25,6 +26,10 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -33,7 +38,6 @@ import javax.validation.Valid;
 public class MemberController {
 
     private final MemberService memberService;
-
 
     // 관리자 회원 페이지 리스트업 api
     @Operation(summary = "관리자 회원 페이지 리스트업 api", tags = { "MemberController" })
@@ -55,12 +59,28 @@ public class MemberController {
             @Parameter(description = "회원 가입 끝 일자") @RequestParam(required = false, defaultValue = "") String endDate) {
         log.info("관리자 회원 리스트업 페이지 api");
 
-        MemberListUpResponseDto responseSupplierList = memberService.listUpMember(request, page, searchtype, search, startDate, endDate);
+        // 요청 파라미터 확인용 HashMap
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("페이지", Integer.toString(page));
+        requestParam.put("회원 타입", searchtype);
+        requestParam.put("회원 검색 키워드", search);
+        requestParam.put("회원 가입 시작 일자", startDate);
+        requestParam.put("회원 가입 끝 일자", endDate);
 
-        if (responseSupplierList == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_GET_BANNER_LISTUP, null), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, responseSupplierList), HttpStatus.OK);
+        try{
+            // 관리자 회원 리스트업 객체
+            MemberListUpResponseDto responseSupplierList = memberService.listUpMember(request, page, searchtype, search, startDate, endDate, requestParam);
+
+            // 관리자 회원 리스트업 객체가 하나도 없을 시
+            if (responseSupplierList == null) {
+                LogUtil.logError(StatusCode.CANT_GET_BANNER_LISTUP.getMessage(), request, requestParam);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_GET_BANNER_LISTUP, null), HttpStatus.OK);
+            } else { // 관리자 회원 리스트업 객체가 하나라도 존재할 시
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, responseSupplierList), HttpStatus.OK);
+            }
+        } catch (Exception e){
+            LogUtil.logException(e, request, requestParam);
+            return null;
         }
     }
 
@@ -76,12 +96,22 @@ public class MemberController {
     })
     @PostMapping(value = "/regist",  produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> registMember(
-            @Parameter(description = "고객 회원가입 정보") @Valid @RequestBody MemberRegistRequestDto memberRegistRequestDto) {
+            @Parameter(description = "고객 회원가입 정보") @Valid @RequestBody MemberRegistRequestDto memberRegistRequestDto){
         log.info("고객 회원가입 api");
 
-        ResponseBody registMember = memberService.registMember(memberRegistRequestDto);
+        try{
+            ResponseBody registResponse = memberService.registMember(memberRegistRequestDto);
 
-        return new ResponseEntity<>(registMember, HttpStatus.OK);
+            if(!registResponse.getStatusCode().equals("O-200")){
+                LogUtil.logError(StatusCode.CANT_REGIST_MEMBER.getMessage(), memberRegistRequestDto);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_REGIST_MEMBER, null), HttpStatus.OK);
+            }else{
+                return new ResponseEntity<>(registResponse, HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, memberRegistRequestDto);
+            return null;
+        }
     }
 
 
@@ -100,12 +130,17 @@ public class MemberController {
             @Parameter(description = "고객 로그인 정보") @RequestBody MemberLoginRequestDto memberLoginRequestDto) {
         log.info("고객 로그인 api");
 
-        MemberLoginResponseDto loginMember = memberService.loginMember(response, memberLoginRequestDto);
+        try{
+            MemberLoginResponseDto loginMember = memberService.loginMember(response, memberLoginRequestDto);
 
-        if (loginMember == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_LOGIN_MEMBER, "로그인 하실 수 없습니다."), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, loginMember), HttpStatus.OK);
+            if (loginMember == null) {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_LOGIN_MEMBER, "로그인 하실 수 없습니다."), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, loginMember), HttpStatus.OK);
+            }
+        }catch (Exception e){
+            LogUtil.logException(e, memberLoginRequestDto);
+            return null;
         }
     }
 
@@ -124,10 +159,20 @@ public class MemberController {
             @Parameter(description = "중복 확인할 로그인 아이디") @RequestParam String checkLoginId) {
         log.info("로그인 id 중복 체크 api");
 
-        if (memberService.checkDuplicateLoginId(checkLoginId)) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_REGIST_MEMBER, "이미 존재한 계정 아이디이므로 다른 계정 아이디를 입력해주십시오."), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, "가입 가능한 계정 아이디 입니다."), HttpStatus.OK);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("중복 확인 로그인 아이디", checkLoginId);
+
+        try{
+            boolean duplicateCheck = memberService.checkDuplicateLoginId(checkLoginId);
+
+            if (duplicateCheck) {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_REGIST_MEMBER, "이미 존재한 계정 아이디이므로 다른 계정 아이디를 입력해주십시오."), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, "가입 가능한 계정 아이디 입니다."), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, requestParam);
+            return null;
         }
     }
 
@@ -147,14 +192,23 @@ public class MemberController {
             @Parameter(description = "전화번호") @RequestParam String phone) {
         log.info("로그인 id 찾기 api");
 
-        String findLoginIdCheck = memberService.findLoginId(email, phone);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("로그인 ID 확인 이메일", email);
+        requestParam.put("로그인 ID 확인 전화번호", phone);
 
-        if (findLoginIdCheck == null) {
-            log.info("계정 아이디를 확인할 수 없습니다.");
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_FIND_LOGINID, "계정 아이디를 확인할 수 없습니다."), HttpStatus.OK);
-        } else {
-            log.info(findLoginIdCheck);
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, findLoginIdCheck), HttpStatus.OK);
+        try{
+            String findLoginIdCheck = memberService.findLoginId(email, phone, requestParam);
+
+            if (findLoginIdCheck == null) {
+                log.info("계정 아이디를 확인할 수 없습니다.");
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_FIND_LOGINID, "계정 아이디를 확인할 수 없습니다."), HttpStatus.OK);
+            } else {
+                log.info(findLoginIdCheck);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, findLoginIdCheck), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, requestParam);
+            return null;
         }
     }
 
@@ -175,14 +229,24 @@ public class MemberController {
             @Parameter(description = "전화번호") @RequestParam String phone) {
         log.info("비밀번호 찾기 api");
 
-        String findPasswordCheck = memberService.findPassword(loginId, email, phone);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("로그인 아이디", loginId);
+        requestParam.put("이메일", email);
+        requestParam.put("전화번호", phone);
 
-        if (findPasswordCheck == null) {
-            log.info("비밀번호를 확인할 수 없습니다.");
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_FIND_PASSWORD, "비밀번호를 확인할 수 없습니다."), HttpStatus.OK);
-        } else {
-            log.info(findPasswordCheck);
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, findPasswordCheck), HttpStatus.OK);
+        try{
+            String findPasswordCheck = memberService.findPassword(loginId, email, phone, requestParam);
+
+            if (findPasswordCheck == null) {
+                log.info("비밀번호를 확인할 수 없습니다.");
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_FIND_PASSWORD, "비밀번호를 확인할 수 없습니다."), HttpStatus.OK);
+            } else {
+                log.info(findPasswordCheck);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, findPasswordCheck), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, requestParam);
+            return null;
         }
     }
 
@@ -204,12 +268,21 @@ public class MemberController {
             @Parameter(description = "회원 가입 끝 일자") @RequestParam(required = false, defaultValue = "") String endDate) {
         log.info("회원 대시보드 api");
 
-        MemberDashboardResponseDto memberDashboardResponseDto = memberService.getDashboard(request, startDate, endDate);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("회원 가입 시작 일자", startDate);
+        requestParam.put("회원 가입 끝 일자", endDate);
 
-        if (memberDashboardResponseDto == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_GET_MEMBER_DASHBOARD_DATA, null), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, memberDashboardResponseDto), HttpStatus.OK);
+        try{
+            MemberDashboardResponseDto memberDashboardResponseDto = memberService.getDashboard(request, startDate, endDate, requestParam);
+
+            if (memberDashboardResponseDto == null) {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_GET_MEMBER_DASHBOARD_DATA, null), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, memberDashboardResponseDto), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request, requestParam);
+            return null;
         }
     }
 

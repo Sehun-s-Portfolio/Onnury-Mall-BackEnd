@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor
+//@AllArgsConstructor
 public class ResponseBody <T>{
 
     private final String statusMessage; // api 수행 상태 메세지
@@ -16,4 +16,5 @@ public class ResponseBody <T>{
         this.statusCode = statusCode.getCode();
         this.data = data;
     }
+
 }

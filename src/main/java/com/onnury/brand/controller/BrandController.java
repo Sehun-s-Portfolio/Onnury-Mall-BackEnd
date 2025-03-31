@@ -7,6 +7,7 @@ import com.onnury.brand.response.BrandListUpResponseDto;
 import com.onnury.brand.response.BrandUpdateResponseDto;
 import com.onnury.brand.response.MainPageBrandResponseDto;
 import com.onnury.brand.service.BrandService;
+import com.onnury.common.util.LogUtil;
 import com.onnury.share.ResponseBody;
 import com.onnury.share.StatusCode;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 
 @Slf4j
@@ -54,12 +56,21 @@ public class BrandController {
         log.info("브랜드 생성 api");
         log.info("브랜드 생성 이미지 : {}", brandImage.getOriginalFilename());
 
-        BrandCreateResponseDto brandCreateResponseDto = brandService.createBrand(request, brandInfo, brandImage);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("브랜드 등록 이미지", brandImage.getOriginalFilename() + " : " + brandImage.getContentType());
 
-        if (brandCreateResponseDto == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_CREATE_BANNER, null), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, brandCreateResponseDto), HttpStatus.OK);
+        try{
+            BrandCreateResponseDto brandCreateResponseDto = brandService.createBrand(request, brandInfo, brandImage, requestParam);
+
+            if (brandCreateResponseDto == null) {
+                LogUtil.logError(StatusCode.CANT_CREATE_BANNER.getMessage(), request, requestParam, brandInfo);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_CREATE_BANNER, null), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, brandCreateResponseDto), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request, requestParam, brandInfo);
+            return null;
         }
     }
 
@@ -83,12 +94,21 @@ public class BrandController {
         log.info("브랜드 수정 api");
         log.info("브랜드 수정 이미지 파일 : {}", updateBrandImage.getOriginalFilename());
 
-        BrandUpdateResponseDto brandUpdateResponseDto = brandService.updateBrand(request, Brandid, brandInfo, updateBrandImage);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("수정 브랜드 id", Long.toString(Brandid));
+        requestParam.put("수정 브랜드 이미지", updateBrandImage.getOriginalFilename() + " : " + updateBrandImage.getContentType());
 
-        if (brandUpdateResponseDto == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_CREATE_BANNER, null), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, brandUpdateResponseDto), HttpStatus.OK);
+        try{
+            BrandUpdateResponseDto brandUpdateResponseDto = brandService.updateBrand(request, Brandid, brandInfo, updateBrandImage, requestParam);
+
+            if (brandUpdateResponseDto == null) {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_CREATE_BANNER, null), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, brandUpdateResponseDto), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request, requestParam, brandInfo);
+            return null;
         }
     }
 
@@ -109,14 +129,23 @@ public class BrandController {
             @Parameter(description = "삭제 브랜드 id") @RequestParam Long Brandid) {
         log.info("브랜드 수정 api");
 
-        boolean deleteSuccess = brandService.deleteBrand(request, Brandid);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("삭제 브랜드 id", Long.toString(Brandid));
 
-        if (deleteSuccess) {
-            log.info("브랜드 삭제 실패");
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_DELETE_BANNER, null), HttpStatus.OK);
-        } else {
-            log.info("브랜드 삭제 성공");
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, "정상적으로 삭제되었습니다."), HttpStatus.OK);
+        try{
+            boolean deleteSuccess = brandService.deleteBrand(request, Brandid, requestParam);
+
+            if (deleteSuccess) {
+                log.info("브랜드 삭제 실패");
+                LogUtil.logError(StatusCode.CANT_DELETE_BANNER.getMessage(), request, requestParam);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_DELETE_BANNER, null), HttpStatus.OK);
+            } else {
+                log.info("브랜드 삭제 성공");
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, "정상적으로 삭제되었습니다."), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request, requestParam);
+            return null;
         }
     }
 
@@ -137,13 +166,21 @@ public class BrandController {
             @Parameter(description = "페이지 번호") @RequestParam(required = false, defaultValue = "1") int page) {
         log.info("관리자 공급사 리스트업 페이지 api");
 
-        BrandListUpResponseDto responseSupplierList = brandService.listUpBrand(request, page);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("페이지 번호", Integer.toString(page));
 
-        if (responseSupplierList == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_GET_BANNER_LISTUP, null), HttpStatus.OK);
-        } else {
-            log.info("첫 번째 브랜드 : {}", responseSupplierList.getBrandDataResponseDto().get(0).getBrandTitle());
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, brandService.listUpBrand(request, page)), HttpStatus.OK);
+        try{
+            BrandListUpResponseDto responseSupplierList = brandService.listUpBrand(request, page, requestParam);
+
+            if (responseSupplierList == null) {
+                LogUtil.logError(StatusCode.CANT_GET_BANNER_LISTUP.getMessage(), request, requestParam);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_GET_BANNER_LISTUP, null), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, responseSupplierList), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request, requestParam);
+            return null;
         }
     }
 
@@ -162,14 +199,19 @@ public class BrandController {
     public ResponseEntity<ResponseBody> mainPageBrandList(HttpServletRequest request) {
         log.info("메인 페이지 브랜드 리스트 api");
 
-        List<MainPageBrandResponseDto> mainPageBrandList = brandService.mainPageBrandList(request);
+        try{
+            List<MainPageBrandResponseDto> mainPageBrandList = brandService.mainPageBrandList(request);
 
-        if (mainPageBrandList == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_GET_BANNER_LISTUP, null), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, mainPageBrandList), HttpStatus.OK);
+            if (mainPageBrandList == null) {
+                LogUtil.logError(StatusCode.CANT_GET_BANNER_LISTUP.getMessage(), request);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_GET_BANNER_LISTUP, null), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, mainPageBrandList), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request);
+            return null;
         }
-
     }
 
 }

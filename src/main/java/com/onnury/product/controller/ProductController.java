@@ -1,5 +1,6 @@
 package com.onnury.product.controller;
 
+import com.onnury.common.util.LogUtil;
 import com.onnury.product.request.ProductCreateRequestDto;
 import com.onnury.product.request.ProductSearchRequestDto;
 import com.onnury.product.request.ProductUpdateRequestDto;
@@ -25,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 
 @Slf4j
@@ -52,12 +54,29 @@ public class ProductController {
             @Parameter(description = "제품 정보") @Valid @RequestPart ProductCreateRequestDto productCreateRequestDto) throws IOException {
         log.info("제품 생성 등록 api");
 
-        ProductCreateResponseDto createResponse = productService.createProduct(request, productImgs, productCreateRequestDto);
+        HashMap<String, String> requestParam = new HashMap<>();
 
-        if (createResponse == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_CREATE_PRODUCT, "제품이 생성되지 않았습니다."), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, createResponse), HttpStatus.OK);
+        if(productImgs == null || productImgs.isEmpty()){
+            LogUtil.logError("제품 생성용 이미지가 존재하지 않습니다.", request);
+            return null;
+        }
+
+        productImgs.forEach(eachProductImage -> {
+            requestParam.put(productImgs.indexOf(eachProductImage) + "번째 제품 생성 이미지", eachProductImage.getOriginalFilename() + " : " + eachProductImage.getContentType());
+        });
+
+        try{
+            ProductCreateResponseDto createResponse = productService.createProduct(request, productImgs, productCreateRequestDto);
+
+            if (createResponse == null) {
+                LogUtil.logError(StatusCode.CANT_CREATE_PRODUCT.getMessage(), request, StatusCode.CANT_CREATE_PRODUCT, productCreateRequestDto);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_CREATE_PRODUCT, "제품이 생성되지 않았습니다."), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, createResponse), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request, requestParam, productCreateRequestDto);
+            return null;
         }
     }
 
@@ -78,12 +97,21 @@ public class ProductController {
             @Parameter(description = "조회할 제품 id") @RequestParam Long productId){
         log.info("관리자 특정 제품 정보 호출 api");
 
-        ProductCreateResponseDto createResponse = productService.getProduct(request, productId);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("조회할 제품 id", Long.toString(productId));
 
-        if (createResponse == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_PRODUCTS, "제품이 존재하지 않습니다."), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, createResponse), HttpStatus.OK);
+        try{
+            ProductCreateResponseDto createResponse = productService.getProduct(request, productId);
+
+            if (createResponse == null) {
+                LogUtil.logError(StatusCode.NOT_EXIST_PRODUCTS.getMessage(), request, requestParam);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_PRODUCTS, "제품이 존재하지 않습니다."), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, createResponse), HttpStatus.OK);
+            }
+        } catch(Exception e){
+            LogUtil.logException(e, request, requestParam);
+            return null;
         }
     }
 
@@ -102,15 +130,29 @@ public class ProductController {
     public ResponseEntity<ResponseBody> updateProduct(
             HttpServletRequest request,
             @Parameter(description = "수정할 제품 이미지 파일 리스트") @RequestPart(required = false) List<MultipartFile> updateProductImgs,
-            @Parameter(description = "수정할 제품 정보") @Valid @RequestPart ProductUpdateRequestDto productUpdateRequestDto) throws IOException {
+            @Parameter(description = "수정할 제품 정보") @Valid @RequestPart ProductUpdateRequestDto productUpdateRequestDto) {
         log.info("제품 수정 api");
 
-        ProductUpdateResponseDto updateResponse = productService.updateProduct(request, updateProductImgs, productUpdateRequestDto);
+        HashMap<String, String> requestParam = new HashMap<>();
 
-        if (updateResponse == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_UPDATE_PRODUCT, "제품이 수정되지 않았습니다."), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, updateResponse), HttpStatus.OK);
+        if(!updateProductImgs.isEmpty()){
+            updateProductImgs.forEach(eachUpdateImage -> {
+                requestParam.put(updateProductImgs.indexOf(eachUpdateImage) + "번째 제품 수정 이미지", eachUpdateImage.getOriginalFilename() + " : " + eachUpdateImage.getContentType());
+            });
+        }
+
+        try{
+            ProductUpdateResponseDto updateResponse = productService.updateProduct(request, updateProductImgs, productUpdateRequestDto);
+
+            if (updateResponse == null) {
+                LogUtil.logError(StatusCode.CANT_UPDATE_PRODUCT.getMessage(), request, requestParam, productUpdateRequestDto);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_UPDATE_PRODUCT, "제품이 수정되지 않았습니다."), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, updateResponse), HttpStatus.OK);
+            }
+        } catch(Exception e){
+            LogUtil.logException(e, request, requestParam, productUpdateRequestDto);
+            return null;
         }
     }
 
@@ -131,12 +173,20 @@ public class ProductController {
             @Parameter(description = "삭제할 제품 id") @RequestParam Long productId) {
         log.info("제품 삭제 api");
 
-        if (!productService.deleteProduct(request, productId)) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_DELETE_PRODUCT, "제품을 삭제할 수 없습니다."), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, "제품이 정상적으로 삭제되었습니다."), HttpStatus.OK);
-        }
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("삭제할 제품 id", Long.toString(productId));
 
+        try{
+            if (!productService.deleteProduct(request, productId)) {
+                LogUtil.logError(StatusCode.CANT_DELETE_PRODUCT.getMessage(), request, requestParam);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_DELETE_PRODUCT, "제품을 삭제할 수 없습니다."), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, "제품이 정상적으로 삭제되었습니다."), HttpStatus.OK);
+            }
+        } catch(Exception e){
+            LogUtil.logException(e, request, requestParam);
+            return null;
+        }
     }
 
 
@@ -172,12 +222,18 @@ public class ProductController {
                 .searchKeyword(searchKeyword)
                 .build();
 
-        AdminTotalProductSearchResponseDto productListResponseDto = productService.getProductsList(request, productSearchRequestDto);
+        try{
+            AdminTotalProductSearchResponseDto productListResponseDto = productService.getProductsList(request, productSearchRequestDto);
 
-        if (productListResponseDto == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_PRODUCTS, "제품 리스트를 조회할 수 없습니다."), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, productListResponseDto), HttpStatus.OK);
+            if (productListResponseDto == null) {
+                LogUtil.logError(StatusCode.NOT_EXIST_PRODUCTS.getMessage(), request, productSearchRequestDto);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_PRODUCTS, "제품 리스트를 조회할 수 없습니다."), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, productListResponseDto), HttpStatus.OK);
+            }
+        } catch(Exception e){
+            LogUtil.logException(e, request, productSearchRequestDto);
+            return null;
         }
     }
 
@@ -193,16 +249,21 @@ public class ProductController {
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
     @GetMapping(value = "/ready", produces = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<ResponseBody> getReadyForCreateProductInfo(
-            HttpServletRequest request) {
+    public ResponseEntity<ResponseBody> getReadyForCreateProductInfo(HttpServletRequest request) {
         log.info("제품 생성 페이지 진입 시 사전 호출되어 활용될 정보 호출 api");
 
-        ProductReadyInfoResponseDto readyForCreateProductInfo = productService.getReadyForCreateProductInfo(request);
+        try{
+            ProductReadyInfoResponseDto readyForCreateProductInfo = productService.getReadyForCreateProductInfo(request);
 
-        if (readyForCreateProductInfo == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_READY_INFO, "제품 등록을 위한 사전 데이터들이 존재하지 않습니다."), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, readyForCreateProductInfo), HttpStatus.OK);
+            if (readyForCreateProductInfo == null) {
+                LogUtil.logError(StatusCode.NOT_EXIST_READY_INFO.getMessage(), request);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_READY_INFO, "제품 등록을 위한 사전 데이터들이 존재하지 않습니다."), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, readyForCreateProductInfo), HttpStatus.OK);
+            }
+        } catch(Exception e){
+            LogUtil.logException(e, request);
+            return null;
         }
     }
 
@@ -224,12 +285,18 @@ public class ProductController {
     public ResponseEntity<ResponseBody> getNewReleaseProducts(HttpServletRequest request) {
         log.info("메인 페이지 신 상품 리스트 호출 api");
 
-        List<MainPageNewReleaseProductResponseDto> newReleaseProducts = productService.getNewReleaseProducts(request);
+        try{
+            List<MainPageNewReleaseProductResponseDto> newReleaseProducts = productService.getNewReleaseProducts(request);
 
-        if (newReleaseProducts.isEmpty()) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_PRODUCTS, newReleaseProducts), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, newReleaseProducts), HttpStatus.OK);
+            if (newReleaseProducts.isEmpty()) {
+                LogUtil.logError(StatusCode.NOT_EXIST_PRODUCTS.getMessage(), request);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_PRODUCTS, newReleaseProducts), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, newReleaseProducts), HttpStatus.OK);
+            }
+        } catch(Exception e){
+            LogUtil.logException(e, request);
+            return null;
         }
     }
 
@@ -262,16 +329,51 @@ public class ProductController {
             @Parameter(description = "중분류 카테고리 id 리스트") @RequestParam(required = false, defaultValue = "") List<Long> middleCategoryId) {
         log.info("대분류 기준 제품 페이지의 정렬 기준 제품 리스트 호출 api");
 
-        TotalProductPageMainProductResponseDto upCategoryProductPageMainProducts =
-                productService.upCategoryPageMainProducts(request, upCategoryId, sort, page, startRangePrice, endRangePrice, brandId, labelId, middleCategoryId);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("대분류 카테고리 id", Long.toString(upCategoryId));
+        requestParam.put("정렬 기준", Integer.toString(sort));
+        requestParam.put("페이지 번호", Integer.toString(page));
+        requestParam.put("리스트 호출 범위 시작 가격", Integer.toString(startRangePrice));
+        requestParam.put("리스트 호출 범위 끝 가격", Integer.toString(endRangePrice));
 
-        if (upCategoryProductPageMainProducts.getMainProductList().isEmpty()) {
-            log.info("아무것도 안 뽑힌 제품들");
-            return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_PRODUCTS, upCategoryProductPageMainProducts), HttpStatus.OK);
-        } else {
+        if(!brandId.isEmpty()){
+            brandId.forEach(eachBrandId -> {
+                requestParam.put(brandId.indexOf(eachBrandId) + "번째 선택 브랜드 id", Long.toString(eachBrandId));
+            });
+        }
 
-            log.info("정상적으로 뽑힌 제품들 갯수 : {}", upCategoryProductPageMainProducts.getMainProductList().size());
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, upCategoryProductPageMainProducts), HttpStatus.OK);
+        if(!labelId.isEmpty()){
+            labelId.forEach(eachLabelId -> {
+                requestParam.put(labelId.indexOf(eachLabelId) + "번째 선택 라벨 id", Long.toString(eachLabelId));
+            });
+        }
+
+        if(!middleCategoryId.isEmpty()){
+            middleCategoryId.forEach(eachCategoryId -> {
+                requestParam.put(middleCategoryId.indexOf(eachCategoryId) + "번째 선택 카테고리 id", Long.toString(eachCategoryId));
+            });
+        }
+
+        try{
+            TotalProductPageMainProductResponseDto upCategoryProductPageMainProducts =
+                    productService.upCategoryPageMainProducts(request, upCategoryId, sort, page, startRangePrice, endRangePrice, brandId, labelId, middleCategoryId);
+
+            if(upCategoryProductPageMainProducts != null){
+                if (upCategoryProductPageMainProducts.getMainProductList().isEmpty()) {
+                    log.info("아무것도 안 뽑힌 제품들");
+                    return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_PRODUCTS, upCategoryProductPageMainProducts), HttpStatus.OK);
+                } else {
+                    log.info("정상적으로 뽑힌 제품들 갯수 : {}", upCategoryProductPageMainProducts.getMainProductList().size());
+                    return new ResponseEntity<>(new ResponseBody(StatusCode.OK, upCategoryProductPageMainProducts), HttpStatus.OK);
+                }
+            }else{
+                LogUtil.logError(StatusCode.NOT_EXIST_PRODUCTS.getMessage(), request, requestParam);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_PRODUCTS, null), HttpStatus.OK);
+            }
+
+        } catch(Exception e){
+            LogUtil.logException(e, request, requestParam);
+            return null;
         }
     }
 
@@ -304,13 +406,49 @@ public class ProductController {
             @Parameter(description = "소분류 카테고리 id 리스트") @RequestParam(required = false, defaultValue = "") List<Long> relatedDownCategoryId) {
         log.info("중분류, 소분류 기준 제품 페이지의 정렬 기준 제품 리스트 호출 api");
 
-        TotalProductPageMainProductResponseDto middleAndDownCategoryProductPageMainProducts = productService.middleAndDownCategoryPageMainProducts(
-                request, categoryId, sort, page, startRangePrice, endRangePrice, brandId, labelId, relatedDownCategoryId);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("중분류 카테고리 id", Long.toString(categoryId));
+        requestParam.put("정렬 기준", Integer.toString(sort));
+        requestParam.put("페이지 번호", Integer.toString(page));
+        requestParam.put("리스트 호출 범위 시작 가격", Integer.toString(startRangePrice));
+        requestParam.put("리스트 호출 범위 끝 가격", Integer.toString(endRangePrice));
 
-        if (middleAndDownCategoryProductPageMainProducts.getMainProductList().isEmpty()) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_PRODUCTS, middleAndDownCategoryProductPageMainProducts), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, middleAndDownCategoryProductPageMainProducts), HttpStatus.OK);
+        if(!brandId.isEmpty()){
+            brandId.forEach(eachBrandId -> {
+                requestParam.put(brandId.indexOf(eachBrandId) + "번째 선택 브랜드 id", Long.toString(eachBrandId));
+            });
+        }
+
+        if(!labelId.isEmpty()){
+            labelId.forEach(eachLabelId -> {
+                requestParam.put(labelId.indexOf(eachLabelId) + "번째 선택 라벨 id", Long.toString(eachLabelId));
+            });
+        }
+
+        if(!relatedDownCategoryId.isEmpty()){
+            relatedDownCategoryId.forEach(eachCategoryId -> {
+                requestParam.put(relatedDownCategoryId.indexOf(eachCategoryId) + "번째 선택 카테고리 id", Long.toString(eachCategoryId));
+            });
+        }
+
+        try{
+            TotalProductPageMainProductResponseDto middleAndDownCategoryProductPageMainProducts = productService.middleAndDownCategoryPageMainProducts(
+                    request, categoryId, sort, page, startRangePrice, endRangePrice, brandId, labelId, relatedDownCategoryId);
+
+            if(middleAndDownCategoryProductPageMainProducts != null){
+                if (middleAndDownCategoryProductPageMainProducts.getMainProductList().isEmpty()) {
+                    return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_PRODUCTS, middleAndDownCategoryProductPageMainProducts), HttpStatus.OK);
+                } else {
+                    return new ResponseEntity<>(new ResponseBody(StatusCode.OK, middleAndDownCategoryProductPageMainProducts), HttpStatus.OK);
+                }
+            }else{
+                LogUtil.logError(StatusCode.NOT_EXIST_PRODUCTS.getMessage(), request, requestParam);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_PRODUCTS, null), HttpStatus.OK);
+            }
+
+        } catch(Exception e){
+            LogUtil.logException(e, request, requestParam);
+            return null;
         }
     }
 
@@ -343,13 +481,49 @@ public class ProductController {
             @Parameter(description = "중분류 카테고리 id 리스트") @RequestParam(required = false, defaultValue = "") List<Long> middleCategoryId) {
         log.info("고객 제품 검색 api - keyword : {}", searchKeyword);
 
-        TotalProductSearchResponseDto searchResult = productService.searchProducts(
-                request, sort, searchKeyword, page, startRangePrice, endRangePrice, brandId, labelId, middleCategoryId);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("검색 키워드", searchKeyword);
+        requestParam.put("정렬 기준", Integer.toString(sort));
+        requestParam.put("페이지 번호", Integer.toString(page));
+        requestParam.put("리스트 호출 범위 시작 가격", Integer.toString(startRangePrice));
+        requestParam.put("리스트 호출 범위 끝 가격", Integer.toString(endRangePrice));
 
-        if (searchResult.getSearchProductList().isEmpty()) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_PRODUCTS, searchResult), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, searchResult), HttpStatus.OK);
+        if(!brandId.isEmpty()){
+            brandId.forEach(eachBrandId -> {
+                requestParam.put(brandId.indexOf(eachBrandId) + "번째 선택 브랜드 id", Long.toString(eachBrandId));
+            });
+        }
+
+        if(!labelId.isEmpty()){
+            labelId.forEach(eachLabelId -> {
+                requestParam.put(labelId.indexOf(eachLabelId) + "번째 선택 라벨 id", Long.toString(eachLabelId));
+            });
+        }
+
+        if(!middleCategoryId.isEmpty()){
+            middleCategoryId.forEach(eachCategoryId -> {
+                requestParam.put(middleCategoryId.indexOf(eachCategoryId) + "번째 선택 카테고리 id", Long.toString(eachCategoryId));
+            });
+        }
+
+        try{
+            TotalProductSearchResponseDto searchResult = productService.searchProducts(
+                    request, sort, searchKeyword, page, startRangePrice, endRangePrice, brandId, labelId, middleCategoryId);
+
+            if(searchResult != null){
+                if (searchResult.getSearchProductList().isEmpty()) {
+                    return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_PRODUCTS, searchResult), HttpStatus.OK);
+                } else {
+                    return new ResponseEntity<>(new ResponseBody(StatusCode.OK, searchResult), HttpStatus.OK);
+                }
+            }else{
+                LogUtil.logError(StatusCode.NOT_EXIST_PRODUCTS.getMessage(), request, requestParam);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_PRODUCTS, null), HttpStatus.OK);
+            }
+
+        } catch(Exception e){
+            LogUtil.logException(e, request, requestParam);
+            return null;
         }
     }
 
@@ -381,14 +555,42 @@ public class ProductController {
             @Parameter(description = "선택 중분류 카테고리 id 리스트") @RequestParam(required = false, defaultValue = "") List<Long> relatedMiddleCategoryId) {
         log.info("라벨 기준 제품 페이지 제품 리스트 호출 api");
 
-        TotalLabelProductPageResponseDto labelProducts = productService.labelPageMainProducts(request, labelId, sort, page, startRangePrice, endRangePrice, brandId, relatedMiddleCategoryId);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("라벨 id", Long.toString(labelId));
+        requestParam.put("정렬 기준", Integer.toString(sort));
+        requestParam.put("페이지 번호", Integer.toString(page));
+        requestParam.put("검색 범위 시작 가격", Integer.toString(startRangePrice));
+        requestParam.put("검색 범위 끝 가격", Integer.toString(endRangePrice));
 
-        if (labelProducts == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_LABEL, "해당 라벨은 현재 존재하지 않습니다."), HttpStatus.OK);
-        } else if (labelProducts.getLabelProductList().isEmpty()) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_PRODUCTS, labelProducts), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, labelProducts), HttpStatus.OK);
+        if(!brandId.isEmpty()){
+            brandId.forEach(eachBrandId -> {
+                requestParam.put(brandId.indexOf(eachBrandId) + "번째 선택 브랜드 id", Long.toString(eachBrandId));
+            });
+        }
+
+        if(!relatedMiddleCategoryId.isEmpty()){
+            relatedMiddleCategoryId.forEach(eachCategoryId -> {
+                requestParam.put(relatedMiddleCategoryId.indexOf(eachCategoryId) + "번째 선택 카테고리 id", Long.toString(eachCategoryId));
+            });
+        }
+
+        try{
+            TotalLabelProductPageResponseDto labelProducts = productService.labelPageMainProducts(request, labelId, sort, page, startRangePrice, endRangePrice, brandId, relatedMiddleCategoryId);
+
+            if (labelProducts != null) {
+                if (labelProducts.getLabelProductList().isEmpty()) {
+                    return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_PRODUCTS, labelProducts), HttpStatus.OK);
+                } else {
+                    return new ResponseEntity<>(new ResponseBody(StatusCode.OK, labelProducts), HttpStatus.OK);
+                }
+            }else {
+                LogUtil.logError(StatusCode.NOT_EXIST_PRODUCTS.getMessage(), request, requestParam);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_PRODUCTS, "해당 라벨 제품들은 현재 존재하지 않습니다."), HttpStatus.OK);
+            }
+
+        } catch(Exception e){
+            LogUtil.logException(e, request, requestParam);
+            return null;
         }
     }
 
@@ -408,12 +610,21 @@ public class ProductController {
             @Parameter(description = "제품 id") @PathVariable Long productId){
         log.info("제품 상세 페이지 조회 api");
 
-        ProductDetailPageResponseDto productDetailInfo = productService.productDetailPage(productId);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("제품 id", Long.toString(productId));
 
-        if(productDetailInfo == null){
-            return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_PRODUCTS, "제품이 존재하지 않습니다."), HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, productDetailInfo), HttpStatus.OK);
+        try{
+            ProductDetailPageResponseDto productDetailInfo = productService.productDetailPage(productId);
+
+            if(productDetailInfo == null){
+                LogUtil.logError(StatusCode.NOT_EXIST_PRODUCT_DETAIL.getMessage(), requestParam);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_PRODUCT_DETAIL, "제품이 존재하지 않습니다."), HttpStatus.OK);
+            }else{
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, productDetailInfo), HttpStatus.OK);
+            }
+        } catch(Exception e){
+            LogUtil.logException(e, requestParam);
+            return null;
         }
     }
 
@@ -434,14 +645,30 @@ public class ProductController {
             @Parameter(description = "상세 정보 이미지 파일들") @RequestPart List<MultipartFile> detailImages) throws IOException {
         log.info("재품 상세 정보 이미지 링크 반환 api");
 
-        List<ProductDetailImageInfoResponseDto> detailInfoImages = productService.saveDetailImage(request, detailImages);
+        HashMap<String, String> requestParam = new HashMap<>();
 
-        if(detailInfoImages == null || detailInfoImages.isEmpty()){
-            return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_SAVE_DETAIL_INFO_IMAGES, "제품 상세 정보 이미지를 생성하지 못하였습니다."), HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, detailInfoImages), HttpStatus.OK);
+        if(detailImages.isEmpty()){
+            LogUtil.logError("제품 상세 정보 이미지들이 존재하지 않습니다.", request);
+            return null;
         }
 
+        detailImages.forEach(eachDetailImage -> {
+            requestParam.put(detailImages.indexOf(eachDetailImage) + "번째 상세 정보 이미지", eachDetailImage.getOriginalFilename() + " : " + eachDetailImage.getContentType());
+        });
+
+        try{
+            List<ProductDetailImageInfoResponseDto> detailInfoImages = productService.saveDetailImage(request, detailImages);
+
+            if(detailInfoImages == null || detailInfoImages.isEmpty()){
+                LogUtil.logError(StatusCode.NOT_SAVE_DETAIL_INFO_IMAGES.getMessage(), request, requestParam);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_SAVE_DETAIL_INFO_IMAGES, "제품 상세 정보 이미지를 생성하지 못하였습니다."), HttpStatus.OK);
+            }else{
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, detailInfoImages), HttpStatus.OK);
+            }
+        } catch(Exception e){
+            LogUtil.logException(e, request, requestParam);
+            return null;
+        }
     }
 
 
@@ -461,12 +688,21 @@ public class ProductController {
             @Parameter(description = "카테고리 id") @RequestParam(required = false, defaultValue = "1") Long categoryId){
         log.info("메인 페이지 카테고리 베스트 제품 리스트 조회 api");
 
-        List<MainPageCategoryBestProductResponseDto> categoryBestProductResponseDto = productService.getCategoryBestProducts(request, categoryId);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("카테고리 id", Long.toString(categoryId));
 
-        if(categoryBestProductResponseDto == null){
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_GET_CATEGORY_BEST_PRODUCTS, "카테고리 베스트 제품들을 조회할 수 없습니다."), HttpStatus.OK);
-        }else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, categoryBestProductResponseDto), HttpStatus.OK);
+        try{
+            List<MainPageCategoryBestProductResponseDto> categoryBestProductResponseDto = productService.getCategoryBestProducts(request, categoryId);
+
+            if(categoryBestProductResponseDto == null){
+                LogUtil.logError(StatusCode.CANT_GET_CATEGORY_BEST_PRODUCTS.getMessage(), request, requestParam);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_GET_CATEGORY_BEST_PRODUCTS, "카테고리 베스트 제품들을 조회할 수 없습니다."), HttpStatus.OK);
+            }else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, categoryBestProductResponseDto), HttpStatus.OK);
+            }
+        } catch(Exception e){
+            LogUtil.logException(e, request, requestParam);
+            return null;
         }
     }
 
@@ -485,12 +721,18 @@ public class ProductController {
     public ResponseEntity<ResponseBody> getWeeklyBestProducts(HttpServletRequest request){
         log.info("메인 페이지 Weekly 베스트 제품 리스트 조회 api");
 
-        List<MainPageWeeklyBestProductResponseDto> weeklyBestProductResponseDto = productService.getWeeklyBestProducts(request);
+        try{
+            List<MainPageWeeklyBestProductResponseDto> weeklyBestProductResponseDto = productService.getWeeklyBestProducts(request);
 
-        if(weeklyBestProductResponseDto == null){
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_GET_WEEKLY_BEST_PRODUCTS, "WEEKLY 베스트 제품들을 조회할 수 없습니다."), HttpStatus.OK);
-        }else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, weeklyBestProductResponseDto), HttpStatus.OK);
+            if(weeklyBestProductResponseDto == null){
+                LogUtil.logError(StatusCode.CANT_GET_WEEKLY_BEST_PRODUCTS.getMessage(), request);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_GET_WEEKLY_BEST_PRODUCTS, "WEEKLY 베스트 제품들을 조회할 수 없습니다."), HttpStatus.OK);
+            }else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, weeklyBestProductResponseDto), HttpStatus.OK);
+            }
+        } catch(Exception e){
+            LogUtil.logException(e, request);
+            return null;
         }
     }
 
@@ -522,12 +764,37 @@ public class ProductController {
             @Parameter(description = "선택 중분류 카테고리 id 리스트") @RequestParam(required = false, defaultValue = "") List<Long> relatedMiddleCategoryIdList) {
         log.info("브랜드관 제품 리스트 호출 api");
 
-        TotalBrandProductPageResponseDto brandProducts = productService.brandPageMainProducts(request, brandId, sort, page, startRangePrice, endRangePrice, labelIdList, relatedMiddleCategoryIdList);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("브랜드 id", Long.toString(brandId));
+        requestParam.put("정렬 기준", Integer.toString(sort));
+        requestParam.put("페이지 번호", Integer.toString(page));
+        requestParam.put("검색 범위 시작 가격", Integer.toString(startRangePrice));
+        requestParam.put("검색 범위 끝 가격", Integer.toString(endRangePrice));
 
-        if (brandProducts == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_LABEL, "해당 브랜드는 현재 존재하지 않습니다."), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, brandProducts), HttpStatus.OK);
+        if(!labelIdList.isEmpty()){
+            labelIdList.forEach(eachLabelId -> {
+                requestParam.put(labelIdList.indexOf(eachLabelId) + "번째 선택 라벨 id", Long.toString(eachLabelId));
+            });
+        }
+
+        if(!relatedMiddleCategoryIdList.isEmpty()){
+            relatedMiddleCategoryIdList.forEach(eachCategoryId -> {
+                requestParam.put(relatedMiddleCategoryIdList.indexOf(eachCategoryId) + "번째 선택 카테고리 id", Long.toString(eachCategoryId));
+            });
+        }
+
+        try{
+            TotalBrandProductPageResponseDto brandProducts = productService.brandPageMainProducts(request, brandId, sort, page, startRangePrice, endRangePrice, labelIdList, relatedMiddleCategoryIdList);
+
+            if (brandProducts == null) {
+                LogUtil.logError(StatusCode.NOT_EXIST_BRAND_PRODUCTS.getMessage(), request, requestParam);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_BRAND_PRODUCTS, "해당 브랜드 제품들은 현재 존재하지 않습니다."), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, brandProducts), HttpStatus.OK);
+            }
+        } catch(Exception e){
+            LogUtil.logException(e, request, requestParam);
+            return null;
         }
     }
 

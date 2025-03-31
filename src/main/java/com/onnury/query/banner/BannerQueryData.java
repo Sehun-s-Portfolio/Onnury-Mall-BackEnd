@@ -273,10 +273,7 @@ public class BannerQueryData {
                 .where(banner.bannerId.eq(deleteBannerId))
                 .execute();
 
-        // Media 데이터 존재 검증
-        assert deleteMedias != null;
-
-        if (!deleteMedias.isEmpty()) {
+        if (deleteMedias != null && !deleteMedias.isEmpty()) {
             for (Media eachImage : deleteMedias) {
                 // 같이 삭제할 이미지 파일 호출
                 File deleteImgfile = new File(eachImage.getImgUploadUrl());

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<!--springProfile 태그를 사용하면 logback 설정파일에서 복수 개의 프로파일을 설정할 수 있다.
+	<springProfile name="dev">
+		<property resource="logback-dev.xml"/>
+	</springProfile>
+	<springProfile name="prod">
+		<property resource="logback-prod.yml"/>
+	</springProfile>
+	 -->
+
+	<!--Environment 내의 프로퍼티들을 개별적으로 설정할 수도 있다.-->
+	<!-- properties 파일의 로깅 경로 -->
+	<springProperty scope="context" name="LOG_PATH" source="app.logging.path"/>
+	<!-- properties 파일의 로깅 레벨 -->
+	<springProperty scope="context" name="LOG_LEVEL" source="app.logging.level"/>
+	<!-- properties 파일의 로깅 파일 압축 유형 -->
+	<springProperty scope="context" name="COMPRESS_TYPE" source="app.logging.compress"/>
+
+	<property name="LOG_FILE_NAME" value="onnury"/>
+
+	<!-- VM (버추얼 머신) 옵션: -Dsvr.nm=local -->
+	<property name="SVR_NAME" value="${svr.nm}"/>
+	<property name="LOG_PATTERN" value="%-5level %d{yy-MM-dd HH:mm:ss}[%thread] [%logger{0}:%line] - %msg%n"/>
+	<property name="MSG_PTRN" value="%d{HH:mm:ss.SSS} %-5level [%thread] [%F-%method-%L] %msg%n"/>
+	<property name="ERR_PTRN" value="%d{HH:mm:ss.SSS} %-5level [%thread] %msg%n%caller{3}"/>
+
+	<!-- Console Appender -->
+	<appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"> 
+			<pattern>${MSG_PTRN}</pattern>
+		</encoder> 
+	</appender>
+
+	<appender name="console-error" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<pattern>${ERR_PTRN}</pattern>
+		</encoder>
+	</appender>
+
+	<!-- rootLog Appender -->
+	<appender name="rootLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${LOG_PATH}/${LOG_FILE_NAME}-${SVR_NAME}.log</file>
+		<append>true</append>
+		<encoder>
+			<pattern>${MSG_PTRN}</pattern>
+		</encoder> 
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<!-- .gz,.zip 등을 넣으면 자동 일자별 로그파일 압축 -->
+			<fileNamePattern>${LOG_PATH}/%d{yyyyMMdd}/${LOG_FILE_NAME}-${SVR_NAME}-%d{yyyyMMdd}_%02i.log.${COMPRESS_TYPE}</fileNamePattern>
+			<!-- 일자별 로그파일 최대 보관주기(일단위) 만약 해당 설정일 이상된 파일은 자동으로 제거 -->
+			<maxHistory>30</maxHistory>
+			<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP"> 
+				<!-- 파일당 최고 용량 kb, mb, gb --> 
+				<maxFileSize>30MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+			<!--
+			<MinIndex>1</MinIndex>
+			<MaxIndex>10</MaxIndex>--> 
+		</rollingPolicy> 
+	</appender>
+
+	<!-- errorLog Appender -->
+	<appender name="errorLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${LOG_PATH}/${LOG_FILE_NAME}-${SVR_NAME}-error.log</file>
+		<append>true</append>
+		<encoder>
+			<pattern>${ERR_PTRN}</pattern>
+		</encoder>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<!-- .gz,.zip 등을 넣으면 자동 일자별 로그파일 압축 -->
+			<fileNamePattern>${LOG_PATH}/%d{yyyyMMdd}/${LOG_FILE_NAME}-${SVR_NAME}-error-%d{yyyyMMdd}_%02i.log.${COMPRESS_TYPE}</fileNamePattern>
+			<!-- 일자별 로그파일 최대 보관주기(일단위) 만약 해당 설정일 이상된 파일은 자동으로 제거 -->
+			<maxHistory>30</maxHistory>
+			<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<!-- 파일당 최고 용량 kb, mb, gb -->
+				<maxFileSize>30MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+		</rollingPolicy>
+	</appender>
+
+	<!-- BatchLog File Appender -->
+	<appender name="batchLog" class="ch.qos.logback.core.rolling.RollingFileAppender"> 
+		<file>${LOG_PATH}/${LOG_FILE_NAME}-${SVR_NAME}-bat.log</file>
+		<append>true</append>
+		<encoder>
+			<pattern>${MSG_PTRN}</pattern>
+		</encoder> 
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<!-- .gz,.zip 등을 넣으면 자동 일자별 로그파일 압축 -->
+			<fileNamePattern>${LOG_PATH}/%d{yyyyMMdd}/${LOG_FILE_NAME}-${SVR_NAME}-batch-%d{yyyyMMdd}_%02i.log.${COMPRESS_TYPE}</fileNamePattern>
+			<!-- 일자별 로그파일 최대 보관주기(일단위) 만약 해당 설정일 이상된 파일은 자동으로 제거 -->
+			<maxHistory>30</maxHistory>
+			<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<!-- 파일당 최고 용량 kb, mb, gb -->
+				<maxFileSize>30MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+		</rollingPolicy> 
+	</appender>
+
+	<!--  배치작업 로그 -->
+    <logger name="batchLog" level="INFO" additivity="false">
+		<appender-ref ref="console-error"/>
+        <appender-ref ref="batchLog" />
+    </logger>
+
+	<!--  에러 로그 -->
+	<logger name="errorLog" level="INFO" additivity="false">
+		<appender-ref ref="console-error"/>
+		<appender-ref ref="errorLog" />
+	</logger>
+
+	<!-- root레벨 설정 -->
+	<root level="${LOG_LEVEL}" additivity="false">
+		<appender-ref ref="console"/>
+		<appender-ref ref="rootLog"/>
+	</root> 
+
+</configuration>

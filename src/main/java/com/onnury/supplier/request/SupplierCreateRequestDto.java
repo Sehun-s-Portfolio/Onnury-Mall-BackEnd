@@ -1,9 +1,10 @@
 package com.onnury.supplier.request;
 
+import com.onnury.common.base.AbstractVO;
 import lombok.Getter;
 
 @Getter
-public class SupplierCreateRequestDto {
+public class SupplierCreateRequestDto extends AbstractVO {
     private String supplierCompany; // 공급사 명
     private String businessNumber; // 사업자 번호
     private String frcNumber; // 온누리 가맹 번호

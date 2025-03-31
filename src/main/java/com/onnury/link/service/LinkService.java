@@ -1,6 +1,7 @@
 package com.onnury.link.service;
 
-import com.onnury.exception.token.JwtTokenExceptionInterface;
+import com.onnury.common.util.LogUtil;
+import com.onnury.exception.token.JwtTokenException;
 import com.onnury.link.domain.Link;
 import com.onnury.link.repository.LinkRepository;
 import com.onnury.link.request.LinkCreateRequestDto;
@@ -22,7 +23,7 @@ import java.io.IOException;
 @Service
 public class LinkService {
 
-    private final JwtTokenExceptionInterface jwtTokenExceptionInterface;
+    private final JwtTokenException jwtTokenException;
     private final LinkRepository linkRepository;
     private final LinkQueryData linkQueryData;
 
@@ -31,8 +32,9 @@ public class LinkService {
         log.info("링크 생성 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
@@ -58,8 +60,9 @@ public class LinkService {
         log.info("링크 수정 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
@@ -80,8 +83,9 @@ public class LinkService {
         log.info("링크 삭제 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return true;
         }
 
@@ -94,8 +98,9 @@ public class LinkService {
         log.info("관리자 공급사 리스트업 페이지 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 

@@ -1,5 +1,6 @@
 package com.onnury.member.request;
 
+import com.onnury.common.base.AbstractVO;
 import lombok.Getter;
 import org.hibernate.validator.constraints.Length;
 
@@ -7,7 +8,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 @Getter
-public class MemberRegistRequestDto {
+public class MemberRegistRequestDto extends AbstractVO {
     @NotBlank
     private String type; // 고객 유형 (일반 - C, 기업 - B)
     @NotBlank
@@ -31,5 +32,4 @@ public class MemberRegistRequestDto {
     private String phone; // 연락처 / 담당자 연락처
     private String manager; // 담당자 명
     private String linkCompany; // 기업 링크 컴퍼니 명
-
 }

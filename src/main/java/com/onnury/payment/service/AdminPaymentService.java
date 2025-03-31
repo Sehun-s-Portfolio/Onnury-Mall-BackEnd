@@ -2,10 +2,9 @@ package com.onnury.payment.service;
 
 
 import com.onnury.admin.domain.AdminAccount;
-import com.onnury.exception.token.JwtTokenExceptionInterface;
+import com.onnury.common.util.LogUtil;
+import com.onnury.exception.token.JwtTokenException;
 import com.onnury.jwt.JwtTokenProvider;
-
-
 import com.onnury.payment.request.TransportInfoRequestDto;
 import com.onnury.payment.response.AdminPaymentDetailResponseDto;
 import com.onnury.payment.response.AdminPaymentList3ResponseDto;
@@ -28,7 +27,7 @@ import java.util.List;
 public class AdminPaymentService {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final JwtTokenExceptionInterface jwtTokenExceptionInterface;
+    private final JwtTokenException jwtTokenException;
     private final AdminPaymentQueryData adminPaymentQueryData;
 
     // 결제 주문 리스트업 service
@@ -36,8 +35,9 @@ public class AdminPaymentService {
         log.info("관리자 공지사항 작성 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request) || jwtTokenProvider.getAdminAccountFromAuthentication() == null) {
+        if (jwtTokenException.checkAccessToken(request) || jwtTokenProvider.getAdminAccountFromAuthentication() == null) {
             log.info("토큰 정합성 검증 실패 및 관리자 계정 정보 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패 및 관리자 계정 정보 검증 실패", request);
             return null;
         }
 
@@ -50,8 +50,9 @@ public class AdminPaymentService {
         log.info("관리자 공지사항 작성 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request) || jwtTokenProvider.getAdminAccountFromAuthentication() == null) {
+        if (jwtTokenException.checkAccessToken(request) || jwtTokenProvider.getAdminAccountFromAuthentication() == null) {
             log.info("토큰 정합성 검증 실패 및 관리자 계정 정보 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패 및 관리자 계정 정보 검증 실패", request);
             return null;
         }
 
@@ -64,8 +65,9 @@ public class AdminPaymentService {
         log.info("관리자 공지사항 작성 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request) || jwtTokenProvider.getAdminAccountFromAuthentication() == null) {
+        if (jwtTokenException.checkAccessToken(request) || jwtTokenProvider.getAdminAccountFromAuthentication() == null) {
             log.info("토큰 정합성 검증 실패 및 관리자 계정 정보 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패 및 관리자 계정 정보 검증 실패", request);
             return null;
         }
 
@@ -80,8 +82,9 @@ public class AdminPaymentService {
         log.info("관리자 공지사항 작성 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request) || jwtTokenProvider.getAdminAccountFromAuthentication() == null) {
+        if (jwtTokenException.checkAccessToken(request) || jwtTokenProvider.getAdminAccountFromAuthentication() == null) {
             log.info("토큰 정합성 검증 실패 및 관리자 계정 정보 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패 및 관리자 계정 정보 검증 실패", request);
             return null;
         }
 
@@ -96,8 +99,9 @@ public class AdminPaymentService {
         log.info("관리자 공지사항 작성 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request) || jwtTokenProvider.getAdminAccountFromAuthentication() == null) {
+        if (jwtTokenException.checkAccessToken(request) || jwtTokenProvider.getAdminAccountFromAuthentication() == null) {
             log.info("토큰 정합성 검증 실패 및 관리자 계정 정보 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패 및 관리자 계정 정보 검증 실패", request);
             return null;
         }
 
@@ -113,8 +117,9 @@ public class AdminPaymentService {
         log.info("운송장 번호 업데이트 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request) || jwtTokenProvider.getAdminAccountFromAuthentication() == null) {
+        if (jwtTokenException.checkAccessToken(request) || jwtTokenProvider.getAdminAccountFromAuthentication() == null) {
             log.info("토큰 정합성 검증 실패 및 관리자 계정 정보 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패 및 관리자 계정 정보 검증 실패", request);
             return null;
         }
 

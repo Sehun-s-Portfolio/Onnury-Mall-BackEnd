@@ -176,7 +176,7 @@ public class QueryTest {
 
         if (supplierCommissionInfo.get(supplier.onnuryCommission) != null) {
             if (supplierCommissionInfo.get(supplier.onnuryCommission) > 0) {
-                onnuryCommissionPrice = onnuryPay * (supplierCommissionInfo.get(supplier.onnuryCommission) / 100);
+                onnuryCommissionPrice = (int) (onnuryPay * (supplierCommissionInfo.get(supplier.onnuryCommission) / 100));
             }
         }
 
@@ -184,7 +184,7 @@ public class QueryTest {
 
         if (supplierCommissionInfo.get(supplier.creditCommission) != null) {
             if (supplierCommissionInfo.get(supplier.creditCommission) > 0) {
-                creditCommissionPrice = creditPay * (supplierCommissionInfo.get(supplier.creditCommission) / 100);
+                creditCommissionPrice = (int) (creditPay * (supplierCommissionInfo.get(supplier.creditCommission) / 100));
             }
         }
 

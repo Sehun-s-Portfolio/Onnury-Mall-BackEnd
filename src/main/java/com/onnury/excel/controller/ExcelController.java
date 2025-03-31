@@ -1,7 +1,7 @@
 package com.onnury.excel.controller;
 
-import com.onnury.banner.domain.Banner;
 import com.onnury.category.response.CategoryDataExcelResponseDto;
+import com.onnury.common.util.LogUtil;
 import com.onnury.excel.response.BannerExcelResponseDto;
 import com.onnury.excel.response.FaqExcelResponseDto;
 import com.onnury.excel.response.InquiryExcelResponseDto;
@@ -9,7 +9,6 @@ import com.onnury.excel.response.LabelExcelResponseDto;
 import com.onnury.excel.service.ExcelService;
 import com.onnury.inquiry.domain.Faq;
 import com.onnury.inquiry.response.InquiryDataResponseDto;
-import com.onnury.label.domain.Label;
 import com.onnury.member.domain.Member;
 import com.onnury.payment.response.AdminSupplierPaymentResponseExcelQDto;
 import com.onnury.product.request.ProductSearchRequestDto;
@@ -32,6 +31,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
 import java.util.List;
 
 @Slf4j
@@ -56,12 +56,18 @@ public class ExcelController {
     public ResponseEntity<ResponseBody> excelBannerList(HttpServletRequest request) {
         log.info("배너 리스트 excel api");
 
-        List<BannerExcelResponseDto> ResultList = excelService.excelBannerList(request);
+        try{
+            List<BannerExcelResponseDto> ResultList = excelService.excelBannerList(request);
 
-        if (ResultList == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_BANNER, "배너 데이터를 조회할 수 없습니다."), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, ResultList), HttpStatus.OK);
+            if (ResultList == null) {
+                LogUtil.logError(StatusCode.NOT_EXIST_BANNER.getMessage(), request);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_BANNER, "배너 데이터를 조회할 수 없습니다."), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, ResultList), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request);
+            return null;
         }
     }
 
@@ -80,12 +86,18 @@ public class ExcelController {
     public ResponseEntity<ResponseBody> excelSupplierList(HttpServletRequest request) {
         log.info("배너 리스트 excel api");
 
-        List<Supplier> ResultList = excelService.excelSupplierList(request);
+        try{
+            List<Supplier> ResultList = excelService.excelSupplierList(request);
 
-        if (ResultList == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_BANNER, "공급사 데이터를 조회할 수 없습니다."), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, ResultList), HttpStatus.OK);
+            if (ResultList == null) {
+                LogUtil.logError(StatusCode.NOT_EXIST_SUPPLIER.getMessage(), request);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_SUPPLIER, "공급사 데이터를 조회할 수 없습니다."), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, ResultList), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request);
+            return null;
         }
     }
 
@@ -104,12 +116,18 @@ public class ExcelController {
     public ResponseEntity<ResponseBody> excelLabelList(HttpServletRequest request) {
         log.info("라벨 리스트 excel api");
 
-        List<LabelExcelResponseDto> ResultList = excelService.excelLabelList(request);
+        try{
+            List<LabelExcelResponseDto> ResultList = excelService.excelLabelList(request);
 
-        if (ResultList == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_BANNER, "라벨 데이터를 조회할 수 없습니다."), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, ResultList), HttpStatus.OK);
+            if (ResultList == null) {
+                LogUtil.logError(StatusCode.NOT_EXIST_LABEL.getMessage(), request);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_LABEL, "라벨 데이터를 조회할 수 없습니다."), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, ResultList), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request);
+            return null;
         }
     }
 
@@ -128,12 +146,18 @@ public class ExcelController {
     public ResponseEntity<ResponseBody> excelCategoryList(HttpServletRequest request) {
         log.info("카테고리 리스트 excel api");
 
-        List<CategoryDataExcelResponseDto> ResultList = excelService.excelCategoryList(request);
+        try{
+            List<CategoryDataExcelResponseDto> ResultList = excelService.excelCategoryList(request);
 
-        if (ResultList == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_BANNER, "카테고리 데이터를 조회할 수 없습니다."), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, ResultList), HttpStatus.OK);
+            if (ResultList == null) {
+                LogUtil.logError(StatusCode.NOT_EXIST_CATEGORY.getMessage(), request);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_CATEGORY, "카테고리 데이터를 조회할 수 없습니다."), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, ResultList), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request);
+            return null;
         }
     }
 
@@ -169,12 +193,18 @@ public class ExcelController {
                 .searchKeyword(searchKeyword)
                 .build();
 
-        List<ProductExcelResponseDto> ResultList = excelService.excelProductList(request, productSearchRequestDto);
+        try{
+            List<ProductExcelResponseDto> ResultList = excelService.excelProductList(request, productSearchRequestDto);
 
-        if (ResultList == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_BANNER, "카테고리 데이터를 조회할 수 없습니다."), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, ResultList), HttpStatus.OK);
+            if (ResultList == null) {
+                LogUtil.logError(StatusCode.NOT_EXIST_PRODUCTS.getMessage(), request, productSearchRequestDto);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_PRODUCTS, "카테고리 데이터를 조회할 수 없습니다."), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, ResultList), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request, productSearchRequestDto);
+            return null;
         }
     }
 
@@ -196,12 +226,22 @@ public class ExcelController {
             @Parameter(description = "검색 타입") @RequestParam(required = false) String search) {
         log.info("회원 리스트 excel api");
 
-        List<Member> ResultList = excelService.excelMemberList(request, searchtype, search);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("회원 검색 키워드", searchtype);
+        requestParam.put("검색 타입", search);
 
-        if (ResultList == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_BANNER, "회원 데이터를 조회할 수 없습니다."), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, ResultList), HttpStatus.OK);
+        try{
+            List<Member> ResultList = excelService.excelMemberList(request, searchtype, search);
+
+            if (ResultList == null) {
+                LogUtil.logError(StatusCode.NOT_EXIST_MEMBER.getMessage(), request, requestParam);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_MEMBER, "회원 데이터를 조회할 수 없습니다."), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, ResultList), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request, requestParam);
+            return null;
         }
     }
 
@@ -224,12 +264,23 @@ public class ExcelController {
             @Parameter(description = "문의 검색 키워드") @RequestParam(required = false) String searchKeyword) {
         log.info("문의 리스트 excel api");
 
-        List<InquiryExcelResponseDto> ResultList = excelService.excelInquiryList(request, searchType, searchType2, searchKeyword);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("문의 타입 1", searchType);
+        requestParam.put("문의 타입 2", searchType2);
+        requestParam.put("문의 검색 키워드", searchKeyword);
 
-        if (ResultList == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_BANNER, "문의 데이터를 조회할 수 없습니다."), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, ResultList), HttpStatus.OK);
+        try{
+            List<InquiryExcelResponseDto> ResultList = excelService.excelInquiryList(request, searchType, searchType2, searchKeyword);
+
+            if (ResultList == null) {
+                LogUtil.logError(StatusCode.NOT_EXIST_INQUIRY.getMessage(), request, requestParam);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_INQUIRY, "문의 데이터를 조회할 수 없습니다."), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, ResultList), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request, requestParam);
+            return null;
         }
     }
 
@@ -250,12 +301,21 @@ public class ExcelController {
             @Parameter(description = "FAQ 타입") @RequestParam(required = false, defaultValue = "전체") String type) {
         log.info("FAQ 리스트 excel api");
 
-        List<FaqExcelResponseDto> ResultList = excelService.excelFaqList(request, type);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("FAQ 타입", type);
 
-        if (ResultList == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_BANNER, "FAQ 데이터를 조회할 수 없습니다."), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, ResultList), HttpStatus.OK);
+        try{
+            List<FaqExcelResponseDto> ResultList = excelService.excelFaqList(request, type);
+
+            if (ResultList == null) {
+                LogUtil.logError(StatusCode.NOT_EXIST_FAQ.getMessage(), request, requestParam);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_FAQ, "FAQ 데이터를 조회할 수 없습니다."), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, ResultList), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request, requestParam);
+            return null;
         }
     }
 
@@ -275,17 +335,30 @@ public class ExcelController {
             HttpServletRequest request,
             @Parameter(description = "공급사 id") @RequestParam(required = false, defaultValue = "0") Long supplierId,
             @Parameter(description = "조회 시작 기간") @RequestParam(required = false, defaultValue = "") String startDate,
-            @Parameter(description = "조회 시작 기간") @RequestParam(required = false, defaultValue = "") String endDate,
+            @Parameter(description = "조회 종료 기간") @RequestParam(required = false, defaultValue = "") String endDate,
             @Parameter(description = "검색 유형") @RequestParam(required = false, defaultValue = "") String searchType,
             @Parameter(description = "검색 키워드") @RequestParam(required = false, defaultValue = "") String searchKeyword) {
         log.info("결제 리스트 excel api");
 
-        List<AdminSupplierPaymentResponseExcelQDto> ResultList = excelService.excelPaymentList(request, supplierId, startDate, endDate, searchType, searchKeyword);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("공급사 id", Long.toString(supplierId));
+        requestParam.put("조회 시작 기간", startDate);
+        requestParam.put("조회 종료 기간", endDate);
+        requestParam.put("검색 유형", searchType);
+        requestParam.put("검색 키워드", searchKeyword);
 
-        if (ResultList == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_BANNER, "결제 리스트 데이터를 조회할 수 없습니다."), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, ResultList), HttpStatus.OK);
+        try{
+            List<AdminSupplierPaymentResponseExcelQDto> ResultList = excelService.excelPaymentList(request, supplierId, startDate, endDate, searchType, searchKeyword);
+
+            if (ResultList == null) {
+                LogUtil.logError(StatusCode.NOT_EXIST_PAYMENT.getMessage(), request, requestParam);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_PAYMENT, "결제 리스트 데이터를 조회할 수 없습니다."), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, ResultList), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request, requestParam);
+            return null;
         }
     }
 
@@ -305,17 +378,30 @@ public class ExcelController {
             HttpServletRequest request,
             @Parameter(description = "공급사 id") @RequestParam(required = false, defaultValue = "0") Long supplierId,
             @Parameter(description = "조회 시작 기간") @RequestParam(required = false, defaultValue = "") String startDate,
-            @Parameter(description = "조회 시작 기간") @RequestParam(required = false, defaultValue = "") String endDate,
+            @Parameter(description = "조회 종료 기간") @RequestParam(required = false, defaultValue = "") String endDate,
             @Parameter(description = "검색 유형") @RequestParam(required = false, defaultValue = "") String searchType,
             @Parameter(description = "검색 키워드") @RequestParam(required = false, defaultValue = "") String searchKeyword) {
         log.info("정산 리스트 excel api");
 
-        List<AdminSupplierPaymentResponseExcelQDto> ResultList = excelService.excelTotalOrderList(request, supplierId, startDate, endDate, searchType, searchKeyword);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("공급사 id", Long.toString(supplierId));
+        requestParam.put("조회 시작 기간", startDate);
+        requestParam.put("조회 종료 기간", endDate);
+        requestParam.put("검색 유형", searchType);
+        requestParam.put("검색 키워드", searchKeyword);
 
-        if (ResultList == null) {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_BANNER, "정산 리스트 데이터를 조회할 수 없습니다."), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, ResultList), HttpStatus.OK);
+        try{
+            List<AdminSupplierPaymentResponseExcelQDto> ResultList = excelService.excelTotalOrderList(request, supplierId, startDate, endDate, searchType, searchKeyword);
+
+            if (ResultList == null) {
+                LogUtil.logError(StatusCode.NOT_EXIST_ORDER.getMessage(), request, requestParam);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.NOT_EXIST_ORDER, "정산 리스트 데이터를 조회할 수 없습니다."), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, ResultList), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request, requestParam);
+            return null;
         }
     }
 }

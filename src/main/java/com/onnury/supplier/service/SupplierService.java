@@ -2,7 +2,10 @@ package com.onnury.supplier.service;
 
 import com.onnury.admin.domain.AdminAccount;
 import com.onnury.admin.repository.AdminRepository;
+import com.onnury.common.util.LogUtil;
 import com.onnury.configuration.AES128Config;
+import com.onnury.exception.supplier.SupplierException;
+import com.onnury.exception.token.JwtTokenException;
 import com.onnury.query.admin.AdminQueryData;
 import com.onnury.supplier.domain.Supplier;
 import com.onnury.supplier.repository.SupplierRepository;
@@ -11,8 +14,6 @@ import com.onnury.supplier.request.SupplierUpdateRequestDto;
 import com.onnury.supplier.response.SupplierCreateResponseDto;
 import com.onnury.supplier.response.SupplierListUpResponseDto;
 import com.onnury.supplier.response.SupplierUpdateResponseDto;
-import com.onnury.exception.supplier.SupplierExceptioInterface;
-import com.onnury.exception.token.JwtTokenExceptionInterface;
 import com.onnury.query.supplier.SupplierQueryData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,8 +36,8 @@ import java.util.List;
 @Service
 public class SupplierService {
 
-    private final JwtTokenExceptionInterface jwtTokenExceptionInterface;
-    private final SupplierExceptioInterface supplierExceptioInterface;
+    private final JwtTokenException jwtTokenException;
+    private final SupplierException supplierException;
     private final SupplierRepository supplierRepository;
     private final SupplierQueryData supplierQueryData;
     private final PasswordEncoder passwordEncoder;
@@ -50,14 +51,16 @@ public class SupplierService {
         log.info("공급사 생성 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
         // 생성하고자 하는 공급사의 정보가 옳바른지 확인
-        if (supplierExceptioInterface.checkCreateSupplierInfo(supplierInfo)) {
+        if (supplierException.checkCreateSupplierInfo(supplierInfo)) {
             log.info("공급사 생성 요청 정보가 옳바르지 않음");
+            LogUtil.logError("공급사 생성 요청 정보가 옳바르지 않음", request, supplierInfo);
             return null;
         }
 
@@ -65,6 +68,7 @@ public class SupplierService {
             // 이미 동일한 계정이 존재할 경우 예외 처리
             if(adminQueryData.checkDuplicateAdminLoginId(supplierInfo.getLoginId()) != null){
                 log.info("이미 존재한 계정");
+                LogUtil.logError("이미 존재한 계정", request, supplierInfo);
                 return null;
             }
         }
@@ -130,13 +134,15 @@ public class SupplierService {
         log.info("공급사 수정 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
         // 수정하고자 하는 공급사의 정보가 옳바른지 확인
-        if (supplierExceptioInterface.checkUpdateSupplierInfo(supplierInfo)) {
+        if (supplierException.checkUpdateSupplierInfo(supplierInfo)) {
             log.info("공급사 수정 요청 정보가 옳바르지 않음");
+            LogUtil.logError("공급사 수정 요청 정보가 옳바르지 않음", request, supplierInfo);
             return null;
         }
 
@@ -168,8 +174,9 @@ public class SupplierService {
         log.info("배너 삭제 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return true;
         }
 
@@ -181,8 +188,9 @@ public class SupplierService {
         log.info("관리자 공급사 리스트업 페이지 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
@@ -194,7 +202,7 @@ public class SupplierService {
     public boolean checkDuplicateSupplierLoginId(String checkSupplierLoginId) {
         log.info("로그인한 공급사 id 중복 체크 service");
 
-        if (supplierExceptioInterface.checkExistSupplierLoginId(checkSupplierLoginId)) {
+        if (supplierException.checkExistSupplierLoginId(checkSupplierLoginId)) {
             log.info("이미 존재한 계정 아이디이므로 다른 계정 아이디를 입력해주십시오.");
             return true;
         } else {

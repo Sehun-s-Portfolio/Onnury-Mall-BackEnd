@@ -1,0 +1,35 @@
+[백엔드/DevOps 학습 및 구현]
+(1) 사용 데이터베이스 다양화
+ㄴ MySQL, Redis, MongoDB, Cassandra, Kafka, mariaDB, OracleDB, PostgreSQL, RabbitMQ
+(1-2) 데이터베이스 사용 기술 다양화
+ㄴ JPA, QueryDSL, MyBatis, JPQL, nativeQuery
+(2) 테스트 도구 사용 다양화
+ㄴ 과부하, 단위, 통합, 시나리오, 성능, 메모리, DB
+(3) 예외 처리 / 로깅 처리
+ㄴ try resources with / logback
+(4) aop와 같은 Spring Boot 자체 기술 활용 (Batch)
+(5) docker
+(6) CI/CD (Git Action)
+(7) bash 셸 사용
+(8) 가비지 콜렉터 사용
+(9) 리눅스 커맨드 사용법
+(10) 데이터베이스 리플리케이션
+- MASTER : MySQL, SLAVE : PostgreSQL 고려
+(11) nginx 프록시 서버 운영
+
+
+[프론트엔드 학습 및 구현]
+(1) React 기반 프론트엔드 구현
+(2) React 주요 hook 학습
+(3) 컴포넌트 운용 방법 학습
+(4) css 학습
+(5) ReactNative, flutter 학습 후 앱 구현
+(6) TypeScript
+
+
+◎ VM 옵션 - 값은 서버에 따라 수정해야 함.
+-XX:+UseG1GC
+-Xms4096m
+-Xmx4096m
+-Dfile.encoding=UTF-8
+-Dsvr.nm=LOC_KBCP_MAIN11

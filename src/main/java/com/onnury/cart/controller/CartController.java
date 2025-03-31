@@ -4,6 +4,9 @@ import com.onnury.cart.request.CartAddRequestDto;
 import com.onnury.cart.response.CartAddResponseDto;
 import com.onnury.cart.response.CartDataResponseDto;
 import com.onnury.cart.service.CartService;
+import com.onnury.common.base.AbstractVO;
+import com.onnury.common.util.LogUtil;
+import com.onnury.common.util.VoUtil;
 import com.onnury.share.ResponseBody;
 import com.onnury.share.StatusCode;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,7 +24,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -49,12 +54,18 @@ public class CartController {
             @Parameter(description = "장바구니에 담긴 제품 정보 리스트") @RequestPart List<CartAddRequestDto> cartAddRequestDtoList){
         log.info("장바구니 담기 api");
 
-        List<CartAddResponseDto> cartAddResult = cartService.addCart(request, cartAddRequestDtoList);
+        try{
+            List<CartAddResponseDto> cartAddResult = cartService.addCart(request, cartAddRequestDtoList);
 
-        if(cartAddResult == null || cartAddResult.isEmpty()){
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_ADD_CART, "장바구니에 담지 못하였습니다."), HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, cartAddResult), HttpStatus.OK);
+            if(cartAddResult == null || cartAddResult.isEmpty()){
+                LogUtil.logError(StatusCode.CANT_ADD_CART.getMessage(), request, cartAddRequestDtoList);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_ADD_CART, "장바구니에 담지 못하였습니다."), HttpStatus.OK);
+            }else{
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, cartAddResult), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request, cartAddRequestDtoList);
+            return null;
         }
     }
 
@@ -75,12 +86,21 @@ public class CartController {
             @Parameter(description = "삭제 장바구니 제품 id") @RequestParam Long cartId){
         log.info("장바구니 제품 삭제 api");
 
-        String deleteCheck = cartService.deleteCartProduct(request, cartId);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("삭제 장바구니 제품 id", Long.toString(cartId));
 
-        if(deleteCheck.equals("FAIL")){
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_DELETE_CART, "장바구니 덜어내기에 실패하셨습니다."), HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, "장바구니 덜어내기"), HttpStatus.OK);
+        try{
+            String deleteCheck = cartService.deleteCartProduct(request, cartId);
+
+            if(deleteCheck.equals("FAIL")){
+                LogUtil.logError(StatusCode.CANT_DELETE_CART.getMessage(), request, requestParam);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_DELETE_CART, "장바구니 덜어내기에 실패하셨습니다."), HttpStatus.OK);
+            }else{
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, "장바구니 덜어내기"), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request, requestParam);
+            return null;
         }
     }
 
@@ -101,12 +121,21 @@ public class CartController {
             @Parameter(description = "페이지 번호") @RequestParam(required = false, defaultValue = "1") int page){
         log.info("장바구니 리스트 호출 api");
 
-        List<CartDataResponseDto> cartList = cartService.getCartList(request, page);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("페이지 번호", Integer.toString(page));
 
-        if(cartList == null){
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_GET_CART_LIST, "장바구니 데이터를 조회할 수 없습니다. 재 로그인 해주십시오."), HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, cartList), HttpStatus.OK);
+        try{
+            List<CartDataResponseDto> cartList = cartService.getCartList(request, page);
+
+            if(cartList == null){
+                LogUtil.logError(StatusCode.CANT_GET_CART_LIST.getMessage(), request, requestParam);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_GET_CART_LIST, "장바구니 데이터를 조회할 수 없습니다. 재 로그인 해주십시오."), HttpStatus.OK);
+            }else{
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, cartList), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request, requestParam);
+            return null;
         }
     }
 }

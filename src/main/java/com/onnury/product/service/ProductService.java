@@ -3,14 +3,15 @@ package com.onnury.product.service;
 import com.onnury.admin.domain.AdminAccount;
 import com.onnury.category.domain.CategoryInBrand;
 import com.onnury.category.repository.CategoryInBrandRepository;
-import com.onnury.exception.product.ProductExceptionInterface;
-import com.onnury.exception.token.JwtTokenExceptionInterface;
+import com.onnury.common.util.LogUtil;
+import com.onnury.exception.product.ProductException;
+import com.onnury.exception.token.JwtTokenException;
 import com.onnury.jwt.JwtTokenProvider;
 import com.onnury.label.domain.LabelOfProduct;
 import com.onnury.label.repository.LabelOfProductRepository;
 import com.onnury.media.domain.Media;
 import com.onnury.media.repository.MediaRepository;
-import com.onnury.media.service.MediaUploadInterface;
+import com.onnury.media.service.MediaUpload;
 import com.onnury.member.domain.Member;
 import com.onnury.product.domain.*;
 import com.onnury.product.repository.*;
@@ -23,8 +24,6 @@ import com.onnury.query.product.ProductQueryData;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,7 +35,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 import static com.onnury.product.domain.QProduct.product;
@@ -47,8 +45,8 @@ import static com.onnury.supplier.domain.QSupplier.supplier;
 @Service
 public class ProductService {
 
-    private final JwtTokenExceptionInterface jwtTokenExceptionInterface;
-    private final ProductExceptionInterface productExceptionInterface;
+    private final JwtTokenException jwtTokenException;
+    private final ProductException productException;
     private final ProductQueryData productQueryData;
     private final ProductRepository productRepository;
     private final LabelOfProductRepository labelOfProductRepository;
@@ -59,7 +57,7 @@ public class ProductService {
     private final ProductOfOptionRepository productOfOptionRepository;
     private final ProductDetailOptionRepository productDetailOptionRepository;
     private final MediaRepository mediaRepository;
-    private final MediaUploadInterface mediaUploadInterface;
+    private final MediaUpload mediaUpload;
     private final CategoryQueryData categoryQueryData;
     private final JPAQueryFactory jpaQueryFactory;
     private final JwtTokenProvider jwtTokenProvider;
@@ -73,13 +71,14 @@ public class ProductService {
         log.info("제품 생성 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
         // 제품 생성 정보 정합성 검증
-        if (productExceptionInterface.checkProductImages(productImgs)) {
+        if (productException.checkProductImages(productImgs)) {
             log.info("제품 생성 이미지 정보 존재하지 않음");
             return null;
         }
@@ -150,7 +149,7 @@ public class ProductService {
         productRepository.save(product);
 
         // 전달받은 이미지 파일들을 기준으로 이미지 업로드 처리 후 정보들을 추출하여 HashMap 리스트로 전달
-        List<HashMap<String, String>> productImageCheckList = mediaUploadInterface.uploadProductImage(productImgs);
+        List<HashMap<String, String>> productImageCheckList = mediaUpload.uploadProductImage(productImgs);
         List<Media> saveMediaList = new ArrayList<>();
 
         // 업로드한 이미지들의 정보들을 조회하여 Media 데이터 저장 처리
@@ -294,8 +293,9 @@ public class ProductService {
         log.info("관리자 특정 제품 정보 호출 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
@@ -303,8 +303,6 @@ public class ProductService {
                 .selectFrom(product)
                 .where(product.productId.eq(productId))
                 .fetchOne();
-
-        assert callProduct != null;
 
         return productQueryData.getProduct(callProduct, "Y");
     }
@@ -319,8 +317,9 @@ public class ProductService {
         log.info("제품 수정 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
@@ -397,8 +396,9 @@ public class ProductService {
         log.info("제품 삭제 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return false;
         }
 
@@ -413,8 +413,9 @@ public class ProductService {
         log.info("제품 리스트 (검색) service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
@@ -429,8 +430,9 @@ public class ProductService {
         log.info("제품 생성 페이지 진입 시 사전 호출되어 활용될 정보 호출 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
@@ -444,8 +446,9 @@ public class ProductService {
         log.info("메인 페이지 신 상품 리스트 호출 service");
         if(request.getHeader("RefreshToken") != null) {
             // 정합성이 검증된 토큰인지 확인
-            if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+            if (jwtTokenException.checkAccessToken(request)) {
                 log.info("토큰 정합성 검증 실패");
+                LogUtil.logError("토큰 정합성 검증 실패", request);
                 return null;
             }
 
@@ -476,8 +479,9 @@ public class ProductService {
 
         if(request.getHeader("RefreshToken") != null) {
             // 정합성이 검증된 토큰인지 확인
-            if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+            if (jwtTokenException.checkAccessToken(request)) {
                 log.info("토큰 정합성 검증 실패");
+                LogUtil.logError("토큰 정합성 검증 실패", request);
                 return null;
             }
             // 로그인 고객
@@ -499,8 +503,9 @@ public class ProductService {
         log.info("중분류, 소분류 기준 제품 페이지의 정렬 기준 제품 리스트 호출 service");
         if (request.getHeader("RefreshToken") != null) {
             // 정합성이 검증된 토큰인지 확인
-            if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+            if (jwtTokenException.checkAccessToken(request)) {
                 log.info("토큰 정합성 검증 실패");
+                LogUtil.logError("토큰 정합성 검증 실패", request);
                 return null;
             }
             // 로그인 고객
@@ -519,8 +524,9 @@ public class ProductService {
         if (request.getHeader("RefreshToken") != null) {
 
             // 정합성이 검증된 토큰인지 확인
-            if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+            if (jwtTokenException.checkAccessToken(request)) {
                 log.info("토큰 정합성 검증 실패");
+                LogUtil.logError("토큰 정합성 검증 실패", request);
                 return null;
             }
 
@@ -540,8 +546,9 @@ public class ProductService {
         if (request.getHeader("RefreshToken") != null) {
 
             // 정합성이 검증된 토큰인지 확인
-            if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+            if (jwtTokenException.checkAccessToken(request)) {
                 log.info("토큰 정합성 검증 실패");
+                LogUtil.logError("토큰 정합성 검증 실패", request);
                 return null;
             }
 
@@ -569,13 +576,14 @@ public class ProductService {
         log.info("재품 상세 정보 이미지 링크 반환 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request);
             return null;
         }
 
         // 전달받은 이미지 파일들을 기준으로 이미지 업로드 처리 후 정보들을 추출하여 HashMap 리스트로 전달
-        List<HashMap<String, String>> saveProductDetailInfoImages = mediaUploadInterface.uploadProductDetailInfoImage(detailImages);
+        List<HashMap<String, String>> saveProductDetailInfoImages = mediaUpload.uploadProductDetailInfoImage(detailImages);
         List<Media> saveMediaList = new ArrayList<>();
 
         // 업로드한 이미지들의 정보들을 조회하여 Media 데이터 저장 처리
@@ -617,10 +625,12 @@ public class ProductService {
     //@Async("threadPoolTaskExecutor")
     public List<MainPageCategoryBestProductResponseDto> getCategoryBestProducts(HttpServletRequest request, Long categoryId) {
         log.info("메인 페이지 카테고리 베스트 제품 리스트 조회 service");
+
         if(request.getHeader("RefreshToken") != null) {
             // 정합성이 검증된 토큰인지 확인
-            if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+            if (jwtTokenException.checkAccessToken(request)) {
                 log.info("토큰 정합성 검증 실패");
+                LogUtil.logError("토큰 정합성 검증 실패", request);
                 return null;
             }
             // 로그인 고객
@@ -641,8 +651,9 @@ public class ProductService {
 
         if(request.getHeader("RefreshToken") != null) {
             // 정합성이 검증된 토큰인지 확인
-            if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+            if (jwtTokenException.checkAccessToken(request)) {
                 log.info("토큰 정합성 검증 실패");
+                LogUtil.logError("토큰 정합성 검증 실패", request);
                 return null;
             }
 
@@ -666,8 +677,9 @@ public class ProductService {
 
         if(request.getHeader("RefreshToken") != null) {
             // 정합성이 검증된 토큰인지 확인
-            if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+            if (jwtTokenException.checkAccessToken(request)) {
                 log.info("토큰 정합성 검증 실패");
+                LogUtil.logError("토큰 정합성 검증 실패", request);
                 return null;
             }
 

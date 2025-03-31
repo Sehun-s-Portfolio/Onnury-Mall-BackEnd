@@ -1,11 +1,12 @@
 package com.onnury.cart.request;
 
+import com.onnury.common.base.AbstractVO;
 import lombok.Getter;
 
 import java.util.List;
 
 @Getter
-public class CartAddRequestDto {
+public class CartAddRequestDto extends AbstractVO {
     private Long productId;
     private List<Long> productOptionIds;
     private List<Long> productDetailOptionIds;

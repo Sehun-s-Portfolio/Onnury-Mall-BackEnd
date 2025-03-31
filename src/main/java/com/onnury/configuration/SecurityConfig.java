@@ -67,6 +67,7 @@ public class SecurityConfig {
                         "/api/supplier/duplicatecheck",
                         "/api/supplier/urgent/create/account/**",
                         "/api/notice/test/splice/notice/content/**",
+                        "/actuator/**",
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
                         "/image/**",

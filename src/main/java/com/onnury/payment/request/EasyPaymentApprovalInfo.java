@@ -1,5 +1,6 @@
 package com.onnury.payment.request;
 
+import com.onnury.common.base.AbstractVO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @Getter
-public class EasyPaymentApprovalInfo {
+public class EasyPaymentApprovalInfo extends AbstractVO {
     private String resCd;
     private String resMsg;
     private String shopOrderNo;

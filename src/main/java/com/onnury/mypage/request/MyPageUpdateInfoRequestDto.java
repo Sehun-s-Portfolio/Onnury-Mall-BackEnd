@@ -1,9 +1,10 @@
 package com.onnury.mypage.request;
 
+import com.onnury.common.base.AbstractVO;
 import lombok.Getter;
 
 @Getter
-public class MyPageUpdateInfoRequestDto {
+public class MyPageUpdateInfoRequestDto extends AbstractVO {
     private String address; // 주소
     private String detailAddress; // 상세 주소
     private String postNumber; // 우편 번호

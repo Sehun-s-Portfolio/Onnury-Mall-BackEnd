@@ -1,7 +1,8 @@
 package com.onnury.member.service;
 
-import com.onnury.exception.member.MemberExceptionInterface;
-import com.onnury.exception.token.JwtTokenExceptionInterface;
+import com.onnury.common.util.LogUtil;
+import com.onnury.exception.member.MemberException;
+import com.onnury.exception.token.JwtTokenException;
 import com.onnury.jwt.JwtToken;
 import com.onnury.jwt.JwtTokenDto;
 import com.onnury.jwt.JwtTokenProvider;
@@ -33,15 +34,16 @@ import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.HashMap;
 
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class MemberService {
-
-    private final JwtTokenExceptionInterface jwtTokenExceptionInterface;
-    private final MemberExceptionInterface memberExceptionInterface;
+    
+    private final JwtTokenException jwtTokenException;
+    private final MemberException memberException;
     private final MemberQueryData memberQueryData;
     private final JwtTokenQueryData jwtTokenQueryData;
     private final MemberRepository memberRepository;
@@ -53,12 +55,13 @@ public class MemberService {
 
 
     // 관리자 회원 페이지 리스트업
-    public MemberListUpResponseDto listUpMember(HttpServletRequest request, int page, String searchtype, String search, String startDate, String endDate) {
+    public MemberListUpResponseDto listUpMember(HttpServletRequest request, int page, String searchtype, String search, String startDate, String endDate, HashMap<String, String> requestParam) {
         log.info("관리자 회원 리스트업 페이지 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request, requestParam);
             return null;
         }
 
@@ -70,30 +73,34 @@ public class MemberService {
     public ResponseBody registMember(MemberRegistRequestDto memberRegistRequestDto) {
         log.info("고객 회원가입 service");
 
-        String checkInfo = memberExceptionInterface.checkRegistMemberInfo(memberRegistRequestDto);
+        HashMap<String, String> checkData = new HashMap<>();
+        String checkInfo = memberException.checkRegistMemberInfo(memberRegistRequestDto);
 
         // 회원가입 정보 확인 후 옳바르지 않은 정보라면 예외 처리
         if (checkInfo != null) {
             log.info("회원가입 시도 정보들이 옳바르지 않습니다.");
-
+            checkData.put("회원가입 정보", checkInfo);
+            LogUtil.logError(StatusCode.CANT_REGIST_MEMBER.getMessage(), memberRegistRequestDto, checkData);
             return new ResponseBody(StatusCode.CANT_REGIST_MEMBER, checkInfo);
         }
 
-        String checkPassword = memberExceptionInterface.checkRightPassword(memberRegistRequestDto.getPassword(), memberRegistRequestDto.getCheckPassword());
+        String checkPassword = memberException.checkRightPassword(memberRegistRequestDto.getPassword(), memberRegistRequestDto.getCheckPassword());
 
         // 회원가입 비밀번호가 옳바르지 않을 경우 예외 처리
         if (checkPassword != null) {
             log.info("비밀번호가 일치하지 않습니다.");
-
+            checkData.put("비밀번호 일치 여부", checkPassword);
+            LogUtil.logError(StatusCode.CANT_REGIST_MEMBER.getMessage(), memberRegistRequestDto, checkData);
             return new ResponseBody(StatusCode.CANT_REGIST_MEMBER, checkPassword);
         }
 
-        String checkAccountExist = memberExceptionInterface.checkAlreadyExistAccount(memberRegistRequestDto.getLoginId());
+        String checkAccountExist = memberException.checkAlreadyExistAccount(memberRegistRequestDto.getLoginId());
 
         // 이미 존재한 계정이 있을 경우 예외 처리
         if (checkAccountExist != null) {
             log.info("이미 존재한 계정 아이디 입니다.");
-
+            checkData.put("계정 중복 여부", checkAccountExist);
+            LogUtil.logError(StatusCode.CANT_REGIST_MEMBER.getMessage(), memberRegistRequestDto, checkData);
             return new ResponseBody(StatusCode.CANT_REGIST_MEMBER, checkAccountExist);
         }
 
@@ -141,8 +148,9 @@ public class MemberService {
         log.info("고객 계정 로그인 service");
 
         // 로그인 시도 시 해당 계정이 존재하는지 확인
-        if (memberExceptionInterface.checkLoginAccount(memberLoginRequestDto.getLoginId(), memberLoginRequestDto.getPassword())) {
+        if (memberException.checkLoginAccount(memberLoginRequestDto.getLoginId(), memberLoginRequestDto.getPassword())) {
             log.info("로그인 시도 시 해당 계정이 존재하지 않습니다.");
+            LogUtil.logError("로그인 시도 시 해당 계정이 존재하지 않습니다.", memberLoginRequestDto);
             return null;
         }
 
@@ -151,7 +159,8 @@ public class MemberService {
 
         // 만약 회원탈퇴 상태인 계정의 경우 예외 처리
         if (loginMember.getStatus().equals("N")) {
-            log.info("회원탈퇴된 계정입니다.");
+            log.info("회원 탈퇴된 계정입니다.");
+            LogUtil.logError("회원 탈퇴된 계정입니다.", memberLoginRequestDto);
             return null;
         }
 
@@ -206,14 +215,6 @@ public class MemberService {
             response.addHeader("Authorization", "Bearer " + token.getAccessToken());
             response.addHeader("RefreshToken", token.getRefreshToken());
             response.addHeader("AccessTokenExpireTime", jwtTokenDto.getAccessTokenExpiresIn().toString());
-
-            Date checkDateTime = jwtTokenDto.getAccessTokenExpiresIn();
-            LocalDateTime checkLocalDateTime = checkDateTime.toInstant()
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDateTime();
-
-            log.info("Date 기존 만료 시간 : {}", checkDateTime);
-            log.info("LocalDateTime 변환 만료 시간 : {}", checkLocalDateTime);
         }
 
         return MemberLoginResponseDto.builder()
@@ -228,7 +229,7 @@ public class MemberService {
     public boolean checkDuplicateLoginId(String checkLoginId) {
         log.info("로그인 id 중복 체크 service");
 
-        if (memberExceptionInterface.checkAlreadyExistAccount(checkLoginId) != null) {
+        if (memberException.checkAlreadyExistAccount(checkLoginId) != null) {
             log.info("이미 존재한 계정 아이디이므로 다른 계정 아이디를 입력해주십시오.");
             return true;
         } else {
@@ -239,7 +240,7 @@ public class MemberService {
 
 
     // 로그인 id 찾기 service
-    public String findLoginId(String email, String phone) {
+    public String findLoginId(String email, String phone, HashMap<String, String> requestParam) {
         log.info("로그인 id 찾기 service");
 
         // 입력한 이메일 기준 찾고자 하는 계정 호출
@@ -248,11 +249,9 @@ public class MemberService {
         // 만약 해당 이메일을 가진 계정이 존재하지 않을 경우
         if (loginMember == null) {
             log.info("해당 이메일과 연락처를 가진 계정은 존재하지 않습니다.");
+            LogUtil.logError("해당 이메일과 연락처를 가진 계정은 존재하지 않습니다.", requestParam);
             return null;
         }
-
-        // 메일 전송
-        //mailService.sendLoginIdEmail(loginMember);
 
         StringBuilder expressId = new StringBuilder(loginMember.getLoginId().substring(0, 4));
         String notExpressId = loginMember.getLoginId().substring(4);
@@ -268,7 +267,7 @@ public class MemberService {
 
     // 비밀번호 찾기 service
     @Transactional
-    public String findPassword(String loginId, String email, String phone) {
+    public String findPassword(String loginId, String email, String phone, HashMap<String, String> requestParam) {
         log.info("비밀번호 찾기 service");
 
         Member loginMember = memberQueryData.getLoginAccountAboutLoginIdEmailPhone(loginId, email, phone);
@@ -276,6 +275,7 @@ public class MemberService {
         // 만약 해당 이메일을 가진 계정이 존재하지 않을 경우
         if (loginMember == null) {
             log.info("해당 아이디, 이메일, 연락처를 가진 계정은 존재하지 않습니다.");
+            LogUtil.logError("해당 아이디, 이메일, 연락처를 가진 계정은 존재하지 않습니다.", requestParam);
             return null;
         }
 
@@ -289,12 +289,13 @@ public class MemberService {
 
 
     // 회원 대시보드 service
-    public MemberDashboardResponseDto getDashboard(HttpServletRequest request, String startDate, String endDate) {
+    public MemberDashboardResponseDto getDashboard(HttpServletRequest request, String startDate, String endDate, HashMap<String, String> requestParam) {
         log.info("회원 대시보드 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패", request, requestParam);
             return null;
         }
 

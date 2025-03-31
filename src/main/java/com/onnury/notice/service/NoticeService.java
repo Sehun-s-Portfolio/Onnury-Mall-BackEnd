@@ -1,11 +1,12 @@
 package com.onnury.notice.service;
 
-import com.onnury.exception.notice.NoticeExceptionInterface;
-import com.onnury.exception.token.JwtTokenExceptionInterface;
+import com.onnury.common.util.LogUtil;
+import com.onnury.exception.notice.NoticeException;
+import com.onnury.exception.token.JwtTokenException;
 import com.onnury.jwt.JwtTokenProvider;
 import com.onnury.media.domain.Media;
 import com.onnury.media.repository.MediaRepository;
-import com.onnury.media.service.MediaUploadInterface;
+import com.onnury.media.service.MediaUpload;
 import com.onnury.notice.request.NoticeRequestDto;
 import com.onnury.notice.request.NoticeUpdateRequestDto;
 import com.onnury.notice.response.NoticeDetailResponseDto;
@@ -16,7 +17,6 @@ import com.onnury.query.notice.NoticeQueryData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,24 +33,27 @@ import java.util.stream.Collectors;
 public class NoticeService {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final JwtTokenExceptionInterface jwtTokenExceptionInterface;
+    private final JwtTokenException jwtTokenException;
     private final NoticeQueryData noticeQueryData;
-    private final NoticeExceptionInterface noticeExceptionInterface;
-    private final MediaUploadInterface mediaUploadInterface;
+    private final NoticeException noticeException;
+    private final MediaUpload mediaUpload;
     private final MediaRepository mediaRepository;
+    
     // 관리자 공지사항 작성 service
     public NoticeResponseDto writeNotice(HttpServletRequest request, NoticeRequestDto noticeRequestDto){
         log.info("관리자 공지사항 작성 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request) || jwtTokenProvider.getAdminAccountFromAuthentication() == null) {
+        if (jwtTokenException.checkAccessToken(request) || jwtTokenProvider.getAdminAccountFromAuthentication() == null) {
             log.info("토큰 정합성 검증 실패 및 관리자 계정 정보 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패 및 관리자 계정 정보 검증 실패", request);
             return null;
         }
 
         // 공지사항 작성 정보 검증
-        if(noticeExceptionInterface.checkWriteNoticeInfo(noticeRequestDto)){
+        if(noticeException.checkWriteNoticeInfo(noticeRequestDto)){
             log.info("공지사항 작성 정보가 옳바르지 않음");
+            LogUtil.logError("공지사항 작성 정보가 옳바르지 않음", request, noticeRequestDto);
             return null;
         }
 
@@ -63,8 +66,9 @@ public class NoticeService {
         log.info("고객 측 공지사항 리스트 조회 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패 및 관리자 계정 정보 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패 및 관리자 계정 정보 검증 실패", request);
             return null;
         }
 
@@ -78,14 +82,16 @@ public class NoticeService {
         log.info("관리자 공지사항 수정 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request) || jwtTokenProvider.getAdminAccountFromAuthentication() == null) {
+        if (jwtTokenException.checkAccessToken(request) || jwtTokenProvider.getAdminAccountFromAuthentication() == null) {
             log.info("토큰 정합성 검증 실패 및 관리자 계정 정보 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패 및 관리자 계정 정보 검증 실패", request);
             return null;
         }
 
         // 공지사항 작성 정보 검증
-        if(noticeExceptionInterface.checkUpdateNoticeInfo(noticeUpdateRequestDto)){
+        if(noticeException.checkUpdateNoticeInfo(noticeUpdateRequestDto)){
             log.info("공지사항 수정 정보가 옳바르지 않음");
+            LogUtil.logError("공지사항 수정 정보가 옳바르지 않음", request, noticeUpdateRequestDto);
             return null;
         }
 
@@ -98,8 +104,9 @@ public class NoticeService {
         log.info("관리자 공지사항 리스트 호출 servjice");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request) || jwtTokenProvider.getAdminAccountFromAuthentication() == null) {
+        if (jwtTokenException.checkAccessToken(request) || jwtTokenProvider.getAdminAccountFromAuthentication() == null) {
             log.info("토큰 정합성 검증 실패 및 관리자 계정 정보 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패 및 관리자 계정 정보 검증 실패", request);
             return null;
         }
 
@@ -113,8 +120,9 @@ public class NoticeService {
         log.info("관리자 공지사항 삭제 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request) || jwtTokenProvider.getAdminAccountFromAuthentication() == null) {
+        if (jwtTokenException.checkAccessToken(request) || jwtTokenProvider.getAdminAccountFromAuthentication() == null) {
             log.info("토큰 정합성 검증 실패 및 관리자 계정 정보 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패 및 관리자 계정 정보 검증 실패", request);
             return null;
         }
 
@@ -127,8 +135,9 @@ public class NoticeService {
         log.info("공지사항 상세 조회 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패 및 관리자 계정 정보 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패 및 관리자 계정 정보 검증 실패", request);
             return null;
         }
 
@@ -139,13 +148,14 @@ public class NoticeService {
         log.info("공지사항 이미지 링크 반환 service");
 
         // 정합성이 검증된 토큰인지 확인
-        if (jwtTokenExceptionInterface.checkAccessToken(request)) {
+        if (jwtTokenException.checkAccessToken(request)) {
             log.info("토큰 정합성 검증 실패");
+            LogUtil.logError("토큰 정합성 검증 실패 및 관리자 계정 정보 검증 실패", request);
             return null;
         }
 
         // 전달받은 이미지 파일들을 기준으로 이미지 업로드 처리 후 정보들을 추출하여 HashMap 리스트로 전달
-        List<HashMap<String, String>> saveProductDetailInfoImages = mediaUploadInterface.uploadNoticeDetailInfoImage(detailImages);
+        List<HashMap<String, String>> saveProductDetailInfoImages = mediaUpload.uploadNoticeDetailInfoImage(detailImages);
         List<Media> saveMediaList = new ArrayList<>();
 
         // 업로드한 이미지들의 정보들을 조회하여 Media 데이터 저장 처리

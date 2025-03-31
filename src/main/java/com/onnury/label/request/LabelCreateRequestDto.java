@@ -1,12 +1,13 @@
 package com.onnury.label.request;
 
+import com.onnury.common.base.AbstractVO;
 import lombok.Getter;
 
 import javax.persistence.Column;
 import java.time.LocalDateTime;
 
 @Getter
-public class LabelCreateRequestDto {
+public class LabelCreateRequestDto extends AbstractVO {
     private String labelTitle; // 라벨 명
     private String startPostDate; // 라벨 게시일
     private String endPostDate; // 라벨 종료일

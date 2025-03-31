@@ -1,5 +1,6 @@
 package com.onnury.label.controller;
 
+import com.onnury.common.util.LogUtil;
 import com.onnury.label.request.LabelCreateRequestDto;
 import com.onnury.label.request.LabelUpdateRequestDto;
 import com.onnury.label.response.LabelCreateResponseDto;
@@ -26,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 
 @Slf4j
@@ -50,15 +52,24 @@ public class LabelController {
     public ResponseEntity<ResponseBody> createLabel(
             HttpServletRequest request,
             @Parameter(description = "라벨 이미지 파일") @RequestPart MultipartFile labelImg,
-            @Parameter(description = "라벨 생성 정보") @RequestPart LabelCreateRequestDto labelInfo) throws IOException {
+            @Parameter(description = "라벨 생성 정보") @RequestPart LabelCreateRequestDto labelInfo) {
         log.info("배너 생성 api");
 
-        LabelCreateResponseDto bannerCreateResponseDto = labelService.createLabel(request, labelImg, labelInfo);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("라벨 이미지 파일", labelImg.getOriginalFilename() + " : " + labelImg.getContentType());
 
-        if(bannerCreateResponseDto == null){
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_CREATE_BANNER, null), HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, bannerCreateResponseDto), HttpStatus.OK);
+        try{
+            LabelCreateResponseDto bannerCreateResponseDto = labelService.createLabel(request, labelImg, labelInfo, requestParam);
+
+            if(bannerCreateResponseDto == null){
+                LogUtil.logError(StatusCode.CANT_CREATE_LABEL.getMessage(), request, requestParam, labelInfo);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_CREATE_LABEL, null), HttpStatus.OK);
+            }else{
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, bannerCreateResponseDto), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request, requestParam, labelInfo);
+            return null;
         }
     }
 
@@ -78,15 +89,25 @@ public class LabelController {
             HttpServletRequest request,
             @Parameter(description = "수정할 라벨 id") @RequestParam Long labelId,
             @Parameter(description = "수정할 라벨 이미지 파일") @RequestPart(required = false) MultipartFile updateLabelImg,
-            @Parameter(description = "수정할 라벨 내용") @RequestPart LabelUpdateRequestDto updateLabelInfo) throws IOException {
+            @Parameter(description = "수정할 라벨 내용") @RequestPart LabelUpdateRequestDto updateLabelInfo)  {
         log.info("라벨 수정 api");
 
-        LabelUpdateResponseDto bannerUpdateResponseDto = labelService.updateLabel(request, labelId, updateLabelImg, updateLabelInfo);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("수정할 라벨 id", Long.toString(labelId));
+        requestParam.put("수정할 라벨 이미지 파일", updateLabelImg.getOriginalFilename() + " : " + updateLabelImg.getContentType());
 
-        if(bannerUpdateResponseDto == null){
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_UPDATE_BANNER, null), HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, bannerUpdateResponseDto), HttpStatus.OK);
+        try{
+            LabelUpdateResponseDto bannerUpdateResponseDto = labelService.updateLabel(request, labelId, updateLabelImg, updateLabelInfo);
+
+            if(bannerUpdateResponseDto == null){
+                LogUtil.logError(StatusCode.CANT_UPDATE_LABEL.getMessage(), request, requestParam, updateLabelInfo);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_UPDATE_LABEL, null), HttpStatus.OK);
+            }else{
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, bannerUpdateResponseDto), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request, requestParam, requestParam);
+            return null;
         }
     }
 
@@ -107,14 +128,23 @@ public class LabelController {
             @Parameter(description = "삭제할 라벨 id") @RequestParam Long deleteLabelId){
         log.info("라벨 삭제 api");
 
-        boolean deleteSuccess = labelService.deleteLabel(request, deleteLabelId);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("삭제할 라벨 id", Long.toString(deleteLabelId));
 
-        if(deleteSuccess){
-            log.info("라벨 삭제 실패");
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_DELETE_BANNER, null), HttpStatus.OK);
-        }else{
-            log.info("라벨 삭제 성공");
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, "정상적으로 삭제되었습니다."), HttpStatus.OK);
+        try{
+            boolean deleteSuccess = labelService.deleteLabel(request, deleteLabelId);
+
+            if(deleteSuccess){
+                log.info("라벨 삭제 실패");
+                LogUtil.logError(StatusCode.CANT_DELETE_LABEL.getMessage(), request, requestParam);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_DELETE_LABEL, null), HttpStatus.OK);
+            }else{
+                log.info("라벨 삭제 성공");
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, "정상적으로 삭제되었습니다."), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request, requestParam);
+            return null;
         }
     }
 
@@ -135,12 +165,21 @@ public class LabelController {
             @Parameter(description = "페이지 번호") @RequestParam(required = false, defaultValue = "1") int page){
         log.info("관리자 라벨 리스트업 페이지 api");
 
-        LabelListUpResponseDto responseBannerList = labelService.listUpLabel(request, page);
+        HashMap<String, String> requestParam = new HashMap<>();
+        requestParam.put("페이지 번호", Integer.toString(page));
 
-        if(responseBannerList == null){
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_GET_BANNER_LISTUP, null), HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, labelService.listUpLabel(request, page)), HttpStatus.OK);
+        try{
+            LabelListUpResponseDto responseBannerList = labelService.listUpLabel(request, page);
+
+            if(responseBannerList == null){
+                LogUtil.logError(StatusCode.CANT_GET_LABEL_LISTUP.getMessage(), request, requestParam);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_GET_LABEL_LISTUP, null), HttpStatus.OK);
+            }else{
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, labelService.listUpLabel(request, page)), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request, requestParam);
+            return null;
         }
     }
 
@@ -159,12 +198,18 @@ public class LabelController {
     public ResponseEntity<ResponseBody> topExpressionLabelList(HttpServletRequest request){
         log.info("상위 노출 라벨 리스트 호출 api");
 
-        List<LabelDataResponseDto> topExpressionLabelList = labelService.topExpressionLabelList(request);
+        try{
+            List<LabelDataResponseDto> topExpressionLabelList = labelService.topExpressionLabelList(request);
 
-        if(topExpressionLabelList == null){
-            return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_GET_BANNER_LISTUP, null), HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(new ResponseBody(StatusCode.OK, topExpressionLabelList), HttpStatus.OK);
+            if(topExpressionLabelList == null){
+                LogUtil.logError(StatusCode.CANT_GET_TOP_EXPRESS_LABEL_LIST.getMessage(), request);
+                return new ResponseEntity<>(new ResponseBody(StatusCode.CANT_GET_TOP_EXPRESS_LABEL_LIST, null), HttpStatus.OK);
+            }else{
+                return new ResponseEntity<>(new ResponseBody(StatusCode.OK, topExpressionLabelList), HttpStatus.OK);
+            }
+        }catch(Exception e){
+            LogUtil.logException(e, request);
+            return null;
         }
     }
 }
