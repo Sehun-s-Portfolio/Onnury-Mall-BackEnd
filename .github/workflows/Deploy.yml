@@ -7,7 +7,7 @@ on:
 
 jobs:
   Deploy:
-    runs-on: linux
+    runs-on: ubuntu-latest
     steps:
       - name: SSH(원격 접속) 운영 서버 접속
         uses: appleboy/ssh-action@v1
