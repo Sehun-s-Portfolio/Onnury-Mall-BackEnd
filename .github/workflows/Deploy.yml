@@ -9,7 +9,7 @@ jobs:
   Deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: SSH(원격 접속) 운영 서버 접속
+      - name: CI/CD
         uses: appleboy/ssh-action@v1
         env:
           APPLICATION_PROPERTIES: ${{ secrets.APPLICATION_PROPERTIES }}
@@ -25,15 +25,22 @@ jobs:
           script_stop: true
           script: |
             cd /home/onnury/web/Onnury-Mall-BackEnd
+            echo "온누리 몰 프로젝트 경로 진입"
             rm -rf src/main/resources/application.properties
             rm -rf src/main/resources/application-dev.properties
             rm -rf src/main/resources/application-prod.properties
             rm -rf src/main/resources/application.yml
+            echo "gitignore 처리된 이전 properties, yml 파일 삭제"
             git pull origin dev
+            echo "dev 브랜치 pull"
             echo "$APPLICATION_PROPERTIES" > src/main/resources/application.properties
             echo "$APPLICATION_DEV_PROPERTIES" > src/main/resources/application-dev.properties
             echo "$APPLICATION_PROD_PROPERTIES" > src/main/resources/application-prod.properties
             echo "$APPLICATION_YML" > src/main/resources/application.yml
+            echo "properties, yml 설정 파일 생성"
             ./gradlew clean build
+            echo "jar 빌드"
             sudo fuser -k -n tcp 8090 || true
+            echo "기존 8090 포트 실행 중이던 java 프로세스 확인 후 제거"
             nohup java -jar -server -Xmx5g -XX:+UseG1GC -Djava.awt.headless=true -Dspring.profiles.active=dev -Dsvr.nm=ONNURY_DEV -Dfile.encoding=UTF-8 build/libs/*SNAPSHOT.jar 1> /dev/null 2>&1 &
+            echo "jar 배포"
