@@ -671,7 +671,7 @@ public class ProductController {
     public ResponseEntity<ResponseBody> saveDetailImage(
             HttpServletRequest request,
             @Parameter(description = "상세 정보 이미지 파일들") @RequestPart List<MultipartFile> detailImages) throws IOException {
-        log.info("재품 상세 정보 이미지 링크 반환 api");
+        log.info("제품 상세 정보 이미지 링크 반환 api");
 
         HashMap<String, String> requestParam = new HashMap<>();
 
