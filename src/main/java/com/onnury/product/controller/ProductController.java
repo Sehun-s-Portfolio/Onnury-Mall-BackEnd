@@ -1,5 +1,7 @@
 package com.onnury.product.controller;
 
+import com.onnury.aop.MethodCallMonitor;
+import com.onnury.aop.TimeMonitor;
 import com.onnury.common.util.LogUtil;
 import com.onnury.product.request.ProductCreateRequestDto;
 import com.onnury.product.request.ProductSearchRequestDto;
@@ -47,6 +49,8 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/create", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> createProduct(
             HttpServletRequest request,
@@ -91,6 +95,8 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/get", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> getProduct(
             HttpServletRequest request,
@@ -126,6 +132,8 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PutMapping(value = "/update", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> updateProduct(
             HttpServletRequest request,
@@ -167,6 +175,8 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @DeleteMapping(value = "/delete", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> deleteProduct(
             HttpServletRequest request,
@@ -200,6 +210,8 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/list", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> getProductsList(
             HttpServletRequest request,
@@ -248,6 +260,8 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/ready", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> getReadyForCreateProductInfo(HttpServletRequest request) {
         log.info("제품 생성 페이지 진입 시 사전 호출되어 활용될 정보 호출 api");
@@ -281,6 +295,8 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/newrelease", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> getNewReleaseProducts(HttpServletRequest request) {
         log.info("메인 페이지 신 상품 리스트 호출 api");
@@ -316,6 +332,8 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/page/up/{upCategoryId}/list", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> upCategoryPageMainProducts(
             HttpServletRequest request,
@@ -393,6 +411,8 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/page/md/{categoryId}/list", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> middleAndDownCategoryPageMainProducts(
             HttpServletRequest request,
@@ -468,6 +488,8 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/search", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> searchProducts(
             HttpServletRequest request,
@@ -543,6 +565,8 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/page/label/{labelId}/list", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> labelPageMainProducts(
             HttpServletRequest request,
@@ -605,6 +629,8 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/page/detail/{productId}", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> productDetailPage(
             @Parameter(description = "제품 id") @PathVariable Long productId){
@@ -639,6 +665,8 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/detailImage", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> saveDetailImage(
             HttpServletRequest request,
@@ -682,6 +710,8 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/category/best", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> getCategoryBestProducts(
             HttpServletRequest request,
@@ -717,6 +747,8 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/weekly/best", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> getWeeklyBestProducts(HttpServletRequest request){
         log.info("메인 페이지 Weekly 베스트 제품 리스트 조회 api");
@@ -752,6 +784,8 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/page/brand/{brandId}/list", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> brandPageMainProducts(
             HttpServletRequest request,

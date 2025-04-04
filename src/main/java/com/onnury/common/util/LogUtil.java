@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
-@Slf4j(topic = "errorLog")
+@Slf4j(topic = "errorLog") // <- Slf4j 어노테이션에 topic 옵션으로 로그 명을 지정해주면 Logback.xml 파일에 이 topic 명과 동일한 이름을 가진 appender와 매칭되어 로깅이 처리된다.
 public class LogUtil {
 	public enum LOG_TYPE { TRACE, DEBUG, INFO, WARN, ERROR, FATAL }
 	
