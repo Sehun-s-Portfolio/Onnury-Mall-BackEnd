@@ -1,5 +1,7 @@
 package com.onnury.payment.controller;
 
+import com.onnury.aop.MethodCallMonitor;
+import com.onnury.aop.TimeMonitor;
 import com.onnury.common.util.LogUtil;
 import com.onnury.payment.request.TransportInfoRequestDto;
 import com.onnury.payment.response.AdminPaymentDetailResponseDto;
@@ -47,6 +49,8 @@ public class AdminPaymentController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/onnury/order/listUp", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> paymentListUp(
             HttpServletRequest request,
@@ -89,6 +93,8 @@ public class AdminPaymentController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/onnury/memberorder/listUp", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> paymentMemberListUp(
             HttpServletRequest request,
@@ -134,6 +140,8 @@ public class AdminPaymentController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/onnury/order/detail", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> paymentDetail(
             HttpServletRequest request,
@@ -169,6 +177,8 @@ public class AdminPaymentController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/onnury/cancelorder/listUp", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> paymentCancelListUp(
             HttpServletRequest request,
@@ -204,6 +214,8 @@ public class AdminPaymentController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/onnury/order/supplierlistUp", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> supplierPaymentListUp(
             HttpServletRequest request,
@@ -249,6 +261,8 @@ public class AdminPaymentController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/transport/confirm", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> confirmTransportNumber(
             HttpServletRequest request,

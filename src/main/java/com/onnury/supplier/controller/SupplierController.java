@@ -1,5 +1,7 @@
 package com.onnury.supplier.controller;
 
+import com.onnury.aop.MethodCallMonitor;
+import com.onnury.aop.TimeMonitor;
 import com.onnury.common.util.LogUtil;
 import com.onnury.configuration.AES128Config;
 import com.onnury.supplier.request.SupplierCreateRequestDto;
@@ -52,6 +54,8 @@ public class SupplierController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/create", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> createSupplier(
             HttpServletRequest request,
@@ -84,6 +88,8 @@ public class SupplierController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PutMapping(value = "/update", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> updateSupplier(
             HttpServletRequest request,
@@ -120,6 +126,8 @@ public class SupplierController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @DeleteMapping(value = "/delete", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> deleteSupplier(
             HttpServletRequest request,
@@ -157,6 +165,8 @@ public class SupplierController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/listup", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> listUpSupplier(
             HttpServletRequest request,
@@ -192,6 +202,8 @@ public class SupplierController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/duplicatecheck", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> checkDuplicateSupplierLoginId(
             @Parameter(description = "중복 확인할 로그인 아이디") @RequestParam String checkSupplierLoginId) {
@@ -215,6 +227,8 @@ public class SupplierController {
 
 
     // 공급사 관리자 계정 긴급 생성 api
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping("/urgent/create/account")
     public ResponseEntity<ResponseBody> urgentCreateAccount(@RequestParam String password) throws InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
         log.info("긴급 공급사 관리자 계정 생성");

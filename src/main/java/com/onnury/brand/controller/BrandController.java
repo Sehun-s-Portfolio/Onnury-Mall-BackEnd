@@ -1,5 +1,7 @@
 package com.onnury.brand.controller;
 
+import com.onnury.aop.MethodCallMonitor;
+import com.onnury.aop.TimeMonitor;
 import com.onnury.brand.request.BrandCreateRequestDto;
 import com.onnury.brand.request.BrandUpdateRequestDto;
 import com.onnury.brand.response.BrandCreateResponseDto;
@@ -48,6 +50,8 @@ public class BrandController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/create", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> createBrand(
             HttpServletRequest request,
@@ -85,6 +89,8 @@ public class BrandController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PutMapping(value = "/update", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> updateBrand(
             HttpServletRequest request,
@@ -123,6 +129,8 @@ public class BrandController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @DeleteMapping(value = "/delete", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> deleteBrand(
             HttpServletRequest request,
@@ -160,6 +168,8 @@ public class BrandController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/listup", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> listUpSupplier(
             HttpServletRequest request,
@@ -195,6 +205,8 @@ public class BrandController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/mainlist", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> mainPageBrandList(HttpServletRequest request) {
         log.info("메인 페이지 브랜드 리스트 api");

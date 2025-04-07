@@ -1,5 +1,7 @@
 package com.onnury.mypage.controller;
 
+import com.onnury.aop.MethodCallMonitor;
+import com.onnury.aop.TimeMonitor;
 import com.onnury.common.util.LogUtil;
 import com.onnury.mypage.request.ConfirmPaymentRequestDto;
 import com.onnury.mypage.request.MyPageChangePasswordRequestDto;
@@ -46,6 +48,8 @@ public class MyPageController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/info", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> getMyPageInfo(HttpServletRequest request) {
         log.info("마이페이지 회원 정보 api");
@@ -76,6 +80,8 @@ public class MyPageController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PutMapping(value = "/change/password", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> changeMyPassword(
             HttpServletRequest request,
@@ -109,6 +115,8 @@ public class MyPageController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PutMapping(value = "/withdrawal", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> withdrawalAccount(HttpServletRequest request) {
         log.info("마이페이지 회원 탈퇴 api");
@@ -139,6 +147,8 @@ public class MyPageController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PutMapping(value = "/info/update", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> updateAccountInfo(
             HttpServletRequest request,
@@ -171,6 +181,8 @@ public class MyPageController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/inquiry/list", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> getMyInquiryList(
             HttpServletRequest request,
@@ -206,6 +218,8 @@ public class MyPageController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/inquiry", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> getMyInquiryDetail(
             HttpServletRequest request,
@@ -241,6 +255,8 @@ public class MyPageController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/payment/list", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> getMyPaymentList(
             HttpServletRequest request,
@@ -279,6 +295,8 @@ public class MyPageController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/mycancle/list", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> getMyCancleList(
             HttpServletRequest request,
@@ -307,6 +325,8 @@ public class MyPageController {
         }
     }
 
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/payment/canclerequest", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> postcanclerequest(
             HttpServletRequest request,
@@ -339,6 +359,8 @@ public class MyPageController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PutMapping(value = "/confirm/payment", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> confirmMyPayment(
             HttpServletRequest request,

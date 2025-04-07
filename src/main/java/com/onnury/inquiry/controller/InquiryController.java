@@ -1,5 +1,7 @@
 package com.onnury.inquiry.controller;
 
+import com.onnury.aop.MethodCallMonitor;
+import com.onnury.aop.TimeMonitor;
 import com.onnury.common.util.LogUtil;
 import com.onnury.inquiry.request.InquiryAnswerRequestDto;
 import com.onnury.inquiry.request.InquiryRequestDto;
@@ -47,6 +49,8 @@ public class InquiryController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PutMapping(value = "/update", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> updateInquiry(
             HttpServletRequest request,
@@ -79,6 +83,8 @@ public class InquiryController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/listup", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> listUpInquiry(
             HttpServletRequest request,
@@ -129,6 +135,8 @@ public class InquiryController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/create", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> writeInquiry(
             HttpServletRequest request,

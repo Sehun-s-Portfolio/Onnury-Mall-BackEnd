@@ -1,5 +1,7 @@
 package com.onnury.inquiry.controller;
 
+import com.onnury.aop.MethodCallMonitor;
+import com.onnury.aop.TimeMonitor;
 import com.onnury.common.util.LogUtil;
 import com.onnury.inquiry.request.FaqCreateRequestDto;
 import com.onnury.inquiry.request.FaqUpdateRequestDto;
@@ -49,6 +51,8 @@ public class FAQController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/create", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> createFaq(
             HttpServletRequest request,
@@ -80,6 +84,8 @@ public class FAQController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PutMapping(value = "/update", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> updateFaq(
             HttpServletRequest request,
@@ -115,6 +121,8 @@ public class FAQController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @DeleteMapping(value = "/delete", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> deleteFaq(
             HttpServletRequest request,
@@ -152,6 +160,8 @@ public class FAQController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/listup", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> listUpFaq(
             HttpServletRequest request,
@@ -198,6 +208,8 @@ public class FAQController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/list", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> getFaqList(
             HttpServletRequest request,
@@ -235,6 +247,8 @@ public class FAQController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/detailImage", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> saveDetailImage(
             HttpServletRequest request,

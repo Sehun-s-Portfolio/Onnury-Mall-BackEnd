@@ -1,5 +1,7 @@
 package com.onnury.excel.controller;
 
+import com.onnury.aop.MethodCallMonitor;
+import com.onnury.aop.TimeMonitor;
 import com.onnury.category.response.CategoryDataExcelResponseDto;
 import com.onnury.common.util.LogUtil;
 import com.onnury.excel.response.BannerExcelResponseDto;
@@ -52,6 +54,8 @@ public class ExcelController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/banner/list", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> excelBannerList(HttpServletRequest request) {
         log.info("배너 리스트 excel api");
@@ -82,6 +86,8 @@ public class ExcelController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/supplier/list", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> excelSupplierList(HttpServletRequest request) {
         log.info("배너 리스트 excel api");
@@ -112,6 +118,8 @@ public class ExcelController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/label/list", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> excelLabelList(HttpServletRequest request) {
         log.info("라벨 리스트 excel api");
@@ -142,6 +150,8 @@ public class ExcelController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/category/list", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> excelCategoryList(HttpServletRequest request) {
         log.info("카테고리 리스트 excel api");
@@ -172,6 +182,8 @@ public class ExcelController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/product/list", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> excelProductList(
             HttpServletRequest request,
@@ -219,6 +231,8 @@ public class ExcelController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/member/list", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> excelMemberList(
             HttpServletRequest request,
@@ -256,6 +270,8 @@ public class ExcelController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/inquiry/list", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> excelInquiryList(
             HttpServletRequest request,
@@ -295,6 +311,8 @@ public class ExcelController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/faq/list", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> excelFaqList(
             HttpServletRequest request,
@@ -330,6 +348,8 @@ public class ExcelController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/payment/list", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> excelPaymentList(
             HttpServletRequest request,
@@ -373,6 +393,8 @@ public class ExcelController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/totalorder/list", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> excelTotalOrderList(
             HttpServletRequest request,

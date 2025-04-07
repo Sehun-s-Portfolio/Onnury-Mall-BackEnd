@@ -1,5 +1,7 @@
 package com.onnury.payment.controller;
 
+import com.onnury.aop.MethodCallMonitor;
+import com.onnury.aop.TimeMonitor;
 import com.onnury.payment.request.*;
 import com.onnury.payment.response.OnnuryPaymentApprovalInfo;
 import com.onnury.payment.service.BizService;
@@ -48,6 +50,8 @@ public class PaymentController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/onnury/reserve/ready", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> onnuryPay(
             HttpServletRequest request,
@@ -69,6 +73,8 @@ public class PaymentController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/onnury/approval/info/get", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> getOnnuryPaymentApprovalInfo(
             HttpServletRequest request,
@@ -97,6 +103,8 @@ public class PaymentController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/onnury/approval", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> onnuryApproval(
             HttpServletRequest request,
@@ -126,6 +134,8 @@ public class PaymentController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/onnury/cancel", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> onnuryCancel(
             HttpServletRequest request,
@@ -146,6 +156,8 @@ public class PaymentController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/easyPay/reserve/ready", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> easyPayPayreserve(
             HttpServletRequest request,
@@ -173,6 +185,8 @@ public class PaymentController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/easyPay/approval/info/get", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> getEasyPaymentApprovalInfo(
             HttpServletRequest request,
@@ -201,6 +215,8 @@ public class PaymentController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/easyPay/approval", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> easyPayApproval(
             HttpServletRequest request,
@@ -229,6 +245,8 @@ public class PaymentController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/easyPay/cancel", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> easyPayCancel(
             HttpServletRequest request,
@@ -249,6 +267,8 @@ public class PaymentController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/compound/approval", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> compoundPayApproval(
             HttpServletRequest request,
@@ -272,6 +292,8 @@ public class PaymentController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/compound/allcancel", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> compoundPayAllCancel(
             HttpServletRequest request,
@@ -292,6 +314,8 @@ public class PaymentController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/compound/partcancel", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> compoundPayPartCancel(
             HttpServletRequest request,

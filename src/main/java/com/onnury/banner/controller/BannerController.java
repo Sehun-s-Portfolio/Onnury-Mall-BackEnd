@@ -1,5 +1,7 @@
 package com.onnury.banner.controller;
 
+import com.onnury.aop.MethodCallMonitor;
+import com.onnury.aop.TimeMonitor;
 import com.onnury.banner.request.BannerCreateRequestDto;
 import com.onnury.banner.request.BannerUpdateRequestDto;
 import com.onnury.banner.response.*;
@@ -44,6 +46,8 @@ public class BannerController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/create", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> createBanner(
             HttpServletRequest request,
@@ -83,6 +87,8 @@ public class BannerController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PutMapping(value = "/update",produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseBody> updateBanner(
             HttpServletRequest request,
@@ -125,6 +131,8 @@ public class BannerController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @DeleteMapping(value = "/delete", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseBody> deleteBanner(
             HttpServletRequest request,
@@ -162,6 +170,8 @@ public class BannerController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/listup", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> listUpBanner(
             HttpServletRequest request,
@@ -198,6 +208,8 @@ public class BannerController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/mainlist", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> mainPageBannerList(HttpServletRequest request){
         log.info("메인 페이지 배너 리스트 api");
@@ -228,6 +240,8 @@ public class BannerController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/promotion/create", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> createPromotionBanner(
             HttpServletRequest request,
@@ -263,6 +277,8 @@ public class BannerController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PutMapping(value = "/promotion/update", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseBody> updatePromotionBanner(
             HttpServletRequest request,
@@ -302,6 +318,8 @@ public class BannerController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/promotion/mainlist", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> mainPagePromotionBannerList(){
         log.info("메인 페이지 프로모션 배너 리스트 api");
@@ -332,6 +350,8 @@ public class BannerController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @DeleteMapping(value = "/promotion/delete", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseBody> deletePromotionBanner(
             HttpServletRequest request,

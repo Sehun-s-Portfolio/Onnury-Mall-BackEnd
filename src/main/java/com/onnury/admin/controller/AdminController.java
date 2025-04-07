@@ -5,6 +5,8 @@ import com.onnury.admin.response.AdminAccountLoginResponseDto;
 import com.onnury.admin.response.AdminAccountRegisterResponseDto;
 import com.onnury.admin.response.DashBoardResponseDto;
 import com.onnury.admin.service.AdminService;
+import com.onnury.aop.MethodCallMonitor;
+import com.onnury.aop.TimeMonitor;
 import com.onnury.common.util.LogUtil;
 import com.onnury.share.ResponseBody;
 import com.onnury.share.StatusCode;
@@ -51,10 +53,11 @@ public class AdminController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/register", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> adminRegister(
-            @Parameter(description = "관리자 계정 회원가입 정보") @RequestBody AdminAccountRegisterRequestDto adminAccountRegisterRequestDto
-    ) {
+            @Parameter(description = "관리자 계정 회원가입 정보") @RequestBody AdminAccountRegisterRequestDto adminAccountRegisterRequestDto) {
         log.info("관리자 계정 회원가입 api - {} / {}", adminAccountRegisterRequestDto.getLoginId(), adminAccountRegisterRequestDto.getPassword());
 
         try{
@@ -81,6 +84,8 @@ public class AdminController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/login", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> adminLogin(
             HttpServletResponse response,
@@ -116,6 +121,8 @@ public class AdminController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/dashboard", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> adminDashBoard(
             HttpServletRequest request,
@@ -148,6 +155,8 @@ public class AdminController {
 
 
     // 유저 비밀번호 재설정 api
+    @MethodCallMonitor
+    @TimeMonitor
     @PutMapping("/change/user/password")
     public ResponseEntity<ResponseBody> adminChangeUserPassword(HttpServletRequest request, @RequestParam Long memberId){
         log.info("유저 비밀번호 재설정 api");
@@ -170,6 +179,8 @@ public class AdminController {
     }
 
     // 계정 비밀번호 수정 (어드민 관리자 경우)
+    @MethodCallMonitor
+    @TimeMonitor
     @PutMapping("/change/admin/password")
     public ResponseEntity<ResponseBody> testChangePassword(@RequestParam String password){
         log.info("관리자 유저 비밀번호 재설정 api");
@@ -188,6 +199,8 @@ public class AdminController {
     }
 
     // 주문 이력 긴급 최종 확정 api
+    @MethodCallMonitor
+    @TimeMonitor
     @PutMapping("/change/order/confirm")
     public ResponseEntity<ResponseBody> emergencyUpdateOrderProduct(){
         log.info("주문 이력 긴급 최종 확정 api");

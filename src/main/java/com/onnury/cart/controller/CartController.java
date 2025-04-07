@@ -1,5 +1,7 @@
 package com.onnury.cart.controller;
 
+import com.onnury.aop.MethodCallMonitor;
+import com.onnury.aop.TimeMonitor;
 import com.onnury.cart.request.CartAddRequestDto;
 import com.onnury.cart.response.CartAddResponseDto;
 import com.onnury.cart.response.CartDataResponseDto;
@@ -48,6 +50,8 @@ public class CartController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/add", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> addCart(
             HttpServletRequest request,
@@ -80,6 +84,8 @@ public class CartController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @DeleteMapping(value = "/delete", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> deleteCartProduct(
             HttpServletRequest request,
@@ -115,6 +121,8 @@ public class CartController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping("/list")
     public ResponseEntity<ResponseBody> getCartList(
             HttpServletRequest request,

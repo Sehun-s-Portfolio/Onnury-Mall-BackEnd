@@ -1,5 +1,7 @@
 package com.onnury.category.controller;
 
+import com.onnury.aop.MethodCallMonitor;
+import com.onnury.aop.TimeMonitor;
 import com.onnury.category.request.CategoryCreateRequestDto;
 import com.onnury.category.request.CategoryUpdateRequestDto;
 import com.onnury.category.response.*;
@@ -46,6 +48,8 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/create", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> createCategory(
             HttpServletRequest request,
@@ -81,6 +85,8 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PutMapping(value = "/update", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> updateCategory(
             HttpServletRequest request,
@@ -118,6 +124,8 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @DeleteMapping(value = "/delete", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> deleteCategory(
             HttpServletRequest request,
@@ -155,6 +163,8 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/listup/onedepth", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> listUpCategoryOneDepth(HttpServletRequest request){
         log.info("관리자 대분류 리스트업 api");
@@ -185,6 +195,8 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/listup/twodepth", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> listUpCategoryTwoDepth(
             HttpServletRequest request,
@@ -220,6 +232,8 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/listup/threedepth", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> listUpCategoryThreeDepth(
             HttpServletRequest request,
@@ -256,6 +270,8 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/navigation", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> navigationCategory(HttpServletRequest request){
         log.info("네비게이션 카테고리 리스트 api");
@@ -286,6 +302,8 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/mainlist", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> mainPageQuickUpCategory(){
         log.info("메인 페이지 대분류 카테고리 리스트 호출 api");
@@ -316,6 +334,8 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/page/{upCategoryId}", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> middleCategoryByUpCategory(
             @Parameter(description = "대분류 카테고리 id") @PathVariable Long upCategoryId){

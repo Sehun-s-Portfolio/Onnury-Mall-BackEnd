@@ -1,5 +1,7 @@
 package com.onnury.payment.controller;
 
+import com.onnury.aop.MethodCallMonitor;
+import com.onnury.aop.TimeMonitor;
 import com.onnury.common.util.LogUtil;
 import com.onnury.payment.domain.PaymentApproval;
 import com.onnury.payment.request.EasyPaymentApprovalInfo;
@@ -49,6 +51,8 @@ public class PageController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/biz_payment_result_approval", consumes = {MediaType.ALL_VALUE})
     public String bizPaymentApproval(
             @Parameter(description = "온누리 결제 승인 정보") @RequestBody String data) throws Exception {
@@ -85,6 +89,8 @@ public class PageController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/biz_payment_result_cancel", consumes = {MediaType.ALL_VALUE})
     public String bizPaymentCancel(
             @Parameter(description = "온누리 결제 취소 정보") @RequestBody String data) throws Exception {
@@ -185,6 +191,8 @@ public class PageController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/biz_payment_result_fail/{merchantOrderId}", consumes = {MediaType.ALL_VALUE})
     public String bizPaymentFail(
             @Parameter(description = "온누리 결제 실패한 주문 번호") @PathVariable String merchantOrderId,
@@ -242,6 +250,8 @@ public class PageController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/easy_payment_result_approval", consumes = {MediaType.ALL_VALUE})
     public String easyPaymentApproval(
             @Parameter(description = "EasyPay 결제 승인 성공 정보") @RequestParam HashMap<String, Object> data) {

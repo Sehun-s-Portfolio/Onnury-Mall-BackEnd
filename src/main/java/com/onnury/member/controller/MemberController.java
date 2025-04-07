@@ -1,5 +1,7 @@
 package com.onnury.member.controller;
 
+import com.onnury.aop.MethodCallMonitor;
+import com.onnury.aop.TimeMonitor;
 import com.onnury.common.util.LogUtil;
 import com.onnury.member.request.MemberLoginRequestDto;
 import com.onnury.member.request.MemberRegistRequestDto;
@@ -49,6 +51,8 @@ public class MemberController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/listup", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> listUpMember(
             HttpServletRequest request,
@@ -94,6 +98,8 @@ public class MemberController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/regist",  produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> registMember(
             @Parameter(description = "고객 회원가입 정보") @Valid @RequestBody MemberRegistRequestDto memberRegistRequestDto){
@@ -124,6 +130,8 @@ public class MemberController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/login", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> loginMember(
             HttpServletResponse response,
@@ -154,6 +162,8 @@ public class MemberController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/duplicatecheck", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> checkDuplicateLoginId(
             @Parameter(description = "중복 확인할 로그인 아이디") @RequestParam String checkLoginId) {
@@ -186,6 +196,8 @@ public class MemberController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/find/loginid", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> findLoginId(
             @Parameter(description = "이메일") @RequestParam String email,
@@ -222,6 +234,8 @@ public class MemberController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/find/password", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> findPassword(
             @Parameter(description = "로그인 아이디") @RequestParam String loginId,
@@ -261,6 +275,8 @@ public class MemberController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/dashboard", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> getDashboard(
             HttpServletRequest request,

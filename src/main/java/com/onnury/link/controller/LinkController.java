@@ -1,5 +1,7 @@
 package com.onnury.link.controller;
 
+import com.onnury.aop.MethodCallMonitor;
+import com.onnury.aop.TimeMonitor;
 import com.onnury.common.util.LogUtil;
 import com.onnury.link.request.LinkCreateRequestDto;
 import com.onnury.link.request.LinkUpdateRequestDto;
@@ -53,6 +55,8 @@ public class LinkController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/create", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> createLink(
             HttpServletRequest request,
@@ -85,6 +89,8 @@ public class LinkController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PutMapping(value = "/update", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> updateLink(
             HttpServletRequest request,
@@ -117,6 +123,8 @@ public class LinkController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @DeleteMapping(value = "/delete", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> deleteLink(
             HttpServletRequest request,
@@ -154,6 +162,8 @@ public class LinkController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/listup", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> listUpLink(
             HttpServletRequest request,
@@ -178,6 +188,8 @@ public class LinkController {
         }
     }
 
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping("/EncCode")
     public ResponseEntity<ResponseBody> bizPaymentReserv2e(@RequestParam String data) throws Exception {
         // 결제 정보 암호화
@@ -186,6 +198,8 @@ public class LinkController {
         return new ResponseEntity<>(new ResponseBody(StatusCode.OK, encCodeData), HttpStatus.OK);
     }
 
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping("/DecCode")
     public ResponseEntity<ResponseBody> bizPaymentReserv3e(@RequestParam String data) throws Exception {
         // 결제 정보 복호화

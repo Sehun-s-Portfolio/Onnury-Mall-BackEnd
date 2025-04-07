@@ -1,5 +1,7 @@
 package com.onnury.notice.controller;
 
+import com.onnury.aop.MethodCallMonitor;
+import com.onnury.aop.TimeMonitor;
 import com.onnury.common.util.LogUtil;
 import com.onnury.notice.request.NoticeRequestDto;
 import com.onnury.notice.request.NoticeUpdateRequestDto;
@@ -52,6 +54,8 @@ public class NoticeController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/write", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> writeNotice(
             HttpServletRequest request,
@@ -84,6 +88,8 @@ public class NoticeController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/list", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> getNoticeList(
             HttpServletRequest request,
@@ -119,6 +125,8 @@ public class NoticeController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PutMapping(value = "/update", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> updateNotice(
             HttpServletRequest request,
@@ -151,6 +159,8 @@ public class NoticeController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/admin/list", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> getAdminNoticeList(
             HttpServletRequest request,
@@ -186,6 +196,8 @@ public class NoticeController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @DeleteMapping(value = "/delete", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> deleteNotice(
             HttpServletRequest request,
@@ -221,6 +233,8 @@ public class NoticeController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @GetMapping(value = "/get", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> getNoticeDetail(
             HttpServletRequest request,
@@ -256,6 +270,8 @@ public class NoticeController {
             @ApiResponse(responseCode = "404", description = "NOT FOUND"),
             @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR")
     })
+    @MethodCallMonitor
+    @TimeMonitor
     @PostMapping(value = "/detailImage", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ResponseBody> saveDetailImage(
             HttpServletRequest request,
