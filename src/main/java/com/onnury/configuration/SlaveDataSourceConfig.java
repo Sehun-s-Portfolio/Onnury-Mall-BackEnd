@@ -30,6 +30,7 @@ public class SlaveDataSourceConfig {
     }
 
     // SqlSessionTemplate 에서 사용할 SqlSession 을 생성하는 Factory
+    @Qualifier(SLAVE_SQL_SESSION)
     @Bean(SLAVE_SQL_SESSION)
     public SqlSessionFactory SlaveSqlSessionFactory(@Qualifier(SLAVE_DATA_SOURCE) HikariDataSource dataSource) throws Exception {
         /*
@@ -54,6 +55,7 @@ public class SlaveDataSourceConfig {
     }
 
     // DataSource 에서 Transaction 관리를 위한 Manager 클래스 등록
+    @Qualifier(SLAVE_TRANSACTION_MANAGER)
     @Bean(SLAVE_TRANSACTION_MANAGER)
     public DataSourceTransactionManager SlaveTransactionManager(@Qualifier(SLAVE_DATA_SOURCE) HikariDataSource dataSource) {
         return new DataSourceTransactionManager(dataSource);
