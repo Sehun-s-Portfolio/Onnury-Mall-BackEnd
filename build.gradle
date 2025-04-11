@@ -92,6 +92,10 @@ dependencies {
 	// httpclient
 	implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.14'
 	implementation group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.14'
+
+	// MyBatis
+	implementation group: 'org.mybatis.spring.boot', name: 'mybatis-spring-boot-starter', version: '2.3.2'
+
 }
 
 tasks.named('bootBuildImage') {

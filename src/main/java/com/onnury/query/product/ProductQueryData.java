@@ -16,11 +16,11 @@ import com.onnury.label.domain.LabelOfProduct;
 import com.onnury.label.repository.LabelOfProductRepository;
 import com.onnury.label.response.LabelDataResponseDto;
 import com.onnury.label.response.LabelResponseDto;
+import com.onnury.mapper.ProductMapper;
 import com.onnury.media.domain.Media;
 import com.onnury.media.repository.MediaRepository;
 import com.onnury.media.response.MediaResponseDto;
 import com.onnury.media.service.MediaUploadInterface;
-import com.onnury.member.domain.Member;
 import com.onnury.product.domain.*;
 import com.onnury.product.repository.ProductDetailOptionRepository;
 import com.onnury.product.repository.ProductOfMediaRepository;
@@ -41,11 +41,10 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
@@ -91,6 +90,8 @@ public class ProductQueryData {
     private final MediaUploadInterface mediaUploadInterface;
     private final CategoryQueryData categoryQueryData;
     private final EntityManager entityManager;
+
+    private final ProductMapper productMapper;
 
     // 새롭게 생성된 제품의 Classification Code 생성
     public String getProductClassificationCode() {
@@ -1798,34 +1799,38 @@ public class ProductQueryData {
 
 
     // 메인 페이지 신 상품 리스트 호출
-    public List<MainPageNewReleaseProductResponseDto> getNewReleaseProducts(String loginMemberType) {
+    public List<MainPageNewReleaseProductResponseDto> getNewReleaseProducts(String loginMemberType) throws Exception {
 
         // 로그인한 고객 유형에 따라 신 상품이 담길 리스트 생성
         List<Product> newReleaseProducts = new ArrayList<>();
 
         // 고객 유형이 일반일 경우 C, A 타입의 신 제품들 추출
         if (loginMemberType.equals("C")) {
-            newReleaseProducts = jpaQueryFactory
-                    .selectFrom(product)
-                    .where(product.expressionCheck.eq("Y")
-                            .and(product.sellClassification.eq("C"))
-                            .and(product.status.eq("Y"))
-                    )
-                    .orderBy(product.createdAt.desc())
-                    .limit(8)
-                    .fetch();
+//            newReleaseProducts = jpaQueryFactory
+//                    .selectFrom(product)
+//                    .where(product.expressionCheck.eq("Y")
+//                            .and(product.sellClassification.eq("C"))
+//                            .and(product.status.eq("Y"))
+//                    )
+//                    .orderBy(product.createdAt.desc())
+//                    .limit(8)
+//                    .fetch();
+
+            newReleaseProducts = productMapper.getNewProductsByCustomer();
 
         } else if (loginMemberType.equals("B")) {
 
             // 고객 유형이 기업일 경우 B, A 타입의 신 제품들 추출
-            newReleaseProducts = jpaQueryFactory
-                    .selectFrom(product)
-                    .where(product.expressionCheck.eq("Y")
-                            .and(product.status.eq("Y"))
-                    )
-                    .orderBy(product.createdAt.desc())
-                    .limit(8)
-                    .fetch();
+//            newReleaseProducts = jpaQueryFactory
+//                    .selectFrom(product)
+//                    .where(product.expressionCheck.eq("Y")
+//                            .and(product.status.eq("Y"))
+//                    )
+//                    .orderBy(product.createdAt.desc())
+//                    .limit(8)
+//                    .fetch();
+
+            newReleaseProducts = productMapper.getNewProductsByBusiness();
         }
 
         // 최종적으로 반환될 페이지에 노출될 신 상품 리스트 생성

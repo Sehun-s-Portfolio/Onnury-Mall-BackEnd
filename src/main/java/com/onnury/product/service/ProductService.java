@@ -442,7 +442,7 @@ public class ProductService {
 
     // 메인 페이지 신 상품 리스트 호출 service
     //@Async("threadPoolTaskExecutor")
-    public List<MainPageNewReleaseProductResponseDto> getNewReleaseProducts(HttpServletRequest request) {
+    public List<MainPageNewReleaseProductResponseDto> getNewReleaseProducts(HttpServletRequest request) throws Exception {
         log.info("메인 페이지 신 상품 리스트 호출 service");
         if(request.getHeader("RefreshToken") != null) {
             // 정합성이 검증된 토큰인지 확인
