@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.onnury.mapper.TokenMapper">
+
+    <!-- 일반 유저 신 제품들 조회 -->
+    <select id="getNewProductsByCustomer" resultType="com.onnury.product.domain.Product">
+        <!-- getNewProductsByCustomer -->
+        select
+            *
+        from product
+        <where>
+            expression_check = 'Y' and sell_classification = 'C' and status = 'Y'
+        </where>
+        order by created_at desc
+        limit 8;
+    </select>
+
+</mapper>

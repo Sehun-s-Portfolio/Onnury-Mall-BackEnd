@@ -1,6 +1,10 @@
 package com.onnury.jwt;
 
 import com.onnury.admin.domain.AdminAccount;
+import com.onnury.common.util.LogUtil;
+import com.onnury.mapper.AdminAccountMapper;
+import com.onnury.mapper.MemberMapper;
+import com.onnury.mapper.TokenMapper;
 import com.onnury.member.domain.Member;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.jsonwebtoken.*;
@@ -18,6 +22,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import javax.annotation.Resource;
+
 import static com.onnury.admin.domain.QAdminAccount.adminAccount;
 import static com.onnury.member.domain.QMember.member;
 
@@ -32,12 +38,21 @@ import java.util.stream.Collectors;
 public class JwtTokenProvider {
 
     private final Key key;
-    private final JPAQueryFactory jpaQueryFactory;
+//    private final JPAQueryFactory jpaQueryFactory;
 
-    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey, JPAQueryFactory queryFactory) {
+    @Resource(name = "tokenMapper")
+    private TokenMapper tokenMapper;
+
+    @Resource(name = "adminAccountMapper")
+    private AdminAccountMapper adminAccountMapper;
+
+    @Resource(name = "memberMapper")
+    private MemberMapper memberMapper;
+
+    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey) {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
-        this.jpaQueryFactory = queryFactory;
+//        this.jpaQueryFactory = queryFactory;
     }
 
     // 유저 정보를 가지고 AccessToken, RefreshToken 을 생성하는 메서드
@@ -104,14 +119,20 @@ public class JwtTokenProvider {
             return null;
         }
 
-        String accountId = ((UserDetails)authentication.getPrincipal()).getUsername();
+        try {
+            String accountId = ((UserDetails)authentication.getPrincipal()).getUsername();
+            log.info("authentication 계정 아이디 - {}", accountId);
 
-        log.info("authentication 계정 아이디 - {}", accountId);
+            //        return jpaQueryFactory
+            //                .selectFrom(adminAccount)
+            //                .where(adminAccount.loginId.eq(accountId))
+            //                .fetchOne();
 
-        return jpaQueryFactory
-                .selectFrom(adminAccount)
-                .where(adminAccount.loginId.eq(accountId))
-                .fetchOne();
+            return adminAccountMapper.getAdminAccount(accountId);
+        }catch(Exception e){
+            LogUtil.logException(e);
+            return null;
+        }
     }
 
     // Spring Security에 허용되고 토큰이 발급된 고객 계정
@@ -122,16 +143,22 @@ public class JwtTokenProvider {
             return null;
         }
 
-        String loginId = ((UserDetails)authentication.getPrincipal()).getUsername();
+        try{
+            String loginId = ((UserDetails)authentication.getPrincipal()).getUsername();
+            log.info("authentication 계정 아이디 - {}", loginId);
 
-        log.info("authentication 계정 아이디 - {}", loginId);
+//            Member authMember = jpaQueryFactory
+//                    .selectFrom(member)
+//                    .where(member.loginId.eq(loginId))
+//                    .fetchOne();
+//
+//            return authMember;
 
-        Member authMember = jpaQueryFactory
-                .selectFrom(member)
-                .where(member.loginId.eq(loginId))
-                .fetchOne();
-
-        return authMember;
+            return memberMapper.getMemberByLoginId(loginId);
+        }catch(Exception e){
+            LogUtil.logException(e);
+            return null;
+        }
     }
 
     // 토큰 정보를 검증하는 메서드

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.onnury.mapper.AdminAccountMapper">
+
+    <!-- 관리자 계정 조회 -->
+    <select id="getAdminAccount" parameterType="String" resultType="com.onnury.admin.domain.AdminAccount">
+        <!-- getAdminAccount -->
+        select
+            *
+        from admin_account
+        <where>
+            login_id = #{accountId}
+        </where>
+        limit 1;
+    </select>
+
+</mapper>

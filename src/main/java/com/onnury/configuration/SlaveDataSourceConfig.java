@@ -48,10 +48,6 @@ public class SlaveDataSourceConfig {
                 .username(userName)
                 .password(password)
                 .build();
-
-//        return DataSourceBuilder.create()
-//                .type(HikariDataSource.class)
-//                .build();
     }
 
     // SqlSessionTemplate 에서 사용할 SqlSession 을 생성하는 Factory
