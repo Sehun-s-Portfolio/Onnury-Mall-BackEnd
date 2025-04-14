@@ -19,10 +19,11 @@ import com.onnury.query.inquiry.FaqQueryData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -104,7 +105,7 @@ public class FaqService {
     }
 
     //FAQ 삭제
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public boolean deleteFaq(HttpServletRequest request, Long Faqid) {
         log.info("FAQ 삭제 service");
 

@@ -12,9 +12,10 @@ import com.querydsl.jpa.impl.JPAUpdateClause;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -93,7 +94,7 @@ public class NoticeQueryData {
 
 
     // 관리자 공지사항 수정
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public NoticeResponseDto updateNotice(NoticeUpdateRequestDto noticeUpdateRequestDto) {
 
         // 공지사항 수정용 JPAUpdateClause 생성
@@ -143,7 +144,7 @@ public class NoticeQueryData {
 
 
     // 관리자 공지사항 삭제
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public String deleteNotice(Long noticeId) {
 
         // 공지사항 삭제 처리

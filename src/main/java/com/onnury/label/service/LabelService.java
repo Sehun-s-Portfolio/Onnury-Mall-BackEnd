@@ -18,10 +18,11 @@ import com.onnury.query.label.LabelQueryData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -102,7 +103,7 @@ public class LabelService {
 
 
     // 라벨 수정 service
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public LabelUpdateResponseDto updateLabel(HttpServletRequest request, Long labelId, MultipartFile updateLabelImg, LabelUpdateRequestDto updateLabelInfo) throws IOException {
         log.info("라벨 수정 service");
 
@@ -128,7 +129,7 @@ public class LabelService {
 
 
     // 라벨 삭제 service
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public boolean deleteLabel(HttpServletRequest request, Long deleteLabelId) {
         log.info("라벨 삭제 service");
 

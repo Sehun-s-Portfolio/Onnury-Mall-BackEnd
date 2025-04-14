@@ -19,12 +19,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -169,7 +170,7 @@ public class SupplierService {
     }
 
     //공급사 삭제
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public boolean deleteSupplier(HttpServletRequest request, Long supplierid) {
         log.info("배너 삭제 service");
 

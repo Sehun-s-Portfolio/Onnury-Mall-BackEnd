@@ -27,13 +27,11 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Date;
+//import javax.transaction.Transactional;
 import java.util.HashMap;
 
 
@@ -143,7 +141,7 @@ public class MemberService {
 
 
     // 고객 계정 로그인 service
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public MemberLoginResponseDto loginMember(HttpServletResponse response, MemberLoginRequestDto memberLoginRequestDto) {
         log.info("고객 계정 로그인 service");
 
@@ -266,7 +264,7 @@ public class MemberService {
 
 
     // 비밀번호 찾기 service
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public String findPassword(String loginId, String email, String phone, HashMap<String, String> requestParam) {
         log.info("비밀번호 찾기 service");
 

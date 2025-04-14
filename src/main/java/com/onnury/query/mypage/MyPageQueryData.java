@@ -30,9 +30,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -68,8 +69,9 @@ public class MyPageQueryData {
     private final PasswordEncoder passwordEncoder;
     private final EntityManager entityManager;
     private final CancleOrderRepository cancleOrderRepository;
+
     // 마이페이지 비밀번호 재설정
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public String chageMyPassword(Member authMember, MyPageChangePasswordRequestDto myPageChangePasswordRequestDto) {
 
         jpaQueryFactory
@@ -86,7 +88,7 @@ public class MyPageQueryData {
 
 
     // 마이페이지 회원 탈퇴
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public String withdrawalAccount(Member authMember) {
 
         if (jpaQueryFactory
@@ -114,7 +116,7 @@ public class MyPageQueryData {
 
 
     // 마이페이지 회원 정보 수정
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public MyPageUpdateInfoResponseDto updateAccountInfo(Member authMember, MyPageUpdateInfoRequestDto myPageUpdateInfoRequestDto) {
         // 수정하고자 하는 회원 정보 호출
         Member tryUpdateMember = jpaQueryFactory
@@ -529,7 +531,7 @@ public class MyPageQueryData {
         return result;
     }
 
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public JSONObject getMyCancleRequest( UserCancleRequestDto userCancleRequestDto) {
 
 
@@ -827,7 +829,7 @@ public class MyPageQueryData {
 
 
     // 마이페이지 결제 주문 확정 쿼리
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public ConfirmPaymentResponseDto confirmMyPayment(Member authMember, ConfirmPaymentRequestDto confirmPaymentRequestDto){
 
         // 주문 확정 처리된 주문 이력 조회

@@ -17,10 +17,11 @@ import com.onnury.query.brand.BrandQueryData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -109,6 +110,7 @@ public class BrandService {
 
 
     // 브랜드 수정
+    @Transactional(transactionManager = "MasterTransactionManager")
     public BrandUpdateResponseDto updateBrand(HttpServletRequest request, Long brandId, BrandUpdateRequestDto brandInfo, MultipartFile updateBrandImage, HashMap<String, String> requestParam) throws IOException {
         log.info("공급사 수정 service");
 
@@ -132,7 +134,7 @@ public class BrandService {
 
 
     // 브랜드 삭제
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public boolean deleteBrand(HttpServletRequest request, Long brandid, HashMap<String, String> requestParam) {
         log.info("브랜드 삭제 service");
 

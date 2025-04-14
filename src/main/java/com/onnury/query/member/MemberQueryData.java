@@ -1,21 +1,20 @@
 package com.onnury.query.member;
 
 import com.onnury.member.domain.Member;
-import com.onnury.member.request.MemberFindPasswordRequestDto;
 import com.onnury.member.response.AreaMemberCountInfoResponseDto;
 import com.onnury.member.response.MemberDashboardResponseDto;
 import com.onnury.member.response.MemberDataResponseDto;
 import com.onnury.member.response.MemberListUpResponseDto;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.querydsl.jpa.impl.JPAUpdateClause;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -23,9 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.onnury.inquiry.domain.QInquiry.inquiry;
 import static com.onnury.member.domain.QMember.member;
-
 
 @Slf4j
 @RequiredArgsConstructor
@@ -233,7 +230,7 @@ public class MemberQueryData {
 
 
     // 비밀번호 재발급을 위한 임시 비밀번호 업데이트
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public String updateImmediatePassword(Long memberId, String loginId, String email, String phone) {
 
         // 로그인 아이디 + 이메일 + 폰 번호를 합쳐 임시 비밀번호 부여

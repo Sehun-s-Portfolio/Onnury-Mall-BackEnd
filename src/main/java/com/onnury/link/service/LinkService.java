@@ -13,9 +13,10 @@ import com.onnury.query.link.LinkQueryData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 import java.io.IOException;
 
 @Slf4j
@@ -78,7 +79,7 @@ public class LinkService {
 
 
     // 링크 삭제
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public boolean deleteLink(HttpServletRequest request, Long linkId) {
         log.info("링크 삭제 service");
 

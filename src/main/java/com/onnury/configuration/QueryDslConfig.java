@@ -11,9 +11,9 @@ import javax.persistence.EntityManager;
 @Configuration
 public class QueryDslConfig {
 
-    @Bean
-    public JPAQueryFactory jpaQueryFactory(EntityManager entityManager){
-        log.info("QueryDSL 설정 - EntityManager : {})", entityManager);
-        return new JPAQueryFactory(entityManager);
-    }
+//    @Bean
+//    public JPAQueryFactory jpaQueryFactory(EntityManager entityManager){
+//        log.info("QueryDSL 설정 - EntityManager : {})", entityManager);
+//        return new JPAQueryFactory(entityManager);
+//    }
 }

@@ -15,9 +15,10 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -693,7 +694,7 @@ public class AdminPaymentQueryData {
 
 
     // 운송장 번호 등록 쿼리 함수
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public String confirmTransportNumber(List<TransportInfoRequestDto> transportInfoRequestDto) {
         log.info("운송장 번호 등록 쿼리 함수 진입");
         log.info("테스트 확인용 DTO : {}", transportInfoRequestDto);

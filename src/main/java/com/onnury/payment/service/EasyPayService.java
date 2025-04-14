@@ -6,7 +6,6 @@ import com.onnury.member.domain.Member;
 import com.onnury.payment.domain.*;
 import com.onnury.payment.repository.*;
 import com.onnury.payment.request.*;
-import com.onnury.product.domain.Product;
 import com.onnury.query.payment.PaymentQueryData;
 import com.onnury.share.ResponseBody;
 import com.onnury.share.StatusCode;
@@ -22,10 +21,11 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -35,7 +35,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static com.onnury.cart.domain.QCart.cart;
@@ -126,7 +125,7 @@ public class EasyPayService {
 
 
     // EasyPay 거래 승인 service
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public JSONObject approval(
             HttpServletRequest request, NewPaymentRequestDto newPaymentRequestDto, List<PaymentProductListRequestDto> PaymentProductListRequestDto) throws Exception {
         log.info("EasyPay 거래 승인 service");

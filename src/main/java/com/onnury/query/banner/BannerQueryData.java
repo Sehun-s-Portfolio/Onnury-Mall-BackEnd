@@ -11,11 +11,12 @@ import com.querydsl.jpa.impl.JPAUpdateClause;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,7 +43,7 @@ public class BannerQueryData {
 
 
     // 배너 수정
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public BannerUpdateResponseDto updateBanner(
             Long bannerId, MultipartFile updateAppBannerImg, MultipartFile updateWebBannerImg, MultipartFile updateSlideBannerImg, BannerUpdateRequestDto updateBannerInfo) throws IOException {
 
@@ -393,7 +394,7 @@ public class BannerQueryData {
 
 
     // 프로모션 배너 수정
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public PromotionBannerUpdateResponseDto updatePromotionBanner(Long bannerId, MultipartFile updateBannerImg, BannerUpdateRequestDto updateBannerInfo) throws IOException {
 
         // 수정하고자 하는 배너 호출

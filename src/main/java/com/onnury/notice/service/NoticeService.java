@@ -17,10 +17,11 @@ import com.onnury.query.notice.NoticeQueryData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -77,7 +78,7 @@ public class NoticeService {
 
 
     // 관리자 공지사항 수정 service
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public NoticeResponseDto updateNotice(HttpServletRequest request,NoticeUpdateRequestDto noticeUpdateRequestDto){
         log.info("관리자 공지사항 수정 service");
 
@@ -115,7 +116,7 @@ public class NoticeService {
 
 
     // 관리자 공지사항 삭제 service
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public String deleteNotice(HttpServletRequest request, Long noticeId){
         log.info("관리자 공지사항 삭제 service");
 

@@ -17,10 +17,11 @@ import com.onnury.query.category.CategoryQueryData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -133,7 +134,7 @@ public class CategoryService {
 
 
     // 카테고리 수정
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public CategoryUpdateResponseDto updateCategory(HttpServletRequest request, Long categoryId, MultipartFile categoryImg, CategoryUpdateRequestDto updatecaegoryInfo, HashMap<String, String> requestParam) throws IOException {
         log.info("카테고리 수정 service");
 
@@ -165,7 +166,7 @@ public class CategoryService {
 
 
     // 카테고리 삭제
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public boolean deleteCategory(HttpServletRequest request, Long deleteCategoryId) {
         log.info("카테고리 삭제 service");
 

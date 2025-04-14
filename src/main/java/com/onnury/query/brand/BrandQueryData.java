@@ -6,25 +6,23 @@ import com.onnury.brand.response.*;
 import com.onnury.media.domain.Media;
 import com.onnury.media.repository.MediaRepository;
 import com.onnury.media.service.MediaUploadInterface;
-import com.onnury.member.domain.Member;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
-import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static com.onnury.brand.domain.QBrand.brand;
 import static com.onnury.media.domain.QMedia.media;
@@ -44,7 +42,7 @@ public class BrandQueryData {
 
 
     // 브랜드 수정
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public BrandUpdateResponseDto updateBrand(Long brandId, BrandUpdateRequestDto brandInfo, MultipartFile updateBrandImage) throws IOException {
 
         // 수정할 브랜드 호출

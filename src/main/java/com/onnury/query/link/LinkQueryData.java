@@ -7,13 +7,13 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 import java.util.List;
 
 import static com.onnury.link.domain.QLink.link1;
-
 
 @Slf4j
 @RequiredArgsConstructor
@@ -25,7 +25,7 @@ public class LinkQueryData {
 
 
     // 링크 수정
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public Link updateLink(LinkUpdateRequestDto linkInfo){
 
         jpaQueryFactory

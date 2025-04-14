@@ -11,20 +11,19 @@ import com.onnury.media.repository.MediaRepository;
 import com.onnury.media.response.MediaResponseDto;
 import com.onnury.media.service.MediaUploadInterface;
 import com.onnury.member.domain.Member;
-import com.onnury.share.InquiryType;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,7 +44,7 @@ public class InquiryQueryData {
     private final MediaUploadInterface mediaUploadInterface;
     private final MediaRepository mediaRepository;
 
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public Inquiry updateInquiry(InquiryAnswerRequestDto inquiryAnswerRequestDto) throws IOException {
 
         jpaQueryFactory

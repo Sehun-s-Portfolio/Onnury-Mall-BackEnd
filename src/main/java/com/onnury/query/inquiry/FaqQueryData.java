@@ -11,9 +11,10 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +31,7 @@ public class FaqQueryData {
     private final JPAQueryFactory jpaQueryFactory;
     private final EntityManager entityManager;
 
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public Faq updateFaq(Long Faqid, FaqUpdateRequestDto faqInfo) throws IOException {
 
         jpaQueryFactory

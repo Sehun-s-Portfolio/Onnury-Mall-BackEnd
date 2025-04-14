@@ -15,10 +15,11 @@ import com.onnury.query.inquiry.InquiryQueryData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.List;
 
@@ -33,7 +34,7 @@ public class InquiryService {
     private final JwtTokenProvider jwtTokenProvider;
 
     // 문의 답변 수정
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public InquiryUpdateResponseDto updateInquiry(HttpServletRequest request, InquiryAnswerRequestDto inquiryAnswerRequestDto) throws IOException {
         log.info("배너 수정 service");
 

@@ -12,10 +12,11 @@ import com.querydsl.jpa.impl.JPAUpdateClause;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -40,7 +41,7 @@ public class LabelQueryData {
 
 
     // 라벨 수정
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public Label updateLabel(Long labelId, MultipartFile updateLabelImg, LabelUpdateRequestDto updateLabelInfo) throws IOException {
 
         // 수정하고자 하는 배너 호출

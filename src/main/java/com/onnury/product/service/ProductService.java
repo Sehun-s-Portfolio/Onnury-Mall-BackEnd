@@ -9,6 +9,7 @@ import com.onnury.exception.token.JwtTokenException;
 import com.onnury.jwt.JwtTokenProvider;
 import com.onnury.label.domain.LabelOfProduct;
 import com.onnury.label.repository.LabelOfProductRepository;
+import com.onnury.mapper.ProductMapper;
 import com.onnury.media.domain.Media;
 import com.onnury.media.repository.MediaRepository;
 import com.onnury.media.service.MediaUpload;
@@ -25,10 +26,12 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -63,7 +66,7 @@ public class ProductService {
     private final JwtTokenProvider jwtTokenProvider;
 
     // 제품 생성 service
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public ProductCreateResponseDto createProduct(
             HttpServletRequest request,
             List<MultipartFile> productImgs,
@@ -309,7 +312,7 @@ public class ProductService {
 
 
     // 제품 수정 service
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public ProductUpdateResponseDto updateProduct(
             HttpServletRequest request,
             List<MultipartFile> updateProductImgs,
@@ -389,7 +392,7 @@ public class ProductService {
 
 
     // 제품 삭제 service
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public boolean deleteProduct(
             HttpServletRequest request,
             Long productId) {
@@ -441,9 +444,9 @@ public class ProductService {
 
 
     // 메인 페이지 신 상품 리스트 호출 service
-    //@Async("threadPoolTaskExecutor")
     public List<MainPageNewReleaseProductResponseDto> getNewReleaseProducts(HttpServletRequest request) throws Exception {
         log.info("메인 페이지 신 상품 리스트 호출 service");
+
         if(request.getHeader("RefreshToken") != null) {
             // 정합성이 검증된 토큰인지 확인
             if (jwtTokenException.checkAccessToken(request)) {

@@ -15,9 +15,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -61,7 +62,7 @@ public class MyPageService{
 
 
     // 마이페이지 비밀번호 재설정 service
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public String changeMyPassword(HttpServletRequest request, MyPageChangePasswordRequestDto myPageChangePasswordRequestDto){
         log.info("마이페이지 비밀번호 재설정 service");
 
@@ -84,7 +85,7 @@ public class MyPageService{
 
 
     // 마이페이지 회원 탈퇴 service
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public String withdrawalAccount(HttpServletRequest request){
         log.info("마이페이지 회원 탈퇴 service");
 
@@ -103,7 +104,7 @@ public class MyPageService{
 
 
     // 마이페이지 회원 정보 수정 service
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public MyPageUpdateInfoResponseDto updateAccountInfo(
             HttpServletRequest request, MyPageUpdateInfoRequestDto myPageUpdateInfoRequestDto){
         log.info("마이페이지 회원 정보 수정 service");
@@ -200,7 +201,7 @@ public class MyPageService{
 
 
     // 마이페이지 결제 주문 확정 service
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public ConfirmPaymentResponseDto confirmMyPayment(
             HttpServletRequest request, ConfirmPaymentRequestDto confirmPaymentRequestDto){
         log.info("마이페이지 결제 주문 확정 service");

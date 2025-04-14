@@ -1,6 +1,5 @@
 package com.onnury.query.payment;
 
-import com.onnury.member.domain.Member;
 import com.onnury.payment.domain.*;
 import com.onnury.payment.repository.*;
 import com.onnury.payment.response.CancelPaymentResponseDto;
@@ -8,19 +7,12 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.simple.JSONObject;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
+//import javax.transaction.Transactional;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import static com.onnury.payment.domain.QPaymentApproval.paymentApproval;
 import static com.onnury.payment.domain.QProductOrder.productOrder;
@@ -115,7 +107,7 @@ public class PaymentQueryData {
 //    }
 //
 //
-//    @Transactional
+//    @Transactional(transactionManager = "MasterTransactionManager")
 //    public void updatePaymentInfo(JSONObject easyPayJsonObj) {
 //        log.info("Payment 정보 업데이트");
 //
@@ -430,7 +422,7 @@ public class PaymentQueryData {
 
         return jpaQueryFactory.selectFrom(orderInDeliveryAddPrice).where(orderInDeliveryAddPrice.orderNumber.eq(orderNumber).and(orderInDeliveryAddPrice.seq.eq(seq))).fetchOne();
     }
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public void productCancleUpdate(String orderNumber) {
 
         List<OrderInProduct> op = jpaQueryFactory
@@ -449,7 +441,7 @@ public class PaymentQueryData {
 
     }
 
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public void productCanclePartUpdate(String orderNumber, String seq, int quantity) {
 
 

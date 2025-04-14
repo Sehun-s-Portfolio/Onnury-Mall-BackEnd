@@ -15,9 +15,10 @@ import com.onnury.query.payment.AdminPaymentQueryData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 
 import java.util.List;
 
@@ -112,7 +113,7 @@ public class AdminPaymentService {
 
 
     // 운송장 번호 업데이트 service
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public String confirmTransportNumber(HttpServletRequest request, List<TransportInfoRequestDto> transportInfoRequestDto) {
         log.info("운송장 번호 업데이트 service");
 

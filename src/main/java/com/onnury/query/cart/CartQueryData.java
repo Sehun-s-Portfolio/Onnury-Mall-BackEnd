@@ -17,9 +17,10 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +45,7 @@ public class CartQueryData {
     private final EntityManager entityManager;
 
     // 장바구니 담기 처리 쿼리 함수
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public List<CartAddResponseDto> addCart(Member authMember, List<CartAddRequestDto> cartAddRequestDtoList) {
 
         List<CartAddResponseDto> cartResponseDtoList = new ArrayList<>();
@@ -356,7 +357,7 @@ public class CartQueryData {
 
 
     // 장바구니 덜어내기
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public String deleteCartProduct(Member authMember, Long cartId) {
 
         // 삭제할 장바구니 정보 호출
@@ -387,7 +388,7 @@ public class CartQueryData {
 
 
     // 장바구니 정보 리스트 조회
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public List<CartDataResponseDto> getCartList(Member authMember, int page) {
 
         // 로그인한 유저의 장바구니 데이터 정보 리스트 호출

@@ -42,12 +42,13 @@ import com.querydsl.jpa.impl.JPAUpdateClause;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -91,7 +92,8 @@ public class ProductQueryData {
     private final CategoryQueryData categoryQueryData;
     private final EntityManager entityManager;
 
-    private final ProductMapper productMapper;
+    @Resource(name = "productMapper")
+    private ProductMapper productMapper;
 
     // 새롭게 생성된 제품의 Classification Code 생성
     public String getProductClassificationCode() {
@@ -160,7 +162,7 @@ public class ProductQueryData {
 
 
     // 제품 수정 처리
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public Product updateProduct(AdminAccount loginAccount, List<MultipartFile> updateProductImgs, ProductUpdateRequestDto productUpdateRequestDto) throws IOException {
 
         // 수정하고자 하는 제품 호출
@@ -1155,7 +1157,7 @@ public class ProductQueryData {
 
 
     // 제품 삭제
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public boolean deleteProduct(Long productId) {
 
         jpaQueryFactory
@@ -1800,12 +1802,14 @@ public class ProductQueryData {
 
     // 메인 페이지 신 상품 리스트 호출
     public List<MainPageNewReleaseProductResponseDto> getNewReleaseProducts(String loginMemberType) throws Exception {
+        log.info("메인 페이지 신 상품 리스트 호출 QueryData");
 
         // 로그인한 고객 유형에 따라 신 상품이 담길 리스트 생성
         List<Product> newReleaseProducts = new ArrayList<>();
 
         // 고객 유형이 일반일 경우 C, A 타입의 신 제품들 추출
         if (loginMemberType.equals("C")) {
+
 //            newReleaseProducts = jpaQueryFactory
 //                    .selectFrom(product)
 //                    .where(product.expressionCheck.eq("Y")
@@ -6364,7 +6368,7 @@ public class ProductQueryData {
 
 
     // 제품 생성 등록 시 사전에 먼저 생성된 상세 정보 이미지들의 mappingContentId를 생성 등록한 제품의 id로 업데이트 시키기 위한 쿼리 함수
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public void updateProductDetailInfoImagesMappingId(Product createProduct, List<Long> productDetailInfoImageIds, List<Media> createMedias) {
 
         List<Long> createImageIdLIst = createMedias.stream()

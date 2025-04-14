@@ -19,10 +19,11 @@ import org.json.simple.JSONValue;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.InputStreamReader;
@@ -92,7 +93,7 @@ public class CompoundPayService {
 
 
     // 복합 거래 승인 service
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public HashMap<String, JSONObject> approval(
             HttpServletRequest request, NewPaymentRequestDto newPaymentRequestDto, List<PaymentProductListRequestDto> PaymentProductListRequestDto) throws Exception {
         log.info("복합 거래 승인 service");
@@ -584,7 +585,7 @@ public class CompoundPayService {
     }
 
     // 결제 전체 취소
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public JSONObject allcancel(HttpServletRequest request, String orderNumber, int onuryCanclePay, int pgCanclePay, List<Long> cancelRequestIdList) throws Exception {
 
         JSONObject compountPayApprovalResult = new JSONObject();
@@ -1152,7 +1153,7 @@ public class CompoundPayService {
     }
 
     // 결제 부분 취소
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public JSONObject partCancel(HttpServletRequest request, PartCancleRequestDto partCancleRequestDto) throws Exception {
 
         JSONObject compountPayApprovalResult = new JSONObject();

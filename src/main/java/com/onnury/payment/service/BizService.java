@@ -23,10 +23,11 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 import java.io.DataInputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
@@ -145,7 +146,7 @@ public class BizService {
 
 
     // 온누리 결제 승인 service
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public JSONObject approval(HttpServletRequest request, NewPaymentRequestDto newPaymentRequestDto, List<PaymentProductListRequestDto> PaymentProductListRequestDto) throws Exception {
         log.info("온누리 결제 승인 service");
 

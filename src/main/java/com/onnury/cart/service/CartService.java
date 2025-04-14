@@ -11,9 +11,10 @@ import com.onnury.query.cart.CartQueryData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 import java.util.List;
 
 @Slf4j
@@ -26,7 +27,7 @@ public class CartService {
     private final CartQueryData cartQueryData;
 
     // 장바구니 담기 service
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public List<CartAddResponseDto> addCart(HttpServletRequest request, List<CartAddRequestDto> cartAddRequestDtoList){
         log.info("장바구니 담기 service");
 
@@ -45,7 +46,7 @@ public class CartService {
 
 
     // 장바구니 제품 삭제 service
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public String deleteCartProduct(HttpServletRequest request, Long cartId){
         log.info("장바구니 제품 삭제 service");
 
@@ -64,7 +65,7 @@ public class CartService {
 
 
     // 장바구니 리스트 호출 service
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public List<CartDataResponseDto> getCartList(HttpServletRequest request, int page){
         log.info("장바구니 리스트 호출 service");
 

@@ -15,10 +15,11 @@ import com.querydsl.jpa.impl.JPAUpdateClause;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ public class CategoryQueryData {
 
 
     // 카테고리 수정
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public Category updateCategory(Long categoryId, MultipartFile categoryImg, CategoryUpdateRequestDto updateCategoryInfo) throws IOException {
 
         // 수정하고자 하는 카테고리 호출

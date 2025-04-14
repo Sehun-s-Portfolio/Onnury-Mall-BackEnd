@@ -15,10 +15,11 @@ import com.onnury.query.banner.BannerQueryData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -142,7 +143,7 @@ public class BannerService {
 
 
     // 배너 수정
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public BannerUpdateResponseDto updateBanner(
             HttpServletRequest request, Long bannerId, MultipartFile updateAppBannerImg, MultipartFile updateWebBannerImg, MultipartFile updateSlideBannerImg, BannerUpdateRequestDto updateBannerInfo, HashMap<String, String> requestParam) throws IOException {
         log.info("배너 수정 service");
@@ -160,7 +161,7 @@ public class BannerService {
 
 
     // 배너 삭제
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public boolean deleteBanner(HttpServletRequest request, Long deleteBannerId, HashMap<String, String> requestParam) {
         log.info("배너 삭제 service");
 
@@ -300,7 +301,7 @@ public class BannerService {
 
 
     // 프로모션 배너 수정 service
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public PromotionBannerUpdateResponseDto updatePromotionBanner(HttpServletRequest request, Long bannerId, MultipartFile updateBannerImg, BannerUpdateRequestDto updateBannerInfo, HashMap<String, String> requestParam) throws IOException {
         log.info("프로모션 배너 수정 service");
 
@@ -325,7 +326,7 @@ public class BannerService {
 
 
     // 프로모션 배너 삭제 service
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public boolean deletePromotionBanner(HttpServletRequest request, Long deleteBannerId, HashMap<String, String> requestParam) {
         log.info("배너 삭제 service");
 

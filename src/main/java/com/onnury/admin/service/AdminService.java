@@ -25,6 +25,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -32,7 +33,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -107,7 +108,7 @@ public class AdminService {
 
 
     // 관리자 계정 로그인
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public AdminAccountLoginResponseDto adminLogin(HttpServletResponse response, String loginId, String password, HashMap<String, String> requestParam) throws InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException {
         log.info("관리자 계정 로그인 service");
 
@@ -219,7 +220,7 @@ public class AdminService {
     }
 
 
-    @Transactional
+    @Transactional(transactionManager = "MasterTransactionManager")
     public boolean emergencyUpdateOrderProduct(){
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // 날짜와 시간 포맷 형식

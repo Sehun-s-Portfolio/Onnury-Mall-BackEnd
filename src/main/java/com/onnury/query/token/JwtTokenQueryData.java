@@ -5,9 +5,10 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
+//import javax.transaction.Transactional;
 
 import static com.onnury.jwt.QJwtToken.jwtToken;
 
@@ -20,7 +21,7 @@ public class JwtTokenQueryData {
     private final EntityManager entityManager;
 
     // 기존에 이미 발급된 토큰이 존재할 경우 삭제 처리
-    @Transactional
+//    @Transactional(transactionManager = "MasterTransactionManager")
     public void deletePrevToken(String mappingAccount, String type){
         JwtToken token = jpaQueryFactory
                 .selectFrom(jwtToken)
@@ -37,7 +38,7 @@ public class JwtTokenQueryData {
                     .execute();
 
             entityManager.flush();
-            entityManager.clear();
+//            entityManager.clear();
         }
     }
 }

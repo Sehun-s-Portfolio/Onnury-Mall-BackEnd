@@ -12,7 +12,7 @@
             *
         from product
         <where>
-            expression_check = 'Y' and sell_classification = 'C' and status = 'Y';
+            expression_check = 'Y' and sell_classification = 'C' and status = 'Y'
         </where>
         order by created_at desc
         limit 8;
@@ -25,7 +25,7 @@
         *
         from product
         <where>
-            expression_check = 'Y' and status = 'Y';
+            expression_check = 'Y' and status = 'Y'
         </where>
         order by created_at desc
         limit 8;
