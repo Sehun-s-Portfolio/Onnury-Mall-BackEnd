@@ -1,6 +1,7 @@
 package com.onnury.mapper;
 
 import com.onnury.product.domain.Product;
+import com.onnury.product.response.NewReleaseProductInfo;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -13,6 +14,9 @@ public interface ProductMapper {
 
     // 기업 및 관리자 신 제품들 조회
     List<Product> getNewProductsByBusiness() throws Exception;
+
+    // 신 상품 제품 정보
+    List<NewReleaseProductInfo> getProductInfo(String loginMemberType) throws Exception;
 
 //    // 당첨권 조회(상품코드순번)
 //    PrizeVO getPrizeByGoodsIdNo(String goodsIdNo) throws Exception;

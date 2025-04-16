@@ -31,7 +31,51 @@
         limit 8;
     </select>
 
-<!--    &lt;!&ndash; 당첨권 등록 &ndash;&gt;-->
+        <!-- 신 상품 정보 조회 -->
+        <select id="getProductInfo" parameterType="String" resultType="com.onnury.product.response.NewReleaseProductInfo">
+            <!-- getProductInfo -->
+            select
+                p.*,
+                pdi.content
+            from
+                (select
+                     a.*,
+                     b.brand_title
+                 from
+                    (select
+                        p.product_id, p.product_name, p.category_in_brand_id, c.brand_id,
+                        c.category1id, (select category_name from category where category_id = c.category1id) as up_category_name,
+                        c.category2id, (select category_name from category where category_id = c.category2id) as middle_category_name,
+                        c.category3id, (select category_name from category where category_id = c.category3id) as down_category_name,
+                        p.supplier_id, p.classification_code, p.model_number, p.delivery_type, p.sell_classification,
+                        p.expression_check, p.sell_price, p.normal_price, p.delivery_price, p.purchase_price,
+                        p.event_start_date, p.event_end_date, p.event_price, p.event_description, p.option_check,
+                        p.manufacturer, p.made_in_origin, p.consignment_store, p.memo, p.status, p.relate_img_ids
+                    from
+                        product p
+                    inner join
+                        category_in_brand c
+                    on
+                        p.category_in_brand_id = c.category_in_brand_id
+                    where
+                        p.expression_check = 'Y' and p.status = 'Y'
+                        <if test='loginMemberType != null and couponNum != ""'>
+                            and p.sell_classification = #{loginMemberType}
+                        </if>
+                        order by
+                            p.created_at desc
+                        limit 8) a
+                    inner join
+                        brand b
+                    on
+                        a.brand_id = b.brand_id) p
+                inner join
+                    product_detail_info pdi
+                on
+                    p.product_id = pdi.product_id;
+            </select>
+
+    <!--    &lt;!&ndash; 당첨권 등록 &ndash;&gt;-->
 <!--    <insert id="insertPrize" parameterType="kbcp.svc.vo.PrizeVO" useGeneratedKeys="true" keyProperty="prizeSeq">-->
 <!--        &lt;!&ndash; insertPrize &ndash;&gt;-->
 <!--        insert into prize (-->

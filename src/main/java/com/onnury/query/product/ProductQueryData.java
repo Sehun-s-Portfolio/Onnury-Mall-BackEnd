@@ -16,6 +16,8 @@ import com.onnury.label.domain.LabelOfProduct;
 import com.onnury.label.repository.LabelOfProductRepository;
 import com.onnury.label.response.LabelDataResponseDto;
 import com.onnury.label.response.LabelResponseDto;
+import com.onnury.label.response.NewReleaseProductLabelResponseDto;
+import com.onnury.mapper.LabelMapper;
 import com.onnury.mapper.ProductMapper;
 import com.onnury.media.domain.Media;
 import com.onnury.media.repository.MediaRepository;
@@ -92,8 +94,9 @@ public class ProductQueryData {
     private final CategoryQueryData categoryQueryData;
     private final EntityManager entityManager;
 
-    @Resource(name = "productMapper")
+
     private ProductMapper productMapper;
+    private LabelMapper labelMapper;
 
     // 새롭게 생성된 제품의 Classification Code 생성
     public String getProductClassificationCode() {
@@ -1805,11 +1808,12 @@ public class ProductQueryData {
         log.info("메인 페이지 신 상품 리스트 호출 QueryData");
 
         // 로그인한 고객 유형에 따라 신 상품이 담길 리스트 생성
-        List<Product> newReleaseProducts = new ArrayList<>();
+        //List<Product> newReleaseProducts = new ArrayList<>();
 
         // 고객 유형이 일반일 경우 C, A 타입의 신 제품들 추출
+        /**
         if (loginMemberType.equals("C")) {
-
+**/
 //            newReleaseProducts = jpaQueryFactory
 //                    .selectFrom(product)
 //                    .where(product.expressionCheck.eq("Y")
@@ -1819,11 +1823,11 @@ public class ProductQueryData {
 //                    .orderBy(product.createdAt.desc())
 //                    .limit(8)
 //                    .fetch();
-
+/**
             newReleaseProducts = productMapper.getNewProductsByCustomer();
 
         } else if (loginMemberType.equals("B")) {
-
+**/
             // 고객 유형이 기업일 경우 B, A 타입의 신 제품들 추출
 //            newReleaseProducts = jpaQueryFactory
 //                    .selectFrom(product)
@@ -1833,9 +1837,13 @@ public class ProductQueryData {
 //                    .orderBy(product.createdAt.desc())
 //                    .limit(8)
 //                    .fetch();
-
+/**
             newReleaseProducts = productMapper.getNewProductsByBusiness();
         }
+ **/
+
+        // 신 상품 8개 정보 리스트
+        List<NewReleaseProductInfo> newReleaseProducts = productMapper.getProductInfo(loginMemberType);
 
         // 최종적으로 반환될 페이지에 노출될 신 상품 리스트 생성
         List<MainPageNewReleaseProductResponseDto> newReleaseProductList = new ArrayList<>();
@@ -1847,14 +1855,17 @@ public class ProductQueryData {
             newReleaseProducts.forEach(eachNewReleaseProduct -> {
 
                 // 제품이 속한 카테고리와 브랜드 매핑 정보 추출
+                /**
                 CategoryInBrand eachCategoryInBrand = jpaQueryFactory
                         .selectFrom(categoryInBrand)
                         .where(categoryInBrand.categoryInBrandId.eq(eachNewReleaseProduct.getCategoryInBrandId()))
                         .fetchOne();
 
                 assert eachCategoryInBrand != null;
+                 **/
 
                 // 브랜드 정보 추출
+                /**
                 Brand getBrand = jpaQueryFactory
                         .selectFrom(brand)
                         .where(brand.brandId.eq(eachCategoryInBrand.getBrandId()))
@@ -1891,7 +1902,8 @@ public class ProductQueryData {
                         .selectFrom(category)
                         .where(category.categoryId.eq(eachCategoryInBrand.getCategory3Id()))
                         .fetchOne();
-
+**/
+                /**
                 // 제품과 매핑된 라벨 정보 추출
                 List<Long> getLabelOfProduct = jpaQueryFactory
                         .select(labelOfProduct.labelId)
@@ -1926,6 +1938,10 @@ public class ProductQueryData {
                         }
                     });
                 }
+                 **/
+
+                // 신 상품에 연관된 라벨 정보 리스트
+                List<NewReleaseProductLabelResponseDto> newReleaseProductLabels = labelMapper.getNewReleaseProductLabelInfo(eachNewReleaseProduct.getProduct_id());
 
                 // 제품의 옵션 매핑 정보 추출
                 List<ProductOfOption> getProductOfOptions = jpaQueryFactory
