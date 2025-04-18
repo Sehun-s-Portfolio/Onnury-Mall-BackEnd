@@ -40,7 +40,7 @@ jobs:
             echo "properties, yml 설정 파일 생성"
             ./gradlew clean build
             echo "jar 빌드"
-            sudo fuser -k -n tcp 8092 || true
-            echo "기존 8092 포트 실행 중이던 java 프로세스 확인 후 제거"
+            sudo fuser -k -n tcp 8091 || true
+            echo "기존 8091 포트 실행 중이던 java 프로세스 확인 후 제거"
             nohup java -jar -server -Xmx5g -XX:+UseG1GC -Djava.awt.headless=true -Dspring.profiles.active=dev -Dsvr.nm=DEV -Dfile.encoding=UTF-8 build/libs/*SNAPSHOT.jar 1> /dev/null 2>&1 &
             echo "jar 배포"
