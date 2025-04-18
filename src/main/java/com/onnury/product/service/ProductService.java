@@ -9,7 +9,6 @@ import com.onnury.exception.token.JwtTokenException;
 import com.onnury.jwt.JwtTokenProvider;
 import com.onnury.label.domain.LabelOfProduct;
 import com.onnury.label.repository.LabelOfProductRepository;
-import com.onnury.mapper.ProductMapper;
 import com.onnury.media.domain.Media;
 import com.onnury.media.repository.MediaRepository;
 import com.onnury.media.service.MediaUpload;
@@ -29,7 +28,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 //import javax.transaction.Transactional;
 import java.io.IOException;

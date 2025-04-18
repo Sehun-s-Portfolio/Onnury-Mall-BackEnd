@@ -1,8 +1,11 @@
 package com.onnury.mapper;
 
 import com.onnury.product.domain.Product;
+import com.onnury.product.response.NewReleaseProductDetailOptionDto;
 import com.onnury.product.response.NewReleaseProductInfo;
+import com.onnury.product.response.NewReleaseProductOptionDto;
 import org.apache.ibatis.annotations.Mapper;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -17,6 +20,12 @@ public interface ProductMapper {
 
     // 신 상품 제품 정보
     List<NewReleaseProductInfo> getProductInfo(String loginMemberType) throws Exception;
+
+    // 신 상품 옵션 리스트
+    List<NewReleaseProductOptionDto> getNewReleaseProductOptionList(Long productId) throws Exception;
+
+    // 신 상품의 각 옵션에 해당되는 상세 옵션 정보 리스트
+    List<NewReleaseProductDetailOptionDto> getNewReleaseProductDetailOptionList(Long productOptionId) throws Exception;
 
 //    // 당첨권 조회(상품코드순번)
 //    PrizeVO getPrizeByGoodsIdNo(String goodsIdNo) throws Exception;

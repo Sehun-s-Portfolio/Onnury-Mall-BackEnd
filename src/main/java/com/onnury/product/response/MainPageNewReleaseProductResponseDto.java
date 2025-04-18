@@ -1,6 +1,6 @@
 package com.onnury.product.response;
 
-import com.onnury.label.response.LabelDataResponseDto;
+import com.onnury.label.response.NewReleaseProductLabelResponseDto;
 import com.onnury.media.response.MediaResponseDto;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,7 +23,7 @@ public class MainPageNewReleaseProductResponseDto {
     private Long productId;
     private String productName; // 제품 명
     private String classificationCode;
-    private List<LabelDataResponseDto> labelList; // 매핑된 라벨 리스트
+    private List<NewReleaseProductLabelResponseDto> labelList; // 매핑된 라벨 리스트
     private String modelNumber; // 모델 번호
     private String deliveryType; // 배송 유형
     private String sellClassification; // 판매 구분 (전체 - A / 기업 - B / 일반 - C)

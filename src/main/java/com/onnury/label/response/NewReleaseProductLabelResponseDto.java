@@ -8,8 +8,9 @@ import java.time.LocalDateTime;
 @Builder
 @Getter
 public class NewReleaseProductLabelResponseDto {
-    private String label_title;
-    private String color_code;
-    private LocalDateTime start_post_date;
-    private LocalDateTime end_post_date;
+    private Long labelId;
+    private String labelTitle;
+    private String colorCode;
+    private LocalDateTime startPostDate;
+    private LocalDateTime endPostDate;
 }

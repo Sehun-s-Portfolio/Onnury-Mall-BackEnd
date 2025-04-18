@@ -24,8 +24,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import javax.annotation.Resource;
 
-import static com.onnury.admin.domain.QAdminAccount.adminAccount;
-import static com.onnury.member.domain.QMember.member;
+
 
 import java.security.Key;
 import java.util.Arrays;

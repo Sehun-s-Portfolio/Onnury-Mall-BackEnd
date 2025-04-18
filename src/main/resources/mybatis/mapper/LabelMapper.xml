@@ -9,7 +9,11 @@
         <select id="getNewReleaseProductLabelInfo" parameterType="Long" resultType="com.onnury.label.response.NewReleaseProductLabelResponseDto">
             <!-- getNewReleaseProductLabelInfo -->
             select
-                l.label_title, l.color_code, l.start_post_date, l.end_post_date
+                l.label_id as labelId,
+                l.label_title as labelTitle,
+                l.color_code as colorCode,
+                l.start_post_date as startPostDate,
+                l.end_post_date as endPostDate
             from
                 label l
             inner join

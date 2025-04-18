@@ -4,10 +4,11 @@ import com.onnury.label.response.NewReleaseProductLabelResponseDto;
 import com.onnury.product.domain.Product;
 import com.onnury.product.response.NewReleaseProductInfo;
 import org.apache.ibatis.annotations.Mapper;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-
+@Component
 @Mapper
 public interface LabelMapper {
 

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.onnury.mapper.MediaMapper">
+        <!-- 신 상품 정보에 들어있는 연관 이미지 id 리스트 정보를 통한 연관 이미지 리스트 조회 -->
+        <select id="getProductImagesByRelateImgIds" parameterType="Map" resultType="com.onnury.media.response.MediaResponseDto">
+            <!-- getProductImagesByRelateImgIds -->
+            select
+                media_id as mediaId,
+                img_upload_url as imgUploadUrl,
+                img_url as imgUrl,
+                img_title as imgTitle,
+                img_uuid_title as imgUuidTitle,
+                represent_check as representCheck
+            from
+                media
+            where
+                mapping_content_id = #{productId} and
+                media_id in
+                <foreach collection="relateImgIdList" item="relateImgId" index="index" open="(" close=")" separator=",">
+                    #{relateImgId}
+                </foreach>;
+        </select>
+
+    <!-- 신 상품 정보에 들어있는 연관 이미지 id 리스트 정보가 존재하지 않을 시 제품 이미지 정보 리스트 추출 -->
+    <select id="getProductImagesByProductIdAndType" parameterType="Long" resultType="com.onnury.media.response.MediaResponseDto">
+        <!-- getProductImagesByProductIdAndType -->
+        select
+            media_id as mediaId,
+            img_upload_url as imgUploadUrl,
+            img_url as imgUrl,
+            img_title as imgTitle,
+            img_uuid_title as imgUuidTitle,
+            represent_check as representCheck
+        from
+            media
+        where
+            type = "product" and mapping_content_id = #{productId};
+    </select>
+
+    <!-- 신 상품 정보에 들어있는 연관 이미지 id 리스트 정보가 존재하지 않을 시 제품 상세 이미지 정보 리스트 추출 -->
+    <select id="getProductDetailInfoImageByProductIdAndType" parameterType="Long" resultType="com.onnury.product.response.ProductDetailImageInfoResponseDto">
+        <!-- getProductDetailInfoImageByProductIdAndType -->
+        select
+            media_id as productDetailImageId,
+            type as type,
+            img_url as imgUrl
+        from
+            media
+        where
+            type = "productdetail" and mapping_content_id = #{productId};
+    </select>
+</mapper>

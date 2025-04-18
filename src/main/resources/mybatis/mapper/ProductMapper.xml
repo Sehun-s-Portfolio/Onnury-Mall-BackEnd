@@ -75,6 +75,39 @@
                     p.product_id = pdi.product_id;
             </select>
 
+    <!-- 신 상품 옵션 정보 리스트 -->
+    <select id="getNewReleaseProductOptionList" parameterType="Long" resultType="com.onnury.product.response.NewReleaseProductOptionDto">
+        <!-- getProductOptionList -->
+        select
+            p.product_option_id, p.option_title, p.necessary_check
+        from
+            product_option p
+        inner join
+            (select product_option_id from product_of_option where product_id = #{productId}) pop
+        on
+            p.product_option_id = pop.product_option_id;
+    </select>
+
+    <!-- 신 상품의 각 옵션에 해당되는 상세 옵션 정보 리스트 -->
+    <select id="getNewReleaseProductDetailOptionList" parameterType="Long" resultType="com.onnury.product.response.NewReleaseProductDetailOptionDto">
+        <!-- getNewReleaseProductDetailOptionList -->
+        select
+            b.product_detail_option_id, b.detail_option_name, b.option_price
+        from
+            (select
+                p.product_option_id, p.option_title, p.necessary_check
+             from
+                product_option p
+            inner join
+                (select product_option_id from product_of_option where product_option_id = #{productOptionId}) pop
+            on
+                p.product_option_id = pop.product_option_id) a
+        inner join
+                product_detail_option b
+        on
+            a.product_option_id = b.product_option_id;
+    </select>
+
     <!--    &lt;!&ndash; 당첨권 등록 &ndash;&gt;-->
 <!--    <insert id="insertPrize" parameterType="kbcp.svc.vo.PrizeVO" useGeneratedKeys="true" keyProperty="prizeSeq">-->
 <!--        &lt;!&ndash; insertPrize &ndash;&gt;-->

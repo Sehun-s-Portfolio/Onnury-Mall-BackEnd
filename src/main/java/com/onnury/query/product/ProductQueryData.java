@@ -11,6 +11,7 @@ import com.onnury.category.response.DownCategoryResponseDto;
 import com.onnury.category.response.RelatedCategoryDataResponseDto;
 import com.onnury.category.response.MiddleCategoryResponseDto;
 import com.onnury.category.response.UpCategoryResponseDto;
+import com.onnury.common.util.LogUtil;
 import com.onnury.label.domain.Label;
 import com.onnury.label.domain.LabelOfProduct;
 import com.onnury.label.repository.LabelOfProductRepository;
@@ -18,6 +19,7 @@ import com.onnury.label.response.LabelDataResponseDto;
 import com.onnury.label.response.LabelResponseDto;
 import com.onnury.label.response.NewReleaseProductLabelResponseDto;
 import com.onnury.mapper.LabelMapper;
+import com.onnury.mapper.MediaMapper;
 import com.onnury.mapper.ProductMapper;
 import com.onnury.media.domain.Media;
 import com.onnury.media.repository.MediaRepository;
@@ -49,14 +51,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
-import javax.servlet.http.HttpServletRequest;
-//import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -94,9 +93,14 @@ public class ProductQueryData {
     private final CategoryQueryData categoryQueryData;
     private final EntityManager entityManager;
 
-
+    @Resource(name = "productMapper")
     private ProductMapper productMapper;
+
+    @Resource(name = "labelMapper")
     private LabelMapper labelMapper;
+
+    @Resource(name = "mediaMapper")
+    private MediaMapper mediaMapper;
 
     // 새롭게 생성된 제품의 Classification Code 생성
     public String getProductClassificationCode() {
@@ -1804,7 +1808,7 @@ public class ProductQueryData {
 
 
     // 메인 페이지 신 상품 리스트 호출
-    public List<MainPageNewReleaseProductResponseDto> getNewReleaseProducts(String loginMemberType) throws Exception {
+    public List<MainPageNewReleaseProductResponseDto> getNewReleaseProducts(String loginMemberType) throws Exception{
         log.info("메인 페이지 신 상품 리스트 호출 QueryData");
 
         // 로그인한 고객 유형에 따라 신 상품이 담길 리스트 생성
@@ -1940,182 +1944,200 @@ public class ProductQueryData {
                 }
                  **/
 
-                // 신 상품에 연관된 라벨 정보 리스트
-                List<NewReleaseProductLabelResponseDto> newReleaseProductLabels = labelMapper.getNewReleaseProductLabelInfo(eachNewReleaseProduct.getProduct_id());
+                try {
+                    // 신 상품에 연관된 라벨 정보 리스트
+                    List<NewReleaseProductLabelResponseDto> newReleaseProductLabels = labelMapper.getNewReleaseProductLabelInfo(eachNewReleaseProduct.getProduct_id());
 
-                // 제품의 옵션 매핑 정보 추출
-                List<ProductOfOption> getProductOfOptions = jpaQueryFactory
-                        .selectFrom(productOfOption)
-                        .where(productOfOption.productId.eq(eachNewReleaseProduct.getProductId()))
-                        .fetch();
+                    // 제품의 옵션 매핑 정보 추출
+//                    List<ProductOfOption> getProductOfOptions = jpaQueryFactory
+//                            .selectFrom(productOfOption)
+//                            .where(productOfOption.productId.eq(eachNewReleaseProduct.getProductId()))
+//                            .fetch();
 
-                // 신 상품 데이터들의 옵션들이 담길 리스트 생성
-                List<NewReleaseProductOptionResponseDto> productOptionList = new ArrayList<>();
+                    // 제품의 옵션 매핑 정보 추출
+                    List<NewReleaseProductOptionDto> getProductOptions = productMapper.getNewReleaseProductOptionList(eachNewReleaseProduct.getProduct_id());
 
-                // 제품에 매핑된 옵션 정보가 존재할 경우 진입
-                if (!getProductOfOptions.isEmpty()) {
-                    // 매핑 옵션 정보에 따른 ProductOption, ProductDetailOption 추출 후 처리
-                    getProductOfOptions.forEach(eachProductOfOption -> {
-                        // 제품 옵션 조회
-                        ProductOption getProductOption = jpaQueryFactory
-                                .selectFrom(productOption)
-                                .where(productOption.productOptionId.eq(eachProductOfOption.getProductOptionId()))
-                                .fetchOne();
+                    // 신 상품 데이터들의 옵션들이 담길 리스트 생성
+                    List<NewReleaseProductOptionResponseDto> productOptionList = new ArrayList<>();
 
-                        // 조회한 제품 옵션에 해당되는 상세 옵션 정보 리스트 추출
-                        List<ProductDetailOption> getProductDetailOptions = jpaQueryFactory
-                                .selectFrom(productDetailOption)
-                                .where(productDetailOption.productOption.eq(getProductOption))
-                                .fetch();
+                    // 제품에 매핑된 옵션 정보가 존재할 경우 진입
+                    if (!getProductOptions.isEmpty()) {
+                        // 매핑 옵션 정보에 따른 ProductOption, ProductDetailOption 추출 후 처리
+                        getProductOptions.forEach(eachProductOption -> {
+                            try {
+//                            // 제품 옵션 조회
+//                            ProductOption getProductOption = jpaQueryFactory
+//                                    .selectFrom(productOption)
+//                                    .where(productOption.productOptionId.eq(eachProductOfOption.getProductOptionId()))
+//                                    .fetchOne();
+//
+//                            // 조회한 제품 옵션에 해당되는 상세 옵션 정보 리스트 추출
+//                            List<ProductDetailOption> getProductDetailOptions = jpaQueryFactory
+//                                    .selectFrom(productDetailOption)
+//                                    .where(productDetailOption.productOption.eq(getProductOption))
+//                                    .fetch();
+//
+//                            // 제품 옵션에 속한 상세 옵션 정보들을 저장할 리스트 생성
+//                            List<NewReleaseProductDetailOptionResponseDto> productDetailOptionList = new ArrayList<>();
+//
+//                            // 상세 옵션 정보들을 가지고 반환 리스트 객체에 저장
+//                            getProductDetailOptions.forEach(eachProductDetailOption -> {
+//                                productDetailOptionList.add(
+//                                        NewReleaseProductDetailOptionResponseDto.builder()
+//                                                .detailOptionId(eachProductDetailOption.getProductDetailOptionId())
+//                                                .detailOptionName(eachProductDetailOption.getDetailOptionName())
+//                                                .optionPrice(eachProductDetailOption.getOptionPrice())
+//                                                .build()
+//                                );
+//                            });
 
-                        // 제품 옵션에 속한 상세 옵션 정보들을 저장할 리스트 생성
-                        List<NewReleaseProductDetailOptionResponseDto> productDetailOptionList = new ArrayList<>();
+                                List<NewReleaseProductDetailOptionDto> productDetailOptionList = productMapper.getNewReleaseProductDetailOptionList(eachProductOption.getProduct_option_id());
 
-                        // 상세 옵션 정보들을 가지고 반환 리스트 객체에 저장
-                        getProductDetailOptions.forEach(eachProductDetailOption -> {
-                            productDetailOptionList.add(
-                                    NewReleaseProductDetailOptionResponseDto.builder()
-                                            .detailOptionId(eachProductDetailOption.getProductDetailOptionId())
-                                            .detailOptionName(eachProductDetailOption.getDetailOptionName())
-                                            .optionPrice(eachProductDetailOption.getOptionPrice())
-                                            .build()
-                            );
-                        });
-
-                        // 제품 옵션 정보를 반환 리스트 객체에 저장
-                        productOptionList.add(
-                                NewReleaseProductOptionResponseDto.builder()
-                                        .productOptionId(getProductOption.getProductOptionId())
-                                        .productOptionTitle(getProductOption.getOptionTitle())
-                                        .necessaryCheck(getProductOption.getNecessaryCheck())
-                                        .productDetailOptionList(productDetailOptionList)
-                                        .build()
-                        );
-                    });
-                }
-
-                // 제품의 상세 정보 추출
-                String productDetailInfoContent = jpaQueryFactory
-                        .select(productDetailInfo.content)
-                        .from(productDetailInfo)
-                        .where(productDetailInfo.productId.eq(eachNewReleaseProduct.getProductId()))
-                        .fetchOne();
-
-                // 제품 이미지, 상세 정보 이미지들 추출
-                List<Media> getMediaList = jpaQueryFactory
-                        .selectFrom(media)
-                        .where((media.type.eq("product").or(media.type.eq("productdetail")))
-                                .and(media.mappingContentId.eq(eachNewReleaseProduct.getProductId())))
-                        .fetch();
-
-                // 제품 이미지 정보들을 담을 리스트 생성
-                List<MediaResponseDto> productImageList = new ArrayList<>();
-                // 제품 상세 정보 이미지를 담을 리스트 생성
-                List<ProductDetailImageInfoResponseDto> productDetailImageInfoList = new ArrayList<>();
-
-                if (eachNewReleaseProduct.getRelateImgIds() != null) {
-                    List<Long> RelateImgIdsList = convertStringToList(eachNewReleaseProduct.getRelateImgIds());
-
-                    productImageList.addAll(
-                            RelateImgIdsList.stream()
-                                    .map(eachRelateImage -> {
-                                        Media eachImage = jpaQueryFactory
-                                                .selectFrom(media)
-                                                .where((media.mediaId.eq(eachRelateImage))
-                                                        .and(media.mappingContentId.eq(eachNewReleaseProduct.getProductId())))
-                                                .fetchOne();
-
-                                        return MediaResponseDto.builder()
-                                                .mediaId(eachImage.getMediaId())
-                                                .imgUploadUrl(eachImage.getImgUploadUrl())
-                                                .imgUrl(eachImage.getImgUrl())
-                                                .imgTitle(eachImage.getImgTitle())
-                                                .imgUuidTitle(eachImage.getImgUuidTitle())
-                                                .representCheck(eachImage.getRepresentCheck())
-                                                .build();
-                                    })
-                                    .collect(Collectors.toList())
-                    );
-
-                } else {
-                    // 제품 이미지, 상세 정보 이미지들이 존재할 경우 진입
-                    if (!getMediaList.isEmpty()) {
-
-                        // 제품과 연관된 이미지들을 조회하여 처리
-                        getMediaList.forEach(eachMedia -> {
-                            // 제품 이미지들 정보들을 변환하여 반환 객체에 매핑 시켜 리스트화
-                            if (eachMedia.getType().equals("product")) {
-                                productImageList.add(
-                                        MediaResponseDto.builder()
-                                                .mediaId(eachMedia.getMediaId())
-                                                .imgUploadUrl(eachMedia.getImgUploadUrl())
-                                                .imgUrl(eachMedia.getImgUrl())
-                                                .imgTitle(eachMedia.getImgTitle())
-                                                .imgUuidTitle(eachMedia.getImgUuidTitle())
-                                                .representCheck(eachMedia.getRepresentCheck())
+                                // 제품 옵션 정보를 반환 리스트 객체에 저장
+                                productOptionList.add(
+                                        NewReleaseProductOptionResponseDto.builder()
+                                                .productOptionId(eachProductOption.getProduct_option_id())
+                                                .productOptionTitle(eachProductOption.getOption_title())
+                                                .necessaryCheck(eachProductOption.getNecessary_check())
+                                                .productDetailOptionList(productDetailOptionList)
                                                 .build()
                                 );
-                            } else if (eachMedia.getType().equals("productdetail")) {
-                                // 제품 상세 정보 이미지들 정보들을 변환하여 반환 객체에 매핑 시켜 리스트화
-                                productDetailImageInfoList.add(
-                                        ProductDetailImageInfoResponseDto.builder()
-                                                .productDetailImageId(eachMedia.getMediaId())
-                                                .type(eachMedia.getType())
-                                                .imgUrl(eachMedia.getImgUrl())
-                                                .build()
-                                );
+                            }catch(Exception e){
+                                LogUtil.logException(e);
                             }
                         });
-
                     }
+
+//                    // 제품의 상세 정보 추출
+//                    String productDetailInfoContent = jpaQueryFactory
+//                            .select(productDetailInfo.content)
+//                            .from(productDetailInfo)
+//                            .where(productDetailInfo.productId.eq(eachNewReleaseProduct.getProductId()))
+//                            .fetchOne();
+
+                    // 제품 이미지, 상세 정보 이미지들 추출
+//                    List<Media> getMediaList = jpaQueryFactory
+//                            .selectFrom(media)
+//                            .where((media.type.eq("product").or(media.type.eq("productdetail")))
+//                                    .and(media.mappingContentId.eq(eachNewReleaseProduct.getProductId())))
+//                            .fetch();
+
+                    // 제품 이미지 정보들을 담을 리스트 생성
+                    List<MediaResponseDto> productImageList = new ArrayList<>();
+                    // 제품 상세 정보 이미지를 담을 리스트 생성
+                    List<ProductDetailImageInfoResponseDto> productDetailImageInfoList = new ArrayList<>();
+
+                    if (eachNewReleaseProduct.getRelate_img_ids() != null) {
+                        List<Long> relateImgIdsList = convertStringToList(eachNewReleaseProduct.getRelate_img_ids());
+
+//                        productImageList.addAll(
+//                                RelateImgIdsList.stream()
+//                                        .map(eachRelateImage -> {
+//                                            Media eachImage = jpaQueryFactory
+//                                                    .selectFrom(media)
+//                                                    .where((media.mediaId.eq(eachRelateImage))
+//                                                            .and(media.mappingContentId.eq(eachNewReleaseProduct.getProductId())))
+//                                                    .fetchOne();
+//
+//                                            return MediaResponseDto.builder()
+//                                                    .mediaId(eachImage.getMediaId())
+//                                                    .imgUploadUrl(eachImage.getImgUploadUrl())
+//                                                    .imgUrl(eachImage.getImgUrl())
+//                                                    .imgTitle(eachImage.getImgTitle())
+//                                                    .imgUuidTitle(eachImage.getImgUuidTitle())
+//                                                    .representCheck(eachImage.getRepresentCheck())
+//                                                    .build();
+//                                        })
+//                                        .collect(Collectors.toList())
+//                        );
+
+                        productImageList.addAll(mediaMapper.getProductImagesByRelateImgIds(eachNewReleaseProduct.getProduct_id(), relateImgIdsList));
+
+                    } else {
+//                        // 제품 이미지, 상세 정보 이미지들이 존재할 경우 진입
+//                        if (!getMediaList.isEmpty()) {
+//
+//                            // 제품과 연관된 이미지들을 조회하여 처리
+//                            getMediaList.forEach(eachMedia -> {
+//                                // 제품 이미지들 정보들을 변환하여 반환 객체에 매핑 시켜 리스트화
+//                                if (eachMedia.getType().equals("product")) {
+//                                    productImageList.add(
+//                                            MediaResponseDto.builder()
+//                                                    .mediaId(eachMedia.getMediaId())
+//                                                    .imgUploadUrl(eachMedia.getImgUploadUrl())
+//                                                    .imgUrl(eachMedia.getImgUrl())
+//                                                    .imgTitle(eachMedia.getImgTitle())
+//                                                    .imgUuidTitle(eachMedia.getImgUuidTitle())
+//                                                    .representCheck(eachMedia.getRepresentCheck())
+//                                                    .build()
+//                                    );
+//                                } else if (eachMedia.getType().equals("productdetail")) {
+//                                    // 제품 상세 정보 이미지들 정보들을 변환하여 반환 객체에 매핑 시켜 리스트화
+//                                    productDetailImageInfoList.add(
+//                                            ProductDetailImageInfoResponseDto.builder()
+//                                                    .productDetailImageId(eachMedia.getMediaId())
+//                                                    .type(eachMedia.getType())
+//                                                    .imgUrl(eachMedia.getImgUrl())
+//                                                    .build()
+//                                    );
+//                                }
+//                            });
+//
+//                        }
+
+                        productImageList.addAll(mediaMapper.getProductImagesByProductIdAndType(eachNewReleaseProduct.getProduct_id()));
+                        productDetailImageInfoList.addAll(mediaMapper.getProductDetailInfoImageByProductIdAndType(eachNewReleaseProduct.getProduct_id()));
+                    }
+
+                    int sellOrEventPrice = 0;
+
+                    if (eachNewReleaseProduct.getEvent_start_date().isBefore(LocalDateTime.now()) && eachNewReleaseProduct.getEvent_end_date().isAfter(LocalDateTime.now())) {
+                        sellOrEventPrice = eachNewReleaseProduct.getEvent_price();
+                    } else {
+                        sellOrEventPrice = eachNewReleaseProduct.getSell_price();
+                    }
+
+                    // 최종 반환 리스트 객체에 저장
+                    newReleaseProductList.add(
+                            MainPageNewReleaseProductResponseDto.builder()
+                                    .supplierId(eachNewReleaseProduct.getSupplier_id())
+                                    .brandId(eachNewReleaseProduct.getBrand_id())
+                                    .brand(eachNewReleaseProduct.getBrand_title())
+                                    .upCategoryId(eachNewReleaseProduct.getCategory1id())
+                                    .upCategory(eachNewReleaseProduct.getUp_category_name())
+                                    .middleCategoryId(eachNewReleaseProduct.getCategory2id())
+                                    .middleCategory(eachNewReleaseProduct.getMiddle_category_name())
+                                    .downCategoryId(eachNewReleaseProduct.getCategory3id())
+                                    .downCategory(eachNewReleaseProduct.getDown_category_name())
+                                    .productId(eachNewReleaseProduct.getProduct_id())
+                                    .productName(eachNewReleaseProduct.getProduct_name())
+                                    .classificationCode(eachNewReleaseProduct.getClassification_code())
+                                    .labelList(newReleaseProductLabels)
+                                    .modelNumber(eachNewReleaseProduct.getModel_number())
+                                    .deliveryType(eachNewReleaseProduct.getDelivery_type())
+                                    .sellClassification(eachNewReleaseProduct.getSell_classification())
+                                    .expressionCheck(eachNewReleaseProduct.getExpression_check())
+                                    .normalPrice(eachNewReleaseProduct.getNormal_price())
+                                    .sellPrice(sellOrEventPrice)
+                                    .deliveryPrice(eachNewReleaseProduct.getDelivery_price())
+                                    .purchasePrice(eachNewReleaseProduct.getPurchase_price())
+                                    .eventStartDate(eachNewReleaseProduct.getEvent_start_date())
+                                    .eventEndDate(eachNewReleaseProduct.getEvent_end_date())
+                                    .eventDescription(eachNewReleaseProduct.getEvent_description())
+                                    .optionCheck(eachNewReleaseProduct.getOption_check())
+                                    .productOptionList(productOptionList)
+                                    .productDetailInfo(eachNewReleaseProduct.getContent())
+                                    .mediaList(productImageList)
+                                    .manufacturer(eachNewReleaseProduct.getManufacturer())
+                                    .madeInOrigin(eachNewReleaseProduct.getMade_in_origin())
+                                    .consignmentStore(eachNewReleaseProduct.getConsignment_store())
+                                    .memo(eachNewReleaseProduct.getMemo())
+                                    .status(eachNewReleaseProduct.getStatus())
+                                    .build()
+                    );
+                }catch(Exception e){
+                    LogUtil.logException(e);
                 }
-
-                int sellOrEventPrice = 0;
-
-                if (eachNewReleaseProduct.getEventStartDate().isBefore(LocalDateTime.now()) && eachNewReleaseProduct.getEventEndDate().isAfter(LocalDateTime.now())) {
-                    sellOrEventPrice = eachNewReleaseProduct.getEventPrice();
-                } else {
-                    sellOrEventPrice = eachNewReleaseProduct.getSellPrice();
-                }
-
-                // 최종 반환 리스트 객체에 저장
-                newReleaseProductList.add(
-                        MainPageNewReleaseProductResponseDto.builder()
-                                .supplierId(eachNewReleaseProduct.getSupplierId())
-                                .brandId(brandId)
-                                .brand(brandTitle)
-                                .upCategoryId(upCategory.getCategoryId())
-                                .upCategory(upCategory.getCategoryName())
-                                .middleCategoryId(middleCategory.getCategoryId())
-                                .middleCategory(middleCategory.getCategoryName())
-                                .downCategoryId(downCategory.getCategoryId())
-                                .downCategory(downCategory.getCategoryName())
-                                .productId(eachNewReleaseProduct.getProductId())
-                                .productName(eachNewReleaseProduct.getProductName())
-                                .classificationCode(eachNewReleaseProduct.getClassificationCode())
-                                .labelList(labelList)
-                                .modelNumber(eachNewReleaseProduct.getModelNumber())
-                                .deliveryType(eachNewReleaseProduct.getDeliveryType())
-                                .sellClassification(eachNewReleaseProduct.getSellClassification())
-                                .expressionCheck(eachNewReleaseProduct.getExpressionCheck())
-                                .normalPrice(eachNewReleaseProduct.getNormalPrice())
-                                .sellPrice(sellOrEventPrice)
-                                .deliveryPrice(eachNewReleaseProduct.getDeliveryPrice())
-                                .purchasePrice(eachNewReleaseProduct.getPurchasePrice())
-                                .eventStartDate(eachNewReleaseProduct.getEventStartDate())
-                                .eventEndDate(eachNewReleaseProduct.getEventEndDate())
-                                .eventDescription(eachNewReleaseProduct.getEventDescription())
-                                .optionCheck(eachNewReleaseProduct.getOptionCheck())
-                                .productOptionList(productOptionList)
-                                .productDetailInfo(productDetailInfoContent)
-                                .mediaList(productImageList)
-                                .manufacturer(eachNewReleaseProduct.getManufacturer())
-                                .madeInOrigin(eachNewReleaseProduct.getMadeInOrigin())
-                                .consignmentStore(eachNewReleaseProduct.getConsignmentStore())
-                                .memo(eachNewReleaseProduct.getMemo())
-                                .status(eachNewReleaseProduct.getStatus())
-                                .build()
-                );
             });
         }
 
