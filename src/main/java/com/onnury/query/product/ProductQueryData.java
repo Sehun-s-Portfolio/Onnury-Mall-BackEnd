@@ -1811,41 +1811,6 @@ public class ProductQueryData {
     public List<MainPageNewReleaseProductResponseDto> getNewReleaseProducts(String loginMemberType) throws Exception{
         log.info("메인 페이지 신 상품 리스트 호출 QueryData");
 
-        // 로그인한 고객 유형에 따라 신 상품이 담길 리스트 생성
-        //List<Product> newReleaseProducts = new ArrayList<>();
-
-        // 고객 유형이 일반일 경우 C, A 타입의 신 제품들 추출
-        /**
-        if (loginMemberType.equals("C")) {
-**/
-//            newReleaseProducts = jpaQueryFactory
-//                    .selectFrom(product)
-//                    .where(product.expressionCheck.eq("Y")
-//                            .and(product.sellClassification.eq("C"))
-//                            .and(product.status.eq("Y"))
-//                    )
-//                    .orderBy(product.createdAt.desc())
-//                    .limit(8)
-//                    .fetch();
-/**
-            newReleaseProducts = productMapper.getNewProductsByCustomer();
-
-        } else if (loginMemberType.equals("B")) {
-**/
-            // 고객 유형이 기업일 경우 B, A 타입의 신 제품들 추출
-//            newReleaseProducts = jpaQueryFactory
-//                    .selectFrom(product)
-//                    .where(product.expressionCheck.eq("Y")
-//                            .and(product.status.eq("Y"))
-//                    )
-//                    .orderBy(product.createdAt.desc())
-//                    .limit(8)
-//                    .fetch();
-/**
-            newReleaseProducts = productMapper.getNewProductsByBusiness();
-        }
- **/
-
         // 신 상품 8개 정보 리스트
         List<NewReleaseProductInfo> newReleaseProducts = productMapper.getProductInfo(loginMemberType);
 
@@ -1857,102 +1822,9 @@ public class ProductQueryData {
 
             // 추출한 신 제품들을 기준으로 매핑 후 반환 처리
             newReleaseProducts.forEach(eachNewReleaseProduct -> {
-
-                // 제품이 속한 카테고리와 브랜드 매핑 정보 추출
-                /**
-                CategoryInBrand eachCategoryInBrand = jpaQueryFactory
-                        .selectFrom(categoryInBrand)
-                        .where(categoryInBrand.categoryInBrandId.eq(eachNewReleaseProduct.getCategoryInBrandId()))
-                        .fetchOne();
-
-                assert eachCategoryInBrand != null;
-                 **/
-
-                // 브랜드 정보 추출
-                /**
-                Brand getBrand = jpaQueryFactory
-                        .selectFrom(brand)
-                        .where(brand.brandId.eq(eachCategoryInBrand.getBrandId()))
-                        .fetchOne();
-
-                // 제품과 연관된 프랜드의 id 초기값 설정
-                Long brandId = 0L;
-                // 제품과 연관된 프랜드 명 초기값 설정
-                String brandTitle = "";
-
-                // 제품과 연관된 브랜드 정보가 존재할 경우
-                if (getBrand != null) {
-                    // 브랜드 id 및 브랜드 명 설정
-                    brandId = getBrand.getBrandId();
-                    brandTitle = getBrand.getBrandTitle();
-                }
-
-                assert getBrand != null;
-
-                // 대분류 카테고리 정보 추출
-                Category upCategory = jpaQueryFactory
-                        .selectFrom(category)
-                        .where(category.categoryId.eq(eachCategoryInBrand.getCategory1Id()))
-                        .fetchOne();
-
-                // 중분류 카테고리 정보 추출
-                Category middleCategory = jpaQueryFactory
-                        .selectFrom(category)
-                        .where(category.categoryId.eq(eachCategoryInBrand.getCategory2Id()))
-                        .fetchOne();
-
-                // 소분류 카테고리 정보 추출
-                Category downCategory = jpaQueryFactory
-                        .selectFrom(category)
-                        .where(category.categoryId.eq(eachCategoryInBrand.getCategory3Id()))
-                        .fetchOne();
-**/
-                /**
-                // 제품과 매핑된 라벨 정보 추출
-                List<Long> getLabelOfProduct = jpaQueryFactory
-                        .select(labelOfProduct.labelId)
-                        .from(labelOfProduct)
-                        .where(labelOfProduct.productId.eq(eachNewReleaseProduct.getProductId()))
-                        .fetch();
-
-                // 제품과 연관된 라벨 정보들을 담을 리스트 생성
-                List<LabelDataResponseDto> labelList = new ArrayList<>();
-
-                // 매핑 라벨 정보가 존재할 경우에 반환 리스트 객체에 저장
-                if (!getLabelOfProduct.isEmpty()) {
-                    // 매핑 라벨 정보들을 반복문으로 조회하여 리스트 저장 처리
-                    getLabelOfProduct.forEach(eachLabelOfProduct -> {
-                        // 라벨 데이터 호출
-                        Label getLabel = jpaQueryFactory
-                                .selectFrom(label)
-                                .where(label.labelId.eq(eachLabelOfProduct)
-                                        .and(label.startPostDate.before(LocalDateTime.now()).and(label.endPostDate.after(LocalDateTime.now()))))
-                                .fetchOne();
-
-                        if (getLabel != null) {
-                            // 리스트에 라벨 데이터 저장
-                            labelList.add(
-                                    LabelDataResponseDto.builder()
-                                            .labelTitle(getLabel.getLabelTitle())
-                                            .colorCode(getLabel.getColorCode())
-                                            .startPostDate(getLabel.getStartPostDate())
-                                            .endPostDate(getLabel.getEndPostDate())
-                                            .build()
-                            );
-                        }
-                    });
-                }
-                 **/
-
                 try {
                     // 신 상품에 연관된 라벨 정보 리스트
                     List<NewReleaseProductLabelResponseDto> newReleaseProductLabels = labelMapper.getNewReleaseProductLabelInfo(eachNewReleaseProduct.getProduct_id());
-
-                    // 제품의 옵션 매핑 정보 추출
-//                    List<ProductOfOption> getProductOfOptions = jpaQueryFactory
-//                            .selectFrom(productOfOption)
-//                            .where(productOfOption.productId.eq(eachNewReleaseProduct.getProductId()))
-//                            .fetch();
 
                     // 제품의 옵션 매핑 정보 추출
                     List<NewReleaseProductOptionDto> getProductOptions = productMapper.getNewReleaseProductOptionList(eachNewReleaseProduct.getProduct_id());
@@ -1965,32 +1837,6 @@ public class ProductQueryData {
                         // 매핑 옵션 정보에 따른 ProductOption, ProductDetailOption 추출 후 처리
                         getProductOptions.forEach(eachProductOption -> {
                             try {
-//                            // 제품 옵션 조회
-//                            ProductOption getProductOption = jpaQueryFactory
-//                                    .selectFrom(productOption)
-//                                    .where(productOption.productOptionId.eq(eachProductOfOption.getProductOptionId()))
-//                                    .fetchOne();
-//
-//                            // 조회한 제품 옵션에 해당되는 상세 옵션 정보 리스트 추출
-//                            List<ProductDetailOption> getProductDetailOptions = jpaQueryFactory
-//                                    .selectFrom(productDetailOption)
-//                                    .where(productDetailOption.productOption.eq(getProductOption))
-//                                    .fetch();
-//
-//                            // 제품 옵션에 속한 상세 옵션 정보들을 저장할 리스트 생성
-//                            List<NewReleaseProductDetailOptionResponseDto> productDetailOptionList = new ArrayList<>();
-//
-//                            // 상세 옵션 정보들을 가지고 반환 리스트 객체에 저장
-//                            getProductDetailOptions.forEach(eachProductDetailOption -> {
-//                                productDetailOptionList.add(
-//                                        NewReleaseProductDetailOptionResponseDto.builder()
-//                                                .detailOptionId(eachProductDetailOption.getProductDetailOptionId())
-//                                                .detailOptionName(eachProductDetailOption.getDetailOptionName())
-//                                                .optionPrice(eachProductDetailOption.getOptionPrice())
-//                                                .build()
-//                                );
-//                            });
-
                                 List<NewReleaseProductDetailOptionDto> productDetailOptionList = productMapper.getNewReleaseProductDetailOptionList(eachProductOption.getProduct_option_id());
 
                                 // 제품 옵션 정보를 반환 리스트 객체에 저장
@@ -2008,92 +1854,27 @@ public class ProductQueryData {
                         });
                     }
 
-//                    // 제품의 상세 정보 추출
-//                    String productDetailInfoContent = jpaQueryFactory
-//                            .select(productDetailInfo.content)
-//                            .from(productDetailInfo)
-//                            .where(productDetailInfo.productId.eq(eachNewReleaseProduct.getProductId()))
-//                            .fetchOne();
-
-                    // 제품 이미지, 상세 정보 이미지들 추출
-//                    List<Media> getMediaList = jpaQueryFactory
-//                            .selectFrom(media)
-//                            .where((media.type.eq("product").or(media.type.eq("productdetail")))
-//                                    .and(media.mappingContentId.eq(eachNewReleaseProduct.getProductId())))
-//                            .fetch();
-
                     // 제품 이미지 정보들을 담을 리스트 생성
                     List<MediaResponseDto> productImageList = new ArrayList<>();
                     // 제품 상세 정보 이미지를 담을 리스트 생성
                     List<ProductDetailImageInfoResponseDto> productDetailImageInfoList = new ArrayList<>();
 
+                    // 제품 정보에 연관 이미지 id 리스트 정보가 존재할 경우 해당 정보를 가지고 이미지 정보들 호출
                     if (eachNewReleaseProduct.getRelate_img_ids() != null) {
                         List<Long> relateImgIdsList = convertStringToList(eachNewReleaseProduct.getRelate_img_ids());
-
-//                        productImageList.addAll(
-//                                RelateImgIdsList.stream()
-//                                        .map(eachRelateImage -> {
-//                                            Media eachImage = jpaQueryFactory
-//                                                    .selectFrom(media)
-//                                                    .where((media.mediaId.eq(eachRelateImage))
-//                                                            .and(media.mappingContentId.eq(eachNewReleaseProduct.getProductId())))
-//                                                    .fetchOne();
-//
-//                                            return MediaResponseDto.builder()
-//                                                    .mediaId(eachImage.getMediaId())
-//                                                    .imgUploadUrl(eachImage.getImgUploadUrl())
-//                                                    .imgUrl(eachImage.getImgUrl())
-//                                                    .imgTitle(eachImage.getImgTitle())
-//                                                    .imgUuidTitle(eachImage.getImgUuidTitle())
-//                                                    .representCheck(eachImage.getRepresentCheck())
-//                                                    .build();
-//                                        })
-//                                        .collect(Collectors.toList())
-//                        );
-
                         productImageList.addAll(mediaMapper.getProductImagesByRelateImgIds(eachNewReleaseProduct.getProduct_id(), relateImgIdsList));
-
-                    } else {
-//                        // 제품 이미지, 상세 정보 이미지들이 존재할 경우 진입
-//                        if (!getMediaList.isEmpty()) {
-//
-//                            // 제품과 연관된 이미지들을 조회하여 처리
-//                            getMediaList.forEach(eachMedia -> {
-//                                // 제품 이미지들 정보들을 변환하여 반환 객체에 매핑 시켜 리스트화
-//                                if (eachMedia.getType().equals("product")) {
-//                                    productImageList.add(
-//                                            MediaResponseDto.builder()
-//                                                    .mediaId(eachMedia.getMediaId())
-//                                                    .imgUploadUrl(eachMedia.getImgUploadUrl())
-//                                                    .imgUrl(eachMedia.getImgUrl())
-//                                                    .imgTitle(eachMedia.getImgTitle())
-//                                                    .imgUuidTitle(eachMedia.getImgUuidTitle())
-//                                                    .representCheck(eachMedia.getRepresentCheck())
-//                                                    .build()
-//                                    );
-//                                } else if (eachMedia.getType().equals("productdetail")) {
-//                                    // 제품 상세 정보 이미지들 정보들을 변환하여 반환 객체에 매핑 시켜 리스트화
-//                                    productDetailImageInfoList.add(
-//                                            ProductDetailImageInfoResponseDto.builder()
-//                                                    .productDetailImageId(eachMedia.getMediaId())
-//                                                    .type(eachMedia.getType())
-//                                                    .imgUrl(eachMedia.getImgUrl())
-//                                                    .build()
-//                                    );
-//                                }
-//                            });
-//
-//                        }
-
+                    } else { // 연관 이미지 id 리스트 정보가 존재하지 않을 경우 제품 id를 가지고 직접 media 테이블에서 해당 정보들 추출
                         productImageList.addAll(mediaMapper.getProductImagesByProductIdAndType(eachNewReleaseProduct.getProduct_id()));
                         productDetailImageInfoList.addAll(mediaMapper.getProductDetailInfoImageByProductIdAndType(eachNewReleaseProduct.getProduct_id()));
                     }
 
+                    // 판매 가격 변수 생성 및 초기화
                     int sellOrEventPrice = 0;
 
+                    // 현재 날짜가 해당 제품의 이벤트 기간에 걸친 상태라면 판매 가격을 이벤트 가격으로 설정
                     if (eachNewReleaseProduct.getEvent_start_date().isBefore(LocalDateTime.now()) && eachNewReleaseProduct.getEvent_end_date().isAfter(LocalDateTime.now())) {
                         sellOrEventPrice = eachNewReleaseProduct.getEvent_price();
-                    } else {
+                    } else { // 현재 날짜가 이벤트 기간에 포함되지 않거나 이벤트를 진행하지 않을 경우 판매 가격을 일반 판매 가격으로 설정
                         sellOrEventPrice = eachNewReleaseProduct.getSell_price();
                     }
 

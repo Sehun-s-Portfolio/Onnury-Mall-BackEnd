@@ -108,6 +108,57 @@
             a.product_option_id = b.product_option_id;
     </select>
 
+    <!-- 선택한 대분류 카테고리 + 검색 조건이 적용된 제품들 id 리스트 조회 -->
+    <select id="getSelectUpCategoryAndConditionRelateProductIdList" parameterType="Map" resultType="">
+        select
+            p.product_id
+        from
+            product p
+        inner join
+            (select
+                 category_in_brand_id
+            from
+                category_in_brand
+            where
+                category1id = #{upCategoryId}
+                <if test='brandIdList != null and !brandIdList.isEmpty()'>
+                    and brand_id in
+                    <foreach collection="brandIdList" item="brandId" index="index" open="(" close=")" separator=",">
+                        #{brandId}
+                    </foreach>
+                </if>
+                <if test='searchBrandKeyword != null and searchBrandKeyword != ""'>
+                    and brand_title like concat("%", #{searchBrandKeyword}, "%")
+                </if>
+                <if test='middleCategoryIdList != null and !middleCategoryIdList.isEmpty()'>
+                    and category2id in
+                    <foreach collection="middleCategoryIdList" item="middleCategoryId" index="index" open="(" close=")" separator=",">
+                        #{middleCategoryId}
+                    </foreach>
+                </if>) b
+        on
+            p.category_in_brand_id = b.category_in_brand_id
+        where
+            p.expression_check = "Y" and
+            <if test='loginMemberType != null and loginMemberType != ""'>
+                p.sell_classification = #{loginMemberType} and
+            </if>
+            p.status = "Y"
+            <if test='labelIdList != null and !labelIdList.isEmpty()' >
+                and p.product_id in
+                (select
+                     product_id
+                 from
+                     label_of_product
+                 where
+                     label_id in
+                <foreach collection="labelIdList" item="labelId" index="index" open="(" close=")" separator=",">
+                    #{labelId}
+                </foreach>)
+            </if>
+             and ((p.event_start_date <= localtime() and p.event_end_date >= localtime() and p.event_price >= 0 and p.event_price <= 999999999) or (p.sell_price >= 0 and p.sell_price <= 999999999))
+    </select>
+
     <!--    &lt;!&ndash; 당첨권 등록 &ndash;&gt;-->
 <!--    <insert id="insertPrize" parameterType="kbcp.svc.vo.PrizeVO" useGeneratedKeys="true" keyProperty="prizeSeq">-->
 <!--        &lt;!&ndash; insertPrize &ndash;&gt;-->
