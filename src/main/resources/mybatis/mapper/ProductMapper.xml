@@ -109,29 +109,108 @@
     </select>
 
     <!-- 선택한 대분류 카테고리 + 검색 조건이 적용된 제품들 id 리스트 조회 -->
-    <select id="getSelectUpCategoryAndConditionRelateProductIdList" parameterType="Map" resultType="">
+    <select id="getSelectUpCategoryAndConditionRelateProductIdList" parameterType="Map" resultType="com.onnury.product.response.ProductPageMainProductResponseDto">
         select
-            p.product_id
+            p.product_id as productId,
+            p.supplier_id as supplierId,
+            b.brand_id as brandId,
+            b.brand_title as brand,
+            b.category1id as upCategoryId,
+            b.up_category as upCategory,
+            b.category2id as middleCategoryId,
+            b.middle_category as middleCategory,
+            b.category3id as downCategoryId,
+            b.down_category as downCategory,
+            p.product_name as productName,
+            p.classification_code as classificationCode,
+            (select
+                 label_id as labelId,
+                 label_title as labelTitle,
+                 color_code as colorCode,
+                 start_post_date as startPostDate,
+                 end_post_date as endPostDate,
+                 img_url as imgUrl,
+                 top_expression as topExpression
+             from
+                 label
+             where
+                 label_id in (select label_id from label_of_product where product_id = p.product_id)) as labelList,
+            p.model_number as modelNumber,
+            p.delivery_type as deliveryType,
+            p.sell_classification as sellClassification,
+            p.expression_check as expressionCheck,
+            p.normal_price as normalPrice,
+            if(p.event_start_date <= localtime() and p.event_end_date >= localtime(), p.event_price, p.sell_price) as sellPrice,
+            p.delivery_price as deliveryPrice,
+            p.purchase_price as purchasePrice,
+            p.event_start_date as eventStartDate,
+            p.event_end_date as eventEndDate,
+            p.event_description as eventDescription,
+            p.option_check as optionCheck,
+            (select
+                po.product_option_id as productOptionId,
+                po.option_title as productOptionTitle,
+                po.necessary_check as necessaryCheck,
+                (select
+                    product_detail_option_id as detailOptionId,
+                    detail_option_name as detailOptionName,
+                    option_price as optionPrice
+                from
+                    product_detail_option
+                where
+                    product_option_id = po.product_option_id) as productDetailOptionList
+            from
+                product_option po) as productOptionList,
+            (select
+                 content
+             from
+                 product_detail_info
+             where
+                 product_id = p.product_id) as productDetailInfo,
+            (select
+                media_id as mediaId,
+                img_upload_url as imgUploadUrl,
+                img_url as imgUrl,
+                img_title as imgTitle,
+                img_uuid_title as imgUuidTitle,
+                represent_check as representCheck
+            from
+                media
+            where
+                type = "product" and mapping_content_id = p.product_id) as mediaList,
+            p.manufacturer as manufacturer,
+            p.made_in_origin as madeInOrigin,
+            p.consignment_store as consignmentStore,
+            p.memo as memo,
+            p.status as status
         from
             product p
         inner join
             (select
-                 category_in_brand_id
+                cib.category_in_brand_id,
+                cib.brand_id,
+                (select brand_title from brand where brand_id = cib.brand_id) as brand_title,
+                cib.category1id,
+                (select category_name from category where category_id = cib.category1id) as up_category,
+                cib.category2id,
+                (select category_name from category where category_id = cib.category2id) as middle_category,
+                cib.category3id,
+                (select category_name from category where category_id = cib.category3id) as down_category
             from
-                category_in_brand
+                category_in_brand cib
             where
-                category1id = #{upCategoryId}
+                cib.category1id = #{upCategoryId}
                 <if test='brandIdList != null and !brandIdList.isEmpty()'>
-                    and brand_id in
+                    and cib.brand_id in
                     <foreach collection="brandIdList" item="brandId" index="index" open="(" close=")" separator=",">
                         #{brandId}
                     </foreach>
                 </if>
                 <if test='searchBrandKeyword != null and searchBrandKeyword != ""'>
-                    and brand_title like concat("%", #{searchBrandKeyword}, "%")
+                    and cib.brand_title like concat("%", #{searchBrandKeyword}, "%")
                 </if>
                 <if test='middleCategoryIdList != null and !middleCategoryIdList.isEmpty()'>
-                    and category2id in
+                    and cib.category2id in
                     <foreach collection="middleCategoryIdList" item="middleCategoryId" index="index" open="(" close=")" separator=",">
                         #{middleCategoryId}
                     </foreach>
@@ -156,7 +235,70 @@
                     #{labelId}
                 </foreach>)
             </if>
-             and ((p.event_start_date <= localtime() and p.event_end_date >= localtime() and p.event_price >= 0 and p.event_price <= 999999999) or (p.sell_price >= 0 and p.sell_price <= 999999999))
+              and ((p.event_start_date <= localtime() and p.event_end_date >= localtime() and p.event_price >= #{startRangePrice}
+                <if test='endRangePrice > 0'>and p.event_price <= #{endRangePrice}</if>)
+                or (p.sell_price >= 0 <if test='endRangePrice > 0'>and p.sell_price <= #{endRangePrice}</if>))
+        order by
+            <if test="sort <= 3">
+                <choose>
+                    <when test="sort == 1">
+                        p.created_at desc
+                    </when>
+                    <when test="sort == 2">
+                        p.sell_price asc
+                    </when>
+                    <when test="sort == 3">
+                        p.sell_price desc
+                    </when>
+                </choose>
+            </if>
+        offset
+            (#{page} * 10) - 10
+        limit
+            10;
+    </select>
+
+    <!-- 선택한 대분류 카테고리 + 검색 조건이 적용된 제품들 총 수량 조회 -->
+    <select id="getSelectUpCategoryProductsCount" parameterType="Map" resultType="Long">
+        select
+            count(*)
+        from
+            product p
+        where
+            p.expression_check = "Y" and
+            <if test='loginMemberType != null and loginMemberType != ""'>
+                p.sell_classification = #{loginMemberType} and
+            </if>
+            p.status = "Y"
+            <if test='labelIdList != null and !labelIdList.isEmpty()' >
+                and p.product_id in
+                (select
+                    product_id
+                from
+                    label_of_product
+                where
+                    label_id in
+                <foreach collection="labelIdList" item="labelId" index="index" open="(" close=")" separator=",">
+                    #{labelId}
+                </foreach>)
+            </if>
+            and ((p.event_start_date <= localtime() and p.event_end_date >= localtime() and p.event_price >= #{startRangePrice}
+            <if test='endRangePrice > 0'>and p.event_price <= #{endRangePrice}</if>)
+            or (p.sell_price >= 0 <if test='endRangePrice > 0'>and p.sell_price <= #{endRangePrice}</if>))
+        order by
+            <if test="sort <= 3">
+                <choose>
+                    <when test="sort == 1">
+                        p.created_at desc
+                    </when>
+                    <when test="sort == 2">
+                        p.sell_price asc
+                    </when>
+                    <when test="sort == 3">
+                        p.sell_price desc
+                    </when>
+                </choose>
+            </if>
     </select>
 
     <!--    &lt;!&ndash; 당첨권 등록 &ndash;&gt;-->
