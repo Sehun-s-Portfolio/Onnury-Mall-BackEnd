@@ -51,6 +51,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -1927,320 +1928,362 @@ public class ProductQueryData {
 
 
     // 대분류 기준 제품 페이지의 정렬 기준 제품 리스트
+//    public TotalProductPageMainProductResponseDto upCategoryPageMainProducts(
+//            String loginMemberType, Long upCategoryId, int sort, int page, int startRangePrice, int endRangePrice, List<Long> brandIdList, List<Long> labelIdList, List<Long> middleCategoryIdList) {
+//
+//        // 정렬된 제품 수
+//        int totalCount = 0;
+//
+//        // 대분류 카테고리에 해당되는 CategoryInBrand 매핑 정보들 호출
+//        List<Long> categoryInBrandIdList = jpaQueryFactory
+//                .select(categoryInBrand.categoryInBrandId)
+//                .from(categoryInBrand)
+//                .where(categoryInBrand.category1Id.eq(upCategoryId)
+//                        .and(eqCategoryProductBrand(brandIdList, ""))
+//                        .and(eqUpCategoryInMiddleCategory(middleCategoryIdList)))
+//                .fetch();
+//
+//        log.info("(1) 대분류 카테고리 / 브랜드 / 선택한 중분류에 해당되는 CategoryInBrand 매핑 정보들 : {}", categoryInBrandIdList.toString());
+//
+//        // 대분류 카테고리에 해당되는 제품들의 id 리스트 생성
+//        List<Product> productsByUpCategoryList = new ArrayList<>();
+//
+//        // CategoryInBrand 매핑 정보들에서 정보들을 추출하여 관련된 제품 id 리스트 저장
+//        categoryInBrandIdList.forEach(eachCategoryInBrandId -> {
+//
+//            // 고객 유형이 일반일 경우 C, A 타입의 신 제품들 추출
+//            if (loginMemberType.equals("C")) {
+//
+//                productsByUpCategoryList.addAll(
+//                        jpaQueryFactory
+//                                .selectFrom(product)
+//                                .where(product.categoryInBrandId.eq(eachCategoryInBrandId)
+//                                        .and(product.expressionCheck.eq("Y"))
+//                                        .and(product.sellClassification.eq("C"))
+//                                        .and(product.status.eq("Y"))
+//                                        .and(eqLabelOfProduct(labelIdList))
+//                                )
+//                                .fetch()
+//                );
+//
+//            } else if (loginMemberType.equals("B")) { // 고객 유형이 기업일 경우 B, A 타입의 신 제품들 추출
+//                productsByUpCategoryList.addAll(
+//                        jpaQueryFactory
+//                                .selectFrom(product)
+//                                .where(product.categoryInBrandId.eq(eachCategoryInBrandId)
+//                                        .and(product.expressionCheck.eq("Y"))
+//                                        .and(product.status.eq("Y"))
+//                                        .and(eqLabelOfProduct(labelIdList))
+//                                )
+//                                .fetch()
+//                );
+//            }
+//        });
+//
+//        List<Long> productsByUpCategory = new ArrayList<>();
+//
+//        if (endRangePrice != 0) {
+//            productsByUpCategory = productsByUpCategoryList.stream()
+//                    .filter(eachProduct ->
+//                            (eachProduct.getEventStartDate().isBefore(LocalDateTime.now()) && eachProduct.getEventEndDate().isAfter(LocalDateTime.now()) && eachProduct.getEventPrice() >= startRangePrice && eachProduct.getEventPrice() <= endRangePrice)
+//                                    || (eachProduct.getSellPrice() >= startRangePrice && eachProduct.getSellPrice() <= endRangePrice)
+//                    )
+//                    .map(Product::getProductId)
+//                    .collect(Collectors.toList());
+//        } else {
+//
+//            if (startRangePrice == 0) {
+//                productsByUpCategory = productsByUpCategoryList.stream()
+//                        .map(Product::getProductId)
+//                        .collect(Collectors.toList());
+//            }
+//
+//        }
+//
+//        // 실제 제품 페이지에 노출될 제품들을 담을 리스트 생성
+//        List<Product> productPageMainProducts = new ArrayList<>();
+//        List<LabelResponseDto> labelList = new ArrayList<>();
+//        List<BrandDataResponseDto> brandList = new ArrayList<>();
+//        List<RelatedCategoryDataResponseDto> middleCategoryList = new ArrayList<>();
+//
+//        int maxPrice = 0;
+//
+//        // 해당되는 제품들의 id 리스트가 존재할 경우 진입
+//        if (!productsByUpCategory.isEmpty()) {
+//            // 총 관련 제품들 수량
+//            totalCount = productsByUpCategory.size();
+//            List<Product> products = new ArrayList<>();
+//
+//            // 리스트에 해당되는 카테고리 제품들을 정렬 조건에 맞춰 리스트에 저장
+//            if (sort <= 3) { // 1 ~ 3 : 기본적인 판매 가격 혹은 최신 순 정렬 기준
+//                products = jpaQueryFactory
+//                        .selectFrom(product)
+//                        .where(product.productId.in(productsByUpCategory))
+//                        .groupBy(product.productId)
+//                        .orderBy(orderBySort(sort))
+//                        .fetch();
+//
+//            } else { // 4 : 누적 판매 기준 순
+//
+//                // 판매 이력이 존재한 제품의 경우 우선 넣기
+//                List<String> classificationCodeList = jpaQueryFactory
+//                        .select(product.classificationCode)
+//                        .from(product)
+//                        .where(product.productId.in(productsByUpCategory))
+//                        .groupBy(product.classificationCode)
+//                        .fetch();
+//
+//                List<Tuple> orderInProducts = jpaQueryFactory
+//                        .select(orderInProduct.productClassificationCode, orderInProduct.productTotalAmount.sum())
+//                        .from(orderInProduct)
+//                        .where(orderInProduct.productClassificationCode.in(classificationCodeList))
+//                        .groupBy(orderInProduct.productClassificationCode)
+//                        .orderBy(orderInProduct.productTotalAmount.sum().desc())
+//                        .fetch();
+//
+//                if (!orderInProducts.isEmpty()) {
+//                    products = orderInProducts.stream()
+//                            .filter(Objects::nonNull)
+//                            .map(eachOrderInProduct ->
+//                                    jpaQueryFactory
+//                                            .selectFrom(product)
+//                                            .where(product.classificationCode.eq(eachOrderInProduct.get(orderInProduct.productClassificationCode)))
+//                                            .fetchOne()
+//                            )
+//                            .collect(Collectors.toList());
+//
+//                    List<Long> remainOrderInfoProductIdList = products.stream()
+//                            .map(Product::getProductId)
+//                            .collect(Collectors.toList());
+//
+//                    products.addAll(
+//                            jpaQueryFactory
+//                                    .selectFrom(product)
+//                                    .where(product.productId.notIn(remainOrderInfoProductIdList)
+//                                            .and(product.productId.in(productsByUpCategory)))
+//                                    .orderBy(product.createdAt.desc())
+//                                    .fetch()
+//                    );
+//
+//                } else {
+//                    products = jpaQueryFactory
+//                            .selectFrom(product)
+//                            .where(product.productId.in(productsByUpCategory))
+//                            .groupBy(product.productId)
+//                            .orderBy(product.createdAt.desc())
+//                            .fetch();
+//                }
+//
+//            }
+//
+//            // 조회한 제품들 중 가격 범위 최대치로 등록할 제품의 맥시멈 가격
+//            maxPrice = products.stream()
+//                    .map(eachProduct -> {
+//                        if (eachProduct.getEventStartDate().isBefore(LocalDateTime.now()) && eachProduct.getEventEndDate().isAfter(LocalDateTime.now())) {
+//                            return eachProduct.getEventPrice();
+//                        } else {
+//                            return eachProduct.getSellPrice();
+//                        }
+//                    })
+//                    .max(Integer::compare)
+//                    .orElse(0);
+//
+//            // [ 필터링 조건용 브랜드 데이터 추출 로직 ]
+//            List<CategoryInBrand> relatedCategoryInBrandList = jpaQueryFactory
+//                    .selectFrom(categoryInBrand)
+//                    .where(categoryInBrand.categoryInBrandId.in(
+//                            products.stream()
+//                                    .map(Product::getCategoryInBrandId)
+//                                    .collect(Collectors.toList())
+//                    ))
+//                    .groupBy(categoryInBrand.categoryInBrandId)
+//                    .fetch();
+//
+//            List<Long> relatedBrandIdList = relatedCategoryInBrandList.stream()
+//                    .map(CategoryInBrand::getBrandId)
+//                    .distinct()
+//                    .collect(Collectors.toList());
+//
+//            brandList = jpaQueryFactory
+//                    .selectFrom(brand)
+//                    .where(brand.brandId.in(relatedBrandIdList))
+//                    .fetch()
+//                    .stream()
+//                    .map(eachBrand ->
+//                            BrandDataResponseDto.builder()
+//                                    .brandId(eachBrand.getBrandId())
+//                                    .brandTitle(eachBrand.getBrandTitle())
+//                                    .build()
+//                    )
+//                    .collect(Collectors.toList());
+//
+//
+//            // [ 필터링 조건용 중분류 카테고리 데이터 추출 로직 ]
+//            List<Long> relatedMiddleCategoryIdList = relatedCategoryInBrandList.stream()
+//                    .map(CategoryInBrand::getCategory2Id)
+//                    .distinct()
+//                    .collect(Collectors.toList());
+//
+//            middleCategoryList = jpaQueryFactory
+//                    .selectFrom(category)
+//                    .where(category.categoryId.in(relatedMiddleCategoryIdList))
+//                    .fetch()
+//                    .stream()
+//                    .map(eachMiddleCategory ->
+//                            RelatedCategoryDataResponseDto.builder()
+//                                    .categoryId(eachMiddleCategory.getCategoryId())
+//                                    .categoryName(eachMiddleCategory.getCategoryName())
+//                                    .build()
+//                    )
+//                    .collect(Collectors.toList());
+//
+//
+//            // [ 필터링 조건용 라벨 데이터 추출 로직 ]
+//            List<Long> relatedTotalLabelList = jpaQueryFactory
+//                    .select(labelOfProduct.labelId)
+//                    .from(labelOfProduct)
+//                    .where(labelOfProduct.productId.in(
+//                            products.stream()
+//                                    .map(Product::getProductId)
+//                                    .collect(Collectors.toList())
+//                    ))
+//                    .groupBy(labelOfProduct.labelId)
+//                    .fetch();
+//
+//            labelList = jpaQueryFactory
+//                    .selectFrom(label)
+//                    .where(label.labelId.in(relatedTotalLabelList)
+//                            .and((label.startPostDate.before(LocalDateTime.now()).and(label.endPostDate.after(LocalDateTime.now())))))
+//                    .fetch()
+//                    .stream()
+//                    .map(eachLabel ->
+//                            LabelResponseDto.builder()
+//                                    .labelId(eachLabel.getLabelId())
+//                                    .labelTitle(eachLabel.getLabelTitle())
+//                                    .build()
+//                    )
+//                    .collect(Collectors.toList());
+//
+//            if (products.size() >= 20) {
+//                if ((page * 20) <= products.size()) {
+//                    productPageMainProducts = products.subList((page * 20) - 20, page * 20);
+//                } else {
+//                    productPageMainProducts = products.subList((page * 20) - 20, products.size());
+//                }
+//            } else {
+//                productPageMainProducts = products.subList((page * 20) - 20, products.size());
+//            }
+//
+//        }
+//
+//        // 최종적으로 확인하기 위한 반환 리스트 선언
+//        List<ProductPageMainProductResponseDto> getPageMainProductList = new ArrayList<>();
+//
+//        // 실제 제품 페이지에 노출될 제품들을 담은 리스트가 존재할 경우 진입
+//        if (!productPageMainProducts.isEmpty()) {
+//
+//            // 저장된 제품들의 정보를 추출하여 반환 객체에 맞게끔 Converting
+//            productPageMainProducts.forEach(eachProduct -> {
+//                ProductCreateResponseDto convertProductInfo = getProduct(eachProduct, "N");
+//
+//                int sellOrEventPrice = 0;
+//
+//                if (convertProductInfo.getEventStartDate().isBefore(LocalDateTime.now()) && convertProductInfo.getEventEndDate().isAfter(LocalDateTime.now())) {
+//                    sellOrEventPrice = convertProductInfo.getEventPrice();
+//                } else {
+//                    sellOrEventPrice = convertProductInfo.getSellPrice();
+//                }
+//
+//                getPageMainProductList.add(
+//                        ProductPageMainProductResponseDto.builder()
+//                                .supplierId(convertProductInfo.getSupplierId())
+//                                .brandId(convertProductInfo.getBrandId())
+//                                .brand(convertProductInfo.getBrand())
+//                                .upCategoryId(convertProductInfo.getUpCategoryId())
+//                                .upCategory(convertProductInfo.getUpCategory())
+//                                .middleCategoryId(convertProductInfo.getMiddleCategoryId())
+//                                .middleCategory(convertProductInfo.getMiddleCategory())
+//                                .downCategoryId(convertProductInfo.getDownCategoryId())
+//                                .downCategory(convertProductInfo.getDownCategory())
+//                                .productId(convertProductInfo.getProductId())
+//                                .productName(convertProductInfo.getProductName())
+//                                .classificationCode(convertProductInfo.getClassificationCode())
+//                                .labelList(convertProductInfo.getLabelList())
+//                                .modelNumber(convertProductInfo.getModelNumber())
+//                                .deliveryType(convertProductInfo.getDeliveryType())
+//                                .sellClassification(convertProductInfo.getSellClassification())
+//                                .expressionCheck(convertProductInfo.getExpressionCheck())
+//                                .normalPrice(convertProductInfo.getNormalPrice())
+//                                .sellPrice(sellOrEventPrice)
+//                                .deliveryPrice(convertProductInfo.getDeliveryPrice())
+//                                .purchasePrice(convertProductInfo.getPurchasePrice())
+//                                .eventStartDate(convertProductInfo.getEventStartDate())
+//                                .eventEndDate(convertProductInfo.getEventEndDate())
+//                                .eventDescription(convertProductInfo.getEventDescription())
+//                                .optionCheck(convertProductInfo.getOptionCheck())
+//                                .productOptionList(convertProductInfo.getProductOptionList())
+//                                .productDetailInfo(convertProductInfo.getProductDetailInfo())
+//                                .mediaList(convertProductInfo.getMediaList())
+//                                .manufacturer(convertProductInfo.getManufacturer())
+//                                .madeInOrigin(convertProductInfo.getMadeInOrigin())
+//                                .consignmentStore(convertProductInfo.getConsignmentStore())
+//                                .memo(convertProductInfo.getMemo())
+//                                .status(convertProductInfo.getStatus())
+//                                .build()
+//                );
+//            });
+//        }
+//
+//        return TotalProductPageMainProductResponseDto.builder()
+//                .totalMainProductCount(totalCount)
+//                .maxPrice(maxPrice)
+//                .mainProductList(getPageMainProductList)
+//                .brandList(brandList)
+//                .labelList(labelList)
+//                .relatedUnderCategoryList(middleCategoryList)
+//                .build();
+//    }
+
+
+    // 대분류 기준 제품 페이지의 정렬 기준 제품 리스트 v2
     public TotalProductPageMainProductResponseDto upCategoryPageMainProducts(
-            String loginMemberType, Long upCategoryId, int sort, int page, int startRangePrice, int endRangePrice, List<Long> brandIdList, List<Long> labelIdList, List<Long> middleCategoryIdList) {
+            HttpServletRequest request, String loginMemberType, Long upCategoryId, int sort, int page, int startRangePrice, int endRangePrice, List<Long> brandIdList, List<Long> labelIdList, List<Long> middleCategoryIdList) {
 
-        // 정렬된 제품 수
-        int totalCount = 0;
-
-        // 대분류 카테고리에 해당되는 CategoryInBrand 매핑 정보들 호출
-        List<Long> categoryInBrandIdList = jpaQueryFactory
-                .select(categoryInBrand.categoryInBrandId)
-                .from(categoryInBrand)
-                .where(categoryInBrand.category1Id.eq(upCategoryId)
-                        .and(eqCategoryProductBrand(brandIdList, ""))
-                        .and(eqUpCategoryInMiddleCategory(middleCategoryIdList)))
-                .fetch();
-
-        log.info("(1) 대분류 카테고리 / 브랜드 / 선택한 중분류에 해당되는 CategoryInBrand 매핑 정보들 : {}", categoryInBrandIdList.toString());
-
-        // 대분류 카테고리에 해당되는 제품들의 id 리스트 생성
-        List<Product> productsByUpCategoryList = new ArrayList<>();
-
-        // CategoryInBrand 매핑 정보들에서 정보들을 추출하여 관련된 제품 id 리스트 저장
-        categoryInBrandIdList.forEach(eachCategoryInBrandId -> {
-
-            // 고객 유형이 일반일 경우 C, A 타입의 신 제품들 추출
-            if (loginMemberType.equals("C")) {
-
-                productsByUpCategoryList.addAll(
-                        jpaQueryFactory
-                                .selectFrom(product)
-                                .where(product.categoryInBrandId.eq(eachCategoryInBrandId)
-                                        .and(product.expressionCheck.eq("Y"))
-                                        .and(product.sellClassification.eq("C"))
-                                        .and(product.status.eq("Y"))
-                                        .and(eqLabelOfProduct(labelIdList))
-                                )
-                                .fetch()
-                );
-
-            } else if (loginMemberType.equals("B")) { // 고객 유형이 기업일 경우 B, A 타입의 신 제품들 추출
-                productsByUpCategoryList.addAll(
-                        jpaQueryFactory
-                                .selectFrom(product)
-                                .where(product.categoryInBrandId.eq(eachCategoryInBrandId)
-                                        .and(product.expressionCheck.eq("Y"))
-                                        .and(product.status.eq("Y"))
-                                        .and(eqLabelOfProduct(labelIdList))
-                                )
-                                .fetch()
-                );
-            }
-        });
-
-        List<Long> productsByUpCategory = new ArrayList<>();
-
-        if (endRangePrice != 0) {
-            productsByUpCategory = productsByUpCategoryList.stream()
-                    .filter(eachProduct ->
-                            (eachProduct.getEventStartDate().isBefore(LocalDateTime.now()) && eachProduct.getEventEndDate().isAfter(LocalDateTime.now()) && eachProduct.getEventPrice() >= startRangePrice && eachProduct.getEventPrice() <= endRangePrice)
-                                    || (eachProduct.getSellPrice() >= startRangePrice && eachProduct.getSellPrice() <= endRangePrice)
-                    )
-                    .map(Product::getProductId)
-                    .collect(Collectors.toList());
-        } else {
-
-            if (startRangePrice == 0) {
-                productsByUpCategory = productsByUpCategoryList.stream()
-                        .map(Product::getProductId)
-                        .collect(Collectors.toList());
-            }
-
-        }
-
-        // 실제 제품 페이지에 노출될 제품들을 담을 리스트 생성
-        List<Product> productPageMainProducts = new ArrayList<>();
-        List<LabelResponseDto> labelList = new ArrayList<>();
-        List<BrandDataResponseDto> brandList = new ArrayList<>();
-        List<RelatedCategoryDataResponseDto> middleCategoryList = new ArrayList<>();
-
-        int maxPrice = 0;
-
-        // 해당되는 제품들의 id 리스트가 존재할 경우 진입
-        if (!productsByUpCategory.isEmpty()) {
-            // 총 관련 제품들 수량
-            totalCount = productsByUpCategory.size();
-            List<Product> products = new ArrayList<>();
-
-            // 리스트에 해당되는 카테고리 제품들을 정렬 조건에 맞춰 리스트에 저장
-            if (sort <= 3) { // 1 ~ 3 : 기본적인 판매 가격 혹은 최신 순 정렬 기준
-                products = jpaQueryFactory
-                        .selectFrom(product)
-                        .where(product.productId.in(productsByUpCategory))
-                        .groupBy(product.productId)
-                        .orderBy(orderBySort(sort))
-                        .fetch();
-
-            } else { // 4 : 누적 판매 기준 순
-
-                // 판매 이력이 존재한 제품의 경우 우선 넣기
-                List<String> classificationCodeList = jpaQueryFactory
-                        .select(product.classificationCode)
-                        .from(product)
-                        .where(product.productId.in(productsByUpCategory))
-                        .groupBy(product.classificationCode)
-                        .fetch();
-
-                List<Tuple> orderInProducts = jpaQueryFactory
-                        .select(orderInProduct.productClassificationCode, orderInProduct.productTotalAmount.sum())
-                        .from(orderInProduct)
-                        .where(orderInProduct.productClassificationCode.in(classificationCodeList))
-                        .groupBy(orderInProduct.productClassificationCode)
-                        .orderBy(orderInProduct.productTotalAmount.sum().desc())
-                        .fetch();
-
-                if (!orderInProducts.isEmpty()) {
-                    products = orderInProducts.stream()
-                            .filter(Objects::nonNull)
-                            .map(eachOrderInProduct ->
-                                    jpaQueryFactory
-                                            .selectFrom(product)
-                                            .where(product.classificationCode.eq(eachOrderInProduct.get(orderInProduct.productClassificationCode)))
-                                            .fetchOne()
-                            )
-                            .collect(Collectors.toList());
-
-                    List<Long> remainOrderInfoProductIdList = products.stream()
-                            .map(Product::getProductId)
-                            .collect(Collectors.toList());
-
-                    products.addAll(
-                            jpaQueryFactory
-                                    .selectFrom(product)
-                                    .where(product.productId.notIn(remainOrderInfoProductIdList)
-                                            .and(product.productId.in(productsByUpCategory)))
-                                    .orderBy(product.createdAt.desc())
-                                    .fetch()
-                    );
-
-                } else {
-                    products = jpaQueryFactory
-                            .selectFrom(product)
-                            .where(product.productId.in(productsByUpCategory))
-                            .groupBy(product.productId)
-                            .orderBy(product.createdAt.desc())
-                            .fetch();
-                }
-
-            }
+        try {
+            // 대분류 제품 페이지에 노출될 제품들 정보 리스트
+            List<ProductPageMainProductResponseDto> getPageMainProductList = productMapper.getSelectUpCategoryAndConditionRelateProductList(upCategoryId, brandIdList, "", middleCategoryIdList, loginMemberType, labelIdList, startRangePrice, endRangePrice, sort, (page * 20) - 20);
+            // 조회된 대분류 제품들의 총 갯수
+            int totalCount = productMapper.getSelectUpCategoryProductsCount(loginMemberType, labelIdList, startRangePrice, endRangePrice, sort);
+            // 조회된 대분류 제품들의 연관된 브랜드 리스트 정보
+            List<BrandDataResponseDto> brandList = productMapper.getSelectUpCategoryProductsRelatedBrand(loginMemberType, labelIdList, startRangePrice, endRangePrice, sort);
+            // 조회된 대분류 제품들의 연관된 중분류 카테고리 정보 리스트
+            List<RelatedCategoryDataResponseDto> middleCategoryList = productMapper.getSelectUpCategoryProductsRelatedMiddleCategory(loginMemberType, labelIdList, startRangePrice, endRangePrice, sort);
+            // 조회된 대분류 제품들의 연관된 라벨 정보 리스트
+            List<LabelResponseDto> labelList = productMapper.getSelectUpCategoryProductsRelatedLabel(loginMemberType, labelIdList, startRangePrice, endRangePrice, sort);
 
             // 조회한 제품들 중 가격 범위 최대치로 등록할 제품의 맥시멈 가격
-            maxPrice = products.stream()
-                    .map(eachProduct -> {
-                        if (eachProduct.getEventStartDate().isBefore(LocalDateTime.now()) && eachProduct.getEventEndDate().isAfter(LocalDateTime.now())) {
-                            return eachProduct.getEventPrice();
-                        } else {
-                            return eachProduct.getSellPrice();
-                        }
-                    })
+            int maxPrice = getPageMainProductList.stream()
+                    .map(ProductPageMainProductResponseDto::getSellPrice)
                     .max(Integer::compare)
                     .orElse(0);
 
-            // [ 필터링 조건용 브랜드 데이터 추출 로직 ]
-            List<CategoryInBrand> relatedCategoryInBrandList = jpaQueryFactory
-                    .selectFrom(categoryInBrand)
-                    .where(categoryInBrand.categoryInBrandId.in(
-                            products.stream()
-                                    .map(Product::getCategoryInBrandId)
-                                    .collect(Collectors.toList())
-                    ))
-                    .groupBy(categoryInBrand.categoryInBrandId)
-                    .fetch();
+            ////////////////////////////////////////////////////////////////////////////////////////
+            //                     4번 정렬 (주문 판매순) 관련 추출 로직 추가해야함                      //
+            ////////////////////////////////////////////////////////////////////////////////////////
 
-            List<Long> relatedBrandIdList = relatedCategoryInBrandList.stream()
-                    .map(CategoryInBrand::getBrandId)
-                    .distinct()
-                    .collect(Collectors.toList());
+            return TotalProductPageMainProductResponseDto.builder()
+                    .totalMainProductCount(totalCount)
+                    .maxPrice(maxPrice)
+                    .mainProductList(getPageMainProductList)
+                    .brandList(brandList)
+                    .labelList(labelList)
+                    .relatedUnderCategoryList(middleCategoryList)
+                    .build();
 
-            brandList = jpaQueryFactory
-                    .selectFrom(brand)
-                    .where(brand.brandId.in(relatedBrandIdList))
-                    .fetch()
-                    .stream()
-                    .map(eachBrand ->
-                            BrandDataResponseDto.builder()
-                                    .brandId(eachBrand.getBrandId())
-                                    .brandTitle(eachBrand.getBrandTitle())
-                                    .build()
-                    )
-                    .collect(Collectors.toList());
-
-
-            // [ 필터링 조건용 중분류 카테고리 데이터 추출 로직 ]
-            List<Long> relatedMiddleCategoryIdList = relatedCategoryInBrandList.stream()
-                    .map(CategoryInBrand::getCategory2Id)
-                    .distinct()
-                    .collect(Collectors.toList());
-
-            middleCategoryList = jpaQueryFactory
-                    .selectFrom(category)
-                    .where(category.categoryId.in(relatedMiddleCategoryIdList))
-                    .fetch()
-                    .stream()
-                    .map(eachMiddleCategory ->
-                            RelatedCategoryDataResponseDto.builder()
-                                    .categoryId(eachMiddleCategory.getCategoryId())
-                                    .categoryName(eachMiddleCategory.getCategoryName())
-                                    .build()
-                    )
-                    .collect(Collectors.toList());
-
-
-            // [ 필터링 조건용 라벨 데이터 추출 로직 ]
-            List<Long> relatedTotalLabelList = jpaQueryFactory
-                    .select(labelOfProduct.labelId)
-                    .from(labelOfProduct)
-                    .where(labelOfProduct.productId.in(
-                            products.stream()
-                                    .map(Product::getProductId)
-                                    .collect(Collectors.toList())
-                    ))
-                    .groupBy(labelOfProduct.labelId)
-                    .fetch();
-
-            labelList = jpaQueryFactory
-                    .selectFrom(label)
-                    .where(label.labelId.in(relatedTotalLabelList)
-                            .and((label.startPostDate.before(LocalDateTime.now()).and(label.endPostDate.after(LocalDateTime.now())))))
-                    .fetch()
-                    .stream()
-                    .map(eachLabel ->
-                            LabelResponseDto.builder()
-                                    .labelId(eachLabel.getLabelId())
-                                    .labelTitle(eachLabel.getLabelTitle())
-                                    .build()
-                    )
-                    .collect(Collectors.toList());
-
-            if (products.size() >= 20) {
-                if ((page * 20) <= products.size()) {
-                    productPageMainProducts = products.subList((page * 20) - 20, page * 20);
-                } else {
-                    productPageMainProducts = products.subList((page * 20) - 20, products.size());
-                }
-            } else {
-                productPageMainProducts = products.subList((page * 20) - 20, products.size());
-            }
-
+        } catch (Exception e){
+            LogUtil.logException(e, request);
+            return null;
         }
-
-        // 최종적으로 확인하기 위한 반환 리스트 선언
-        List<ProductPageMainProductResponseDto> getPageMainProductList = new ArrayList<>();
-
-        // 실제 제품 페이지에 노출될 제품들을 담은 리스트가 존재할 경우 진입
-        if (!productPageMainProducts.isEmpty()) {
-
-            // 저장된 제품들의 정보를 추출하여 반환 객체에 맞게끔 Converting
-            productPageMainProducts.forEach(eachProduct -> {
-                ProductCreateResponseDto convertProductInfo = getProduct(eachProduct, "N");
-
-                int sellOrEventPrice = 0;
-
-                if (convertProductInfo.getEventStartDate().isBefore(LocalDateTime.now()) && convertProductInfo.getEventEndDate().isAfter(LocalDateTime.now())) {
-                    sellOrEventPrice = convertProductInfo.getEventPrice();
-                } else {
-                    sellOrEventPrice = convertProductInfo.getSellPrice();
-                }
-
-                getPageMainProductList.add(
-                        ProductPageMainProductResponseDto.builder()
-                                .supplierId(convertProductInfo.getSupplierId())
-                                .brandId(convertProductInfo.getBrandId())
-                                .brand(convertProductInfo.getBrand())
-                                .upCategoryId(convertProductInfo.getUpCategoryId())
-                                .upCategory(convertProductInfo.getUpCategory())
-                                .middleCategoryId(convertProductInfo.getMiddleCategoryId())
-                                .middleCategory(convertProductInfo.getMiddleCategory())
-                                .downCategoryId(convertProductInfo.getDownCategoryId())
-                                .downCategory(convertProductInfo.getDownCategory())
-                                .productId(convertProductInfo.getProductId())
-                                .productName(convertProductInfo.getProductName())
-                                .classificationCode(convertProductInfo.getClassificationCode())
-                                .labelList(convertProductInfo.getLabelList())
-                                .modelNumber(convertProductInfo.getModelNumber())
-                                .deliveryType(convertProductInfo.getDeliveryType())
-                                .sellClassification(convertProductInfo.getSellClassification())
-                                .expressionCheck(convertProductInfo.getExpressionCheck())
-                                .normalPrice(convertProductInfo.getNormalPrice())
-                                .sellPrice(sellOrEventPrice)
-                                .deliveryPrice(convertProductInfo.getDeliveryPrice())
-                                .purchasePrice(convertProductInfo.getPurchasePrice())
-                                .eventStartDate(convertProductInfo.getEventStartDate())
-                                .eventEndDate(convertProductInfo.getEventEndDate())
-                                .eventDescription(convertProductInfo.getEventDescription())
-                                .optionCheck(convertProductInfo.getOptionCheck())
-                                .productOptionList(convertProductInfo.getProductOptionList())
-                                .productDetailInfo(convertProductInfo.getProductDetailInfo())
-                                .mediaList(convertProductInfo.getMediaList())
-                                .manufacturer(convertProductInfo.getManufacturer())
-                                .madeInOrigin(convertProductInfo.getMadeInOrigin())
-                                .consignmentStore(convertProductInfo.getConsignmentStore())
-                                .memo(convertProductInfo.getMemo())
-                                .status(convertProductInfo.getStatus())
-                                .build()
-                );
-            });
-        }
-
-        return TotalProductPageMainProductResponseDto.builder()
-                .totalMainProductCount(totalCount)
-                .maxPrice(maxPrice)
-                .mainProductList(getPageMainProductList)
-                .brandList(brandList)
-                .labelList(labelList)
-                .relatedUnderCategoryList(middleCategoryList)
-                .build();
     }
 
 

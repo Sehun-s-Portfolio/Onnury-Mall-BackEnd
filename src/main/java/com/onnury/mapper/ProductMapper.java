@@ -1,11 +1,15 @@
 package com.onnury.mapper;
 
+import com.onnury.brand.response.BrandDataResponseDto;
+import com.onnury.category.response.RelatedCategoryDataResponseDto;
+import com.onnury.label.response.LabelResponseDto;
 import com.onnury.product.domain.Product;
 import com.onnury.product.response.NewReleaseProductDetailOptionDto;
 import com.onnury.product.response.NewReleaseProductInfo;
 import com.onnury.product.response.NewReleaseProductOptionDto;
+import com.onnury.product.response.ProductPageMainProductResponseDto;
 import org.apache.ibatis.annotations.Mapper;
-import org.springframework.stereotype.Component;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -27,33 +31,35 @@ public interface ProductMapper {
     // 신 상품의 각 옵션에 해당되는 상세 옵션 정보 리스트
     List<NewReleaseProductDetailOptionDto> getNewReleaseProductDetailOptionList(Long productOptionId) throws Exception;
 
-//    // 당첨권 조회(상품코드순번)
-//    PrizeVO getPrizeByGoodsIdNo(String goodsIdNo) throws Exception;
-//    // 쿠폰정보 조회(쿠폰발급시)
-//    PrizeGoodsVO getPrizeByCouponInfo(CouponInfoVO reqgetPrizeByCouponInfoData) throws Exception;
-//
-//    // 당첨권 등록
-//    int insertPrize(PrizeVO reqData) throws Exception;
-//    // 쿠폰상태 변경
-//    int updatePrizeStatus(PrizeVO reqData) throws Exception;
-//    // 쿠폰 발급 이력 등록
-//    int insertCoupon(CouponVO reqData) throws Exception;
-//    // 쿠폰 발급 응답 update
-//    int updateCoupon(CouponVO reqData) throws Exception;
-//
-//    // 쿠폰함 이용가능 쿠폰리스트 조회
-//    List<CouponListVO> getCouponBoxListAvail(KbReqCouponBoxVO reqData) throws Exception;
-//    // 쿠폰함 이력 조회
-//    List<CouponListVO> getCouponBoxListHistory(CouponInfoVO reqData) throws Exception;
-//
-//    // 상품/이벤트 정보 조회(상품ID)
-//    GoodsEventVO getGoodsEventByGoodsId(Map reqData) throws Exception;
-//    // 상품 조회(이벤트 seq)
-//    List<GoodsListVO> getGoodsListByEventSeq(String goodsSeq) throws Exception;
-//    // 상품 조회(상품 seq)
-//    GoodsVO getGoodsByGoodsSeq(String goodsSeq) throws Exception;
-//    // 이벤트 조회(이벤트 seq)
-//    EventVO getEventByEventSeq(String eventSeq) throws Exception;
-//    // 쿠폰정보 상세조회(쿠폰상세조회시)
-//    RspGetCouponDetailAdd getCouponDetailByTranId(String tranId) throws Exception;
+    // 선택한 대분류 카테고리 + 검색 조건이 적용된 제품 정보 리스트 조회
+    List<ProductPageMainProductResponseDto> getSelectUpCategoryAndConditionRelateProductList(
+            @Param("upCategoryId") Long upCategoryId, @Param("brandIdList") List<Long> brandIdList,
+            @Param("searchBrandKeyword") String searchBrandKeyword, @Param("middleCategoryIdList") List<Long> middleCategoryIdList,
+            @Param("loginMemberType") String loginMemberType, @Param("labelIdList") List<Long> labelIdList,
+            @Param("startRangePrice") int startRangePrice, @Param("endRangePrice") int endRangePrice,
+            @Param("sort") int sort, @Param("page") int page) throws Exception;
+
+    // 선택한 대분류 카테고리 + 검색 조건이 적용된 제품들 총 수량 조회
+    int getSelectUpCategoryProductsCount(
+            @Param("loginMemberType") String loginMemberType, @Param("labelIdList") List<Long> labelIdList,
+            @Param("startRangePrice") int startRangePrice, @Param("endRangePrice") int endRangePrice, @Param("sort") int sort) throws Exception;
+
+    // 선택한 대분류 카테고리 제품들이 해당되는 브랜드 리스트
+    List<BrandDataResponseDto> getSelectUpCategoryProductsRelatedBrand(
+            @Param("loginMemberType") String loginMemberType, @Param("labelIdList") List<Long> labelIdList,
+            @Param("startRangePrice") int startRangePrice, @Param("endRangePrice") int endRangePrice,
+            @Param("sort") int sort) throws Exception;
+
+    // 선택한 대분류 카테고리 제품들이 해당되는 중분류 카테고리 정보 리스트
+    List<RelatedCategoryDataResponseDto> getSelectUpCategoryProductsRelatedMiddleCategory(
+            @Param("loginMemberType") String loginMemberType, @Param("labelIdList") List<Long> labelIdList,
+            @Param("startRangePrice") int startRangePrice, @Param("endRangePrice") int endRangePrice,
+            @Param("sort") int sort) throws Exception;
+
+    // 선택한 대분류 카테고리 제품들의 연관된 라벨 리스트 정보
+    List<LabelResponseDto> getSelectUpCategoryProductsRelatedLabel(
+            @Param("loginMemberType") String loginMemberType, @Param("labelIdList") List<Long> labelIdList,
+            @Param("startRangePrice") int startRangePrice, @Param("endRangePrice") int endRangePrice,
+            @Param("sort") int sort) throws Exception;
+
 }

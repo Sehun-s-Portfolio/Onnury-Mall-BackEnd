@@ -466,7 +466,7 @@ public class ProductService {
     // 대분류 기준 제품 페이지의 정렬 기준 제품 리스트 호출 service (정렬 기준 : 1 - 최신(기본) , 2 - 낮은 가격 순 , 3 - 높은 가격 순 , 4 - 누적 판매 순 (# 추후 반영))
     //@Async("threadPoolTaskExecutor")
     public TotalProductPageMainProductResponseDto upCategoryPageMainProducts(
-            HttpServletRequest request, Long upCategoryId, int sort, int page, int startRangePrice, int endRangePrice, List<Long> brandId, List<Long> labelId, List<Long> middleCategoryId) {
+            HttpServletRequest request, Long upCategoryId, int sort, int page, int startRangePrice, int endRangePrice, List<Long> brandId, List<Long> labelId, List<Long> middleCategoryId) throws Exception {
         log.info("대분류 기준 제품 페이지의 정렬 기준 제품 리스트 호출 service");
 
         log.info("(1) upCategoryId : {} - {}", upCategoryId, upCategoryId.getClass());
@@ -488,11 +488,9 @@ public class ProductService {
             // 로그인 고객
             Member loginMember = jwtTokenProvider.getMemberFromAuthentication();
 
-            return productQueryData.upCategoryPageMainProducts(loginMember.getType(), upCategoryId, sort, page, startRangePrice, endRangePrice, brandId, labelId, middleCategoryId);
-
+            return productQueryData.upCategoryPageMainProducts(request, loginMember.getType(), upCategoryId, sort, page, startRangePrice, endRangePrice, brandId, labelId, middleCategoryId);
         } else {
-            return productQueryData.upCategoryPageMainProducts("C", upCategoryId, sort, page, startRangePrice, endRangePrice, brandId, labelId, middleCategoryId);
-
+            return productQueryData.upCategoryPageMainProducts(request, "C", upCategoryId, sort, page, startRangePrice, endRangePrice, brandId, labelId, middleCategoryId);
         }
     }
 
