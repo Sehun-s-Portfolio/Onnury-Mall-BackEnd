@@ -2,10 +2,7 @@ package com.onnury.product.response;
 
 import com.onnury.label.response.LabelDataResponseDto;
 import com.onnury.media.response.MediaResponseDto;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -13,6 +10,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Setter
 @Getter
 public class ProductPageMainProductResponseDto {
     private Long supplierId; // 공급사 id

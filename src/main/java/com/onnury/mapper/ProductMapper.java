@@ -2,12 +2,11 @@ package com.onnury.mapper;
 
 import com.onnury.brand.response.BrandDataResponseDto;
 import com.onnury.category.response.RelatedCategoryDataResponseDto;
+import com.onnury.label.response.LabelDataResponseDto;
 import com.onnury.label.response.LabelResponseDto;
+import com.onnury.media.response.MediaResponseDto;
 import com.onnury.product.domain.Product;
-import com.onnury.product.response.NewReleaseProductDetailOptionDto;
-import com.onnury.product.response.NewReleaseProductInfo;
-import com.onnury.product.response.NewReleaseProductOptionDto;
-import com.onnury.product.response.ProductPageMainProductResponseDto;
+import com.onnury.product.response.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -38,6 +37,19 @@ public interface ProductMapper {
             @Param("loginMemberType") String loginMemberType, @Param("labelIdList") List<Long> labelIdList,
             @Param("startRangePrice") int startRangePrice, @Param("endRangePrice") int endRangePrice,
             @Param("sort") int sort, @Param("page") int page) throws Exception;
+
+
+    // 각 대분류 제품이 가지고 있는 라벨 정보
+    List<LabelDataResponseDto> getEachUpCategoryProductLabelInfo(Long productId) throws Exception;
+
+    // 각 대분류 제품이 가지고 있는 옵션 정보
+    List<ProductOptionCreateResponseDto> getEachUpCategoryProductOptionInfo(Long productId) throws Exception;
+
+    // 각 대분류 제품이 가지고 있는 옵션의 상세 옵션 정보
+    List<ProductDetailOptionCreateResponseDto> getEachUpCategoryProductDetailOptionInfo(Long productOptionId) throws Exception;
+
+    // 각 대분류 제품이 가지고 있는 제품 이미지 정보
+    List<MediaResponseDto> getEachUpCategoryProductMediaInfo(Long productId) throws Exception;
 
     // 선택한 대분류 카테고리 + 검색 조건이 적용된 제품들 총 수량 조회
     int getSelectUpCategoryProductsCount(

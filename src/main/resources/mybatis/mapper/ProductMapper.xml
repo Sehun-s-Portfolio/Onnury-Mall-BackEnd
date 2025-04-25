@@ -123,18 +123,6 @@
             b.down_category as downCategory,
             p.product_name as productName,
             p.classification_code as classificationCode,
---             (select
---                  label_id as labelId,
---                  label_title as labelTitle,
---                  color_code as colorCode,
---                  start_post_date as startPostDate,
---                  end_post_date as endPostDate,
---                  img_url as imgUrl,
---                  top_expression as topExpression
---              from
---                  label
---              where
---                  label_id in (select label_id from label_of_product where product_id = p.product_id)) as labelList,
             p.model_number as modelNumber,
             p.delivery_type as deliveryType,
             p.sell_classification as sellClassification,
@@ -147,37 +135,12 @@
             p.event_end_date as eventEndDate,
             p.event_description as eventDescription,
             p.option_check as optionCheck,
---             (select
---                 po.product_option_id as productOptionId,
---                 po.option_title as productOptionTitle,
---                 po.necessary_check as necessaryCheck,
---                 (select
---                     product_detail_option_id as detailOptionId,
---                     detail_option_name as detailOptionName,
---                     option_price as optionPrice
---                 from
---                     product_detail_option
---                 where
---                     product_option_id = po.product_option_id) as productDetailOptionList
---             from
---                 product_option po) as productOptionList,
---             (select
---                  content
---              from
---                  product_detail_info
---              where
---                  product_id = p.product_id) as productDetailInfo,
---             (select
---                 media_id as mediaId,
---                 img_upload_url as imgUploadUrl,
---                 img_url as imgUrl,
---                 img_title as imgTitle,
---                 img_uuid_title as imgUuidTitle,
---                 represent_check as representCheck
---             from
---                 media
---             where
---                 type = "product" and mapping_content_id = p.product_id) as mediaList,
+            (select
+                 content
+             from
+                 product_detail_info
+             where
+                 product_id = p.product_id) as productDetailInfo,
             p.manufacturer as manufacturer,
             p.made_in_origin as madeInOrigin,
             p.consignment_store as consignmentStore,
@@ -238,6 +201,8 @@
               and (((localtime() between p.event_start_date and p.event_end_date) and p.event_price >= #{startRangePrice}
                 <if test='endRangePrice > 0'>and #{endRangePrice} >= p.event_price </if>)
                 or (p.sell_price >= #{startRangePrice} <if test='endRangePrice > 0'>and #{endRangePrice} >= p.sell_price</if>))
+        group by
+            p.product_id
         order by
             <if test="sort != 4">
                 <choose>
@@ -256,6 +221,68 @@
             20
         offset
             #{page};
+    </select>
+
+    <!-- 각 대분류 제품이 가지고 있는 라벨 정보 -->
+    <select id="getEachUpCategoryProductLabelInfo" parameterType="Long" resultType="com.onnury.label.response.LabelDataResponseDto">
+        select
+            label_id as labelId,
+            label_title as labelTitle,
+            color_code as colorCode,
+            start_post_date as startPostDate,
+            end_post_date as endPostDate,
+            img_url as imgUrl,
+            top_expression as topExpression
+        from
+            label
+        where
+            label_id in (select label_id from label_of_product where product_id = #{productId});
+    </select>
+
+    <!-- 각 대분류 제품이 가지고 있는 옵션 정보 -->
+    <select id="getEachUpCategoryProductOptionInfo" parameterType="Long" resultType="com.onnury.product.response.ProductOptionCreateResponseDto">
+        select
+            po.product_option_id as productOptionId,
+            po.option_title as productOptionTitle,
+            po.necessary_check as necessaryCheck,
+            null as productDetailOptionList
+        from
+            product_option po
+        where
+            po.product_option_id in
+            (select
+                 poo.product_option_id
+             from
+                 product_of_option poo
+             where
+                 poo.product_id = #{productId});
+    </select>
+
+    <!-- 각 대분류 제품이 가지고 있는 옵션의 상세 옵션 정보 -->
+    <select id="getEachUpCategoryProductDetailOptionInfo" parameterType="Long" resultType="com.onnury.product.response.ProductDetailOptionCreateResponseDto">
+        select
+            product_detail_option_id as detailOptionId,
+            detail_option_name as detailOptionName,
+            option_price as optionPrice
+        from
+            product_detail_option
+        where
+            product_option_id = #{productOptionId};
+    </select>
+
+    <!-- 각 대분류 제품이 가지고 있는 제품 이미지 정보 -->
+    <select id="getEachUpCategoryProductMediaInfo" parameterType="Long" resultType="com.onnury.media.response.MediaResponseDto">
+        select
+            media_id as mediaId,
+            img_upload_url as imgUploadUrl,
+            img_url as imgUrl,
+            img_title as imgTitle,
+            img_uuid_title as imgUuidTitle,
+            represent_check as representCheck
+        from
+            media
+        where
+            type = "product" and mapping_content_id = #{productId};
     </select>
 
     <!-- 선택한 대분류 카테고리 + 검색 조건이 적용된 제품들 총 수량 조회 -->
@@ -317,7 +344,9 @@
                 category_in_brand cib
                     inner join
                 (select
-                    p.category_in_brand_id
+                    p.category_in_brand_id,
+                    p.sell_price,
+                    p.created_at
                 from
                     product p
                 where
@@ -346,22 +375,22 @@
                     <if test='endRangePrice > 0'>
                         and #{endRangePrice} >= p.sell_price
                     </if>))
-                    group by
-                        p.category_in_brand_id
-                    order by
-                        <if test="sort != 4">
-                            <choose>
-                                <when test="sort == 1">
-                                    p.created_at desc
-                                </when>
-                                <when test="sort == 2">
-                                    p.sell_price asc
-                                </when>
-                                <when test="sort == 3">
-                                    p.sell_price desc
-                                </when>
-                            </choose>
-                        </if>) b
+                group by
+                    p.category_in_brand_id
+                order by
+                    <if test="sort != 4">
+                        <choose>
+                            <when test="sort == 1">
+                                p.created_at desc
+                            </when>
+                            <when test="sort == 2">
+                                p.sell_price asc
+                            </when>
+                            <when test="sort == 3">
+                                p.sell_price desc
+                            </when>
+                        </choose>
+                    </if>) b
                 on cib.category_in_brand_id = b.category_in_brand_id
             group by
                 cib.brand_id) cib

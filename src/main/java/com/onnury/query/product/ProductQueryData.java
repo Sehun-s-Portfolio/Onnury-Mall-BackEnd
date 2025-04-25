@@ -1809,7 +1809,7 @@ public class ProductQueryData {
 
 
     // 메인 페이지 신 상품 리스트 호출
-    public List<MainPageNewReleaseProductResponseDto> getNewReleaseProducts(String loginMemberType) throws Exception{
+    public List<MainPageNewReleaseProductResponseDto> getNewReleaseProducts(String loginMemberType) throws Exception {
         log.info("메인 페이지 신 상품 리스트 호출 QueryData");
 
         // 신 상품 8개 정보 리스트
@@ -1849,7 +1849,7 @@ public class ProductQueryData {
                                                 .productDetailOptionList(productDetailOptionList)
                                                 .build()
                                 );
-                            }catch(Exception e){
+                            } catch (Exception e) {
                                 LogUtil.logException(e);
                             }
                         });
@@ -1917,7 +1917,7 @@ public class ProductQueryData {
                                     .status(eachNewReleaseProduct.getStatus())
                                     .build()
                     );
-                }catch(Exception e){
+                } catch (Exception e) {
                     LogUtil.logException(e);
                 }
             });
@@ -2252,6 +2252,35 @@ public class ProductQueryData {
         try {
             // 대분류 제품 페이지에 노출될 제품들 정보 리스트
             List<ProductPageMainProductResponseDto> getPageMainProductList = productMapper.getSelectUpCategoryAndConditionRelateProductList(upCategoryId, brandIdList, "", middleCategoryIdList, loginMemberType, labelIdList, startRangePrice, endRangePrice, sort, (page * 20) - 20);
+
+            getPageMainProductList.forEach(eachUpCategoryProduct -> {
+                try {
+                    List<LabelDataResponseDto> labelList = productMapper.getEachUpCategoryProductLabelInfo(eachUpCategoryProduct.getProductId());
+                    List<ProductOptionCreateResponseDto> productOptionList = productMapper.getEachUpCategoryProductOptionInfo(eachUpCategoryProduct.getProductId());
+
+                    if(!productOptionList.isEmpty()){
+                        productOptionList.forEach(eachProductOption -> {
+                            try {
+                                List<ProductDetailOptionCreateResponseDto> productDetailOptionList = productMapper.getEachUpCategoryProductDetailOptionInfo(eachProductOption.getProductOptionId());
+                                eachProductOption.setProductDetailOptionList(productDetailOptionList);
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+                    }
+
+                    List<MediaResponseDto> mediaList = productMapper.getEachUpCategoryProductMediaInfo(eachUpCategoryProduct.getProductId());
+
+                    eachUpCategoryProduct.setLabelList(labelList);
+                    eachUpCategoryProduct.setProductOptionList(productOptionList);
+                    eachUpCategoryProduct.setMediaList(mediaList);
+
+                } catch (Exception e) {
+                    LogUtil.logException(e, request);
+                    throw new RuntimeException(e);
+                }
+            });
+
             // 조회된 대분류 제품들의 총 갯수
             int totalCount = productMapper.getSelectUpCategoryProductsCount(loginMemberType, labelIdList, startRangePrice, endRangePrice, sort);
             // 조회된 대분류 제품들의 연관된 브랜드 리스트 정보
@@ -2280,7 +2309,7 @@ public class ProductQueryData {
                     .relatedUnderCategoryList(middleCategoryList)
                     .build();
 
-        } catch (Exception e){
+        } catch (Exception e) {
             LogUtil.logException(e, request);
             return null;
         }
