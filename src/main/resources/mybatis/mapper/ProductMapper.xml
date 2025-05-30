@@ -9,7 +9,7 @@
     <select id="getNewProductsByCustomer" resultType="com.onnury.product.domain.Product">
         <!-- getNewProductsByCustomer -->
         select
-            *
+        *
         from product
         <where>
             expression_check = 'Y' and sell_classification = 'C' and status = 'Y'
@@ -31,773 +31,772 @@
         limit 8;
     </select>
 
-        <!-- 신 상품 정보 조회 -->
-        <select id="getProductInfo" parameterType="String" resultType="com.onnury.product.response.NewReleaseProductInfo">
-            <!-- getProductInfo -->
-            select
-                p.*,
-                pdi.content
-            from
-                (select
-                     a.*,
-                     b.brand_title
-                 from
-                    (select
-                        p.product_id, p.product_name, p.category_in_brand_id, c.brand_id,
-                        c.category1id, (select category_name from category where category_id = c.category1id) as up_category_name,
-                        c.category2id, (select category_name from category where category_id = c.category2id) as middle_category_name,
-                        c.category3id, (select category_name from category where category_id = c.category3id) as down_category_name,
-                        p.supplier_id, p.classification_code, p.model_number, p.delivery_type, p.sell_classification,
-                        p.expression_check, p.sell_price, p.normal_price, p.delivery_price, p.purchase_price,
-                        p.event_start_date, p.event_end_date, p.event_price, p.event_description, p.option_check,
-                        p.manufacturer, p.made_in_origin, p.consignment_store, p.memo, p.status, p.relate_img_ids
-                    from
-                        product p
-                    inner join
-                        category_in_brand c
-                    on
-                        p.category_in_brand_id = c.category_in_brand_id
-                    where
-                        p.expression_check = 'Y' and p.status = 'Y'
-                        <if test='loginMemberType != null and couponNum != ""'>
-                            and p.sell_classification = #{loginMemberType}
-                        </if>
-                        order by
-                            p.created_at desc
-                        limit 8) a
-                    inner join
-                        brand b
-                    on
-                        a.brand_id = b.brand_id) p
-                inner join
-                    product_detail_info pdi
-                on
-                    p.product_id = pdi.product_id;
-            </select>
+    <!-- 신 상품 정보 조회 -->
+    <select id="getProductInfo" parameterType="String" resultType="com.onnury.product.response.NewReleaseProductInfo">
+        <!-- getProductInfo -->
+        select
+        p.*,
+        pdi.content
+        from
+        (select
+        a.*,
+        b.brand_title
+        from
+        (select
+        p.product_id, p.product_name, p.category_in_brand_id, c.brand_id,
+        c.category1id, (select category_name from category where category_id = c.category1id) as up_category_name,
+        c.category2id, (select category_name from category where category_id = c.category2id) as middle_category_name,
+        c.category3id, (select category_name from category where category_id = c.category3id) as down_category_name,
+        p.supplier_id, p.classification_code, p.model_number, p.delivery_type, p.sell_classification,
+        p.expression_check, p.sell_price, p.normal_price, p.delivery_price, p.purchase_price,
+        p.event_start_date, p.event_end_date, p.event_price, p.event_description, p.option_check,
+        p.manufacturer, p.made_in_origin, p.consignment_store, p.memo, p.status, p.relate_img_ids
+        from
+        product p
+        inner join
+        category_in_brand c
+        on
+        p.category_in_brand_id = c.category_in_brand_id
+        where
+        p.expression_check = 'Y' and p.status = 'Y'
+        <if test='loginMemberType != null and couponNum != ""'>
+            and p.sell_classification = #{loginMemberType}
+        </if>
+        order by
+        p.created_at desc
+        limit 8) a
+        inner join
+        brand b
+        on
+        a.brand_id = b.brand_id) p
+        inner join
+        product_detail_info pdi
+        on
+        p.product_id = pdi.product_id;
+    </select>
 
     <!-- 신 상품 옵션 정보 리스트 -->
-    <select id="getNewReleaseProductOptionList" parameterType="Long" resultType="com.onnury.product.response.NewReleaseProductOptionDto">
+    <select id="getNewReleaseProductOptionList" parameterType="Long"
+            resultType="com.onnury.product.response.NewReleaseProductOptionDto">
         <!-- getProductOptionList -->
         select
-            p.product_option_id, p.option_title, p.necessary_check
+        p.product_option_id, p.option_title, p.necessary_check
         from
-            product_option p
+        product_option p
         inner join
-            (select product_option_id from product_of_option where product_id = #{productId}) pop
+        (select product_option_id from product_of_option where product_id = #{productId}) pop
         on
-            p.product_option_id = pop.product_option_id;
+        p.product_option_id = pop.product_option_id;
     </select>
 
     <!-- 신 상품의 각 옵션에 해당되는 상세 옵션 정보 리스트 -->
-    <select id="getNewReleaseProductDetailOptionList" parameterType="Long" resultType="com.onnury.product.response.NewReleaseProductDetailOptionDto">
+    <select id="getNewReleaseProductDetailOptionList" parameterType="Long"
+            resultType="com.onnury.product.response.NewReleaseProductDetailOptionDto">
         <!-- getNewReleaseProductDetailOptionList -->
         select
-            b.product_detail_option_id, b.detail_option_name, b.option_price
+        b.product_detail_option_id, b.detail_option_name, b.option_price
         from
-            (select
-                p.product_option_id, p.option_title, p.necessary_check
-             from
-                product_option p
-            inner join
-                (select product_option_id from product_of_option where product_option_id = #{productOptionId}) pop
-            on
-                p.product_option_id = pop.product_option_id) a
+        (select
+        p.product_option_id, p.option_title, p.necessary_check
+        from
+        product_option p
         inner join
-                product_detail_option b
+        (select product_option_id from product_of_option where product_option_id = #{productOptionId}) pop
         on
-            a.product_option_id = b.product_option_id;
+        p.product_option_id = pop.product_option_id) a
+        inner join
+        product_detail_option b
+        on
+        a.product_option_id = b.product_option_id;
     </select>
 
     <!-- 선택한 대분류 카테고리 + 검색 조건이 적용된 제품 정보 리스트 조회 -->
-    <select id="getSelectUpCategoryAndConditionRelateProductList" parameterType="Map" resultType="com.onnury.product.response.ProductPageMainProductResponseDto">
+    <select id="getSelectUpCategoryAndConditionRelateProductList" parameterType="Map"
+            resultType="com.onnury.product.response.ReadyProductPageMainProductResponseDto">
         select
-            p.product_id as productId,
-            p.supplier_id as supplierId,
-            b.brand_id as brandId,
-            b.brand_title as brand,
-            b.category1id as upCategoryId,
-            b.up_category as upCategory,
-            b.category2id as middleCategoryId,
-            b.middle_category as middleCategory,
-            b.category3id as downCategoryId,
-            b.down_category as downCategory,
-            p.product_name as productName,
-            p.classification_code as classificationCode,
-            p.model_number as modelNumber,
-            p.delivery_type as deliveryType,
-            p.sell_classification as sellClassification,
-            p.expression_check as expressionCheck,
-            p.normal_price as normalPrice,
-            if(localtime() between p.event_start_date and p.event_end_date, p.event_price, p.sell_price) as sellPrice,
-            p.delivery_price as deliveryPrice,
-            p.purchase_price as purchasePrice,
-            p.event_start_date as eventStartDate,
-            p.event_end_date as eventEndDate,
-            p.event_description as eventDescription,
-            p.option_check as optionCheck,
-            (select
-                 content
-             from
-                 product_detail_info
-             where
-                 product_id = p.product_id) as productDetailInfo,
-            p.manufacturer as manufacturer,
-            p.made_in_origin as madeInOrigin,
-            p.consignment_store as consignmentStore,
-            p.memo as memo,
-            p.status as status
+        p.product_id as productId,
+        p.supplier_id as supplierId,
+        b.brand_id as brandId,
+        b.brand_title as brand,
+        b.category1id as upCategoryId,
+        b.up_category as upCategory,
+        b.category2id as middleCategoryId,
+        b.middle_category as middleCategory,
+        b.category3id as downCategoryId,
+        b.down_category as downCategory,
+        p.product_name as productName,
+        p.classification_code as classificationCode,
+        p.model_number as modelNumber,
+        p.delivery_type as deliveryType,
+        p.sell_classification as sellClassification,
+        p.expression_check as expressionCheck,
+        p.normal_price as normalPrice,
+        if(localtime() between p.event_start_date and p.event_end_date, p.event_price, p.sell_price) as sellPrice,
+        p.delivery_price as deliveryPrice,
+        p.purchase_price as purchasePrice,
+        p.event_start_date as eventStartDate,
+        p.event_end_date as eventEndDate,
+        p.event_description as eventDescription,
+        p.option_check as optionCheck,
+        (select
+        content
         from
-            product p
-        inner join
-            (select
-                cib.category_in_brand_id,
-                cib.brand_id,
-                (select brand_title from brand where brand_id = cib.brand_id) as brand_title,
-                cib.category1id,
-                (select category_name from category where category_id = cib.category1id) as up_category,
-                cib.category2id,
-                (select category_name from category where category_id = cib.category2id) as middle_category,
-                cib.category3id,
-                (select category_name from category where category_id = cib.category3id) as down_category
-            from
-                category_in_brand cib
-            where
-                cib.category1id = #{upCategoryId}
-                <if test='brandIdList != null and !brandIdList.isEmpty()'>
-                    and cib.brand_id in
-                    <foreach collection="brandIdList" item="brandId" index="index" open="(" close=")" separator=",">
-                        #{brandId}
-                    </foreach>
-                </if>
-                <if test='searchBrandKeyword != null and searchBrandKeyword != ""'>
-                    and cib.brand_title like concat("%", #{searchBrandKeyword}, "%")
-                </if>
-                <if test='middleCategoryIdList != null and !middleCategoryIdList.isEmpty()'>
-                    and cib.category2id in
-                    <foreach collection="middleCategoryIdList" item="middleCategoryId" index="index" open="(" close=")" separator=",">
-                        #{middleCategoryId}
-                    </foreach>
-                </if>) b
-        on
-            p.category_in_brand_id = b.category_in_brand_id
+        product_detail_info
         where
-            p.expression_check = "Y" and
-            <if test='loginMemberType != null and loginMemberType != ""'>
-                p.sell_classification = #{loginMemberType} and
-            </if>
-            p.status = "Y"
-            <if test='labelIdList != null and !labelIdList.isEmpty()' >
-                and p.product_id in
-                (select
-                     product_id
-                 from
-                     label_of_product
-                 where
-                     label_id in
-                <foreach collection="labelIdList" item="labelId" index="index" open="(" close=")" separator=",">
-                    #{labelId}
-                </foreach>)
-            </if>
-              and (((localtime() between p.event_start_date and p.event_end_date) and p.event_price >= #{startRangePrice}
-                <if test='endRangePrice > 0'>and #{endRangePrice} >= p.event_price </if>)
-                or (p.sell_price >= #{startRangePrice} <if test='endRangePrice > 0'>and #{endRangePrice} >= p.sell_price</if>))
+        product_id = p.product_id) as productDetailInfo,
+        p.manufacturer as manufacturer,
+        p.made_in_origin as madeInOrigin,
+        p.consignment_store as consignmentStore,
+        p.memo as memo,
+        p.status as status
+        from
+        product p
+        inner join
+        (select
+        cib.category_in_brand_id,
+        cib.brand_id,
+        (select brand_title from brand where brand_id = cib.brand_id) as brand_title,
+        cib.category1id,
+        (select category_name from category where category_id = cib.category1id) as up_category,
+        cib.category2id,
+        (select category_name from category where category_id = cib.category2id) as middle_category,
+        cib.category3id,
+        (select category_name from category where category_id = cib.category3id) as down_category
+        from
+        category_in_brand cib
+        where
+        cib.category1id = #{upCategoryId}
+        <if test='brandIdList != null and !brandIdList.isEmpty()'>
+            and cib.brand_id in
+            <foreach collection="brandIdList" item="brandId" index="index" open="(" close=")" separator=",">
+                #{brandId}
+            </foreach>
+        </if>
+        <if test='searchBrandKeyword != null and searchBrandKeyword != ""'>
+            and cib.brand_title like concat("%", #{searchBrandKeyword}, "%")
+        </if>
+        <if test='middleCategoryIdList != null and !middleCategoryIdList.isEmpty()'>
+            and cib.category2id in
+            <foreach collection="middleCategoryIdList" item="middleCategoryId" index="index" open="(" close=")"
+                     separator=",">
+                #{middleCategoryId}
+            </foreach>
+        </if>
+        ) b
+        on
+        p.category_in_brand_id = b.category_in_brand_id
+        where
+        p.expression_check = "Y" and
+        <if test='loginMemberType != null and loginMemberType != ""'>
+            p.sell_classification = #{loginMemberType} and
+        </if>
+        p.status = "Y"
+        <if test='labelIdList != null and !labelIdList.isEmpty()'>
+            and p.product_id in
+            (select
+            product_id
+            from
+            label_of_product
+            where
+            label_id in
+            <foreach collection="labelIdList" item="labelId" index="index" open="(" close=")" separator=",">
+                #{labelId}
+            </foreach>)
+        </if>
+        and (((localtime() between p.event_start_date and p.event_end_date) and p.event_price >= #{startRangePrice}
+        <if test='endRangePrice > 0'>and #{endRangePrice} >= p.event_price</if>)
+        or (p.sell_price >= #{startRangePrice} <if test='endRangePrice > 0'>and #{endRangePrice} >= p.sell_price</if>))
         group by
-            p.product_id
+        p.product_id
         order by
-            <if test="sort != 4">
-                <choose>
-                    <when test="sort == 1">
-                        p.created_at desc
-                    </when>
-                    <when test="sort == 2">
-                        p.sell_price asc
-                    </when>
-                    <when test="sort == 3">
-                        p.sell_price desc
-                    </when>
-                </choose>
-            </if>
+        <if test="sort != 4">
+            <choose>
+                <when test="sort == 1">
+                    p.created_at desc
+                </when>
+                <when test="sort == 2">
+                    p.sell_price asc
+                </when>
+                <when test="sort == 3">
+                    p.sell_price desc
+                </when>
+            </choose>
+        </if>
         limit
-            20
+        20
         offset
-            #{page};
+        #{page};
     </select>
 
     <!-- 각 대분류 제품이 가지고 있는 라벨 정보 -->
-    <select id="getEachUpCategoryProductLabelInfo" parameterType="Long" resultType="com.onnury.label.response.LabelDataResponseDto">
-        select
-            label_id as labelId,
-            label_title as labelTitle,
-            color_code as colorCode,
-            start_post_date as startPostDate,
-            end_post_date as endPostDate,
-            img_url as imgUrl,
-            top_expression as topExpression
-        from
-            label
-        where
-            label_id in (select label_id from label_of_product where product_id = #{productId});
+    <select id="getEachUpCategoryProductLabelInfo" parameterType="Long"
+            resultType="com.onnury.label.response.LabelDataResponseDto">
+        select label_id        as labelId,
+               label_title     as labelTitle,
+               color_code      as colorCode,
+               start_post_date as startPostDate,
+               end_post_date   as endPostDate,
+               img_url         as imgUrl,
+               top_expression  as topExpression
+        from label
+        where label_id in (select label_id from label_of_product where product_id = #{productId});
     </select>
 
     <!-- 각 대분류 제품이 가지고 있는 옵션 정보 -->
-    <select id="getEachUpCategoryProductOptionInfo" parameterType="Long" resultType="com.onnury.product.response.ProductOptionCreateResponseDto">
-        select
-            po.product_option_id as productOptionId,
-            po.option_title as productOptionTitle,
-            po.necessary_check as necessaryCheck,
-            null as productDetailOptionList
-        from
-            product_option po
-        where
-            po.product_option_id in
-            (select
-                 poo.product_option_id
-             from
-                 product_of_option poo
-             where
-                 poo.product_id = #{productId});
+    <select id="getEachUpCategoryProductOptionInfo" parameterType="Long"
+            resultType="com.onnury.product.response.ProductOptionCreateResponseDto">
+        select po.product_option_id as productOptionId,
+               po.option_title      as productOptionTitle,
+               po.necessary_check   as necessaryCheck,
+               null                 as productDetailOptionList
+        from product_option po
+        where po.product_option_id in
+              (select poo.product_option_id
+               from product_of_option poo
+               where poo.product_id = #{productId});
     </select>
 
     <!-- 각 대분류 제품이 가지고 있는 옵션의 상세 옵션 정보 -->
-    <select id="getEachUpCategoryProductDetailOptionInfo" parameterType="Long" resultType="com.onnury.product.response.ProductDetailOptionCreateResponseDto">
-        select
-            product_detail_option_id as detailOptionId,
-            detail_option_name as detailOptionName,
-            option_price as optionPrice
-        from
-            product_detail_option
-        where
-            product_option_id = #{productOptionId};
+    <select id="getEachUpCategoryProductDetailOptionInfo" parameterType="Long"
+            resultType="com.onnury.product.response.ProductDetailOptionCreateResponseDto">
+        select product_detail_option_id as detailOptionId,
+               detail_option_name       as detailOptionName,
+               option_price             as optionPrice
+        from product_detail_option
+        where product_option_id = #{productOptionId};
     </select>
 
     <!-- 각 대분류 제품이 가지고 있는 제품 이미지 정보 -->
-    <select id="getEachUpCategoryProductMediaInfo" parameterType="Long" resultType="com.onnury.media.response.MediaResponseDto">
-        select
-            media_id as mediaId,
-            img_upload_url as imgUploadUrl,
-            img_url as imgUrl,
-            img_title as imgTitle,
-            img_uuid_title as imgUuidTitle,
-            represent_check as representCheck
-        from
-            media
-        where
-            type = "product" and mapping_content_id = #{productId};
+    <select id="getEachUpCategoryProductMediaInfo" parameterType="Long"
+            resultType="com.onnury.media.response.MediaResponseDto">
+        select media_id        as mediaId,
+               img_upload_url  as imgUploadUrl,
+               img_url         as imgUrl,
+               img_title       as imgTitle,
+               img_uuid_title  as imgUuidTitle,
+               represent_check as representCheck
+        from media
+        where type = "product"
+          and mapping_content_id = #{productId};
     </select>
 
     <!-- 선택한 대분류 카테고리 + 검색 조건이 적용된 제품들 총 수량 조회 -->
     <select id="getSelectUpCategoryProductsCount" parameterType="Map" resultType="Integer">
         select
-            count(*)
+        count(*)
         from
-            product p
+        product p
         where
-            p.expression_check = "Y" and
-            <if test='loginMemberType != null and loginMemberType != ""'>
-                p.sell_classification = #{loginMemberType} and
-            </if>
-            p.status = "Y"
-            <if test='labelIdList != null and !labelIdList.isEmpty()' >
-                and p.product_id in
-                (select
-                    product_id
-                from
-                    label_of_product
-                where
-                    label_id in
-                <foreach collection="labelIdList" item="labelId" index="index" open="(" close=")" separator=",">
-                    #{labelId}
-                </foreach>)
-            </if>
-            and (((localtime() between p.event_start_date and p.event_end_date)and p.event_price >= #{startRangePrice}
-            <if test='endRangePrice > 0'>and #{endRangePrice} >= p.event_price</if>)
-            or (p.sell_price >= #{startRangePrice} <if test='endRangePrice > 0'>and #{endRangePrice} >= p.sell_price </if>))
+        p.expression_check = "Y" and
+        <if test='loginMemberType != null and loginMemberType != ""'>
+            p.sell_classification = #{loginMemberType} and
+        </if>
+        p.status = "Y"
+        <if test='labelIdList != null and !labelIdList.isEmpty()'>
+            and p.product_id in
+            (select
+            product_id
+            from
+            label_of_product
+            where
+            label_id in
+            <foreach collection="labelIdList" item="labelId" index="index" open="(" close=")" separator=",">
+                #{labelId}
+            </foreach>)
+        </if>
+        and (((localtime() between p.event_start_date and p.event_end_date)and p.event_price >= #{startRangePrice}
+        <if test='endRangePrice > 0'>and #{endRangePrice} >= p.event_price</if>)
+        or (p.sell_price >= #{startRangePrice} <if test='endRangePrice > 0'>and #{endRangePrice} >= p.sell_price</if>))
         order by
-            <if test="sort != 4">
-                <choose>
-                    <when test="sort == 1">
-                        p.created_at desc
-                    </when>
-                    <when test="sort == 2">
-                        p.sell_price asc
-                    </when>
-                    <when test="sort == 3">
-                        p.sell_price desc
-                    </when>
-                </choose>
-            </if>
+        <if test="sort != 4">
+            <choose>
+                <when test="sort == 1">
+                    p.created_at desc
+                </when>
+                <when test="sort == 2">
+                    p.sell_price asc
+                </when>
+                <when test="sort == 3">
+                    p.sell_price desc
+                </when>
+            </choose>
+        </if>
     </select>
 
     <!-- 선택한 대분류 카테고리 제품들이 해당되는 브랜드 리스트 -->
-    <select id="getSelectUpCategoryProductsRelatedBrand" parameterType="Map" resultType="com.onnury.brand.response.BrandDataResponseDto">
+    <select id="getSelectUpCategoryProductsRelatedBrand" parameterType="Map"
+            resultType="com.onnury.brand.response.BrandDataResponseDto">
         select
-            b.brand_id as brandId,
-            b.brand_title as brandTitle,
-            b.status as status,
-            concat(b.brand_title, " - 이미지 호출 안함") as imgUrl
+        b.brand_id as brandId,
+        b.brand_title as brandTitle,
+        b.status as status,
+        concat(b.brand_title, " - 이미지 호출 안함") as imgUrl
         from
-            brand b
-                inner join
+        brand b
+        inner join
+        (select
+        cib.brand_id
+        from
+        category_in_brand cib
+        inner join
+        (select cp.category_in_brand_id from
+        (select
+        p.category_in_brand_id
+        from
+        product p
+        where
+        p.expression_check = "Y" and
+        <if test='loginMemberType != null and loginMemberType != ""'>p.sell_classification = #{loginMemberType} and
+        </if>
+        p.status = "Y"
+        <if test='
+        labelIdList != null and !labelIdList.isEmpty()'>and p.product_id in
             (select
-                cib.brand_id
+            product_id
             from
-                category_in_brand cib
-                    inner join
-                (select
-                    p.category_in_brand_id,
-                    p.sell_price,
-                    p.created_at
-                from
-                    product p
-                where
-                    p.expression_check = "Y" and
-                    <if test='loginMemberType != null and loginMemberType != ""'>
-                        p.sell_classification = #{loginMemberType} and
-                    </if>
-                    p.status = "Y"
-                    <if test='labelIdList != null and !labelIdList.isEmpty()'>
-                        and p.product_id in
-                        (select
-                            product_id
-                        from
-                            label_of_product
-                        where
-                            label_id in
-                            <foreach collection="labelIdList" item="labelId" index="index" open="(" close=")" separator=",">
-                                    #{labelId}
-                            </foreach>)
-                    </if>
-                    and (((localtime() between p.event_start_date and p.event_end_date) and p.event_price >= #{startRangePrice}
-                    <if test='endRangePrice > 0'>
-                        and #{endRangePrice} >= p.event_price
-                    </if>)
-                    or (p.sell_price >= #{startRangePrice}
-                    <if test='endRangePrice > 0'>
-                        and #{endRangePrice} >= p.sell_price
-                    </if>))
-                group by
-                    p.category_in_brand_id
-                order by
-                    <if test="sort != 4">
-                        <choose>
-                            <when test="sort == 1">
-                                p.created_at desc
-                            </when>
-                            <when test="sort == 2">
-                                p.sell_price asc
-                            </when>
-                            <when test="sort == 3">
-                                p.sell_price desc
-                            </when>
-                        </choose>
-                    </if>) b
-                on cib.category_in_brand_id = b.category_in_brand_id
-            group by
-                cib.brand_id) cib
+            label_of_product
+            where
+            label_id in
+            <foreach collection="
+            labelIdList" item="labelId" index="index" open="(" close=")" separator=",">
+                #{labelId}
+            </foreach>)
+        </if>
+        and (((localtime() between p.event_start_date and p.event_end_date) and p.event_price >= #{startRangePrice}
+        <if test='endRangePrice > 0'>
+            and #{endRangePrice} >= p.event_price
+        </if>)
+        or (p.sell_price >= #{startRangePrice}
+        <if test='endRangePrice > 0'>
+            and #{endRangePrice} >= p.sell_price
+        </if>))
+        order by
+        <if test="sort != 4">
+            <choose>
+                <when test="sort == 1">
+                    p.created_at desc
+                </when>
+                <when test="sort == 2">
+                    p.sell_price asc
+                </when>
+                <when test="sort == 3">
+                    p.sell_price desc
+                </when>
+            </choose>
+        </if>
+        ) cp
+        group by cp.category_in_brand_id) b
+        on cib.category_in_brand_id = b.category_in_brand_id
+        group by
+        cib.brand_id) cib
     </select>
 
     <!-- 선택한 대분류 카테고리 제품들이 해당되는 중분류 카테고리 정보 리스트 -->
-    <select id="getSelectUpCategoryProductsRelatedMiddleCategory" parameterType="Map" resultType="com.onnury.category.response.RelatedCategoryDataResponseDto">
+    <select id="getSelectUpCategoryProductsRelatedMiddleCategory" parameterType="Map"
+            resultType="com.onnury.category.response.RelatedCategoryDataResponseDto">
         select
-            c.category_id as categoryId,
-            c.category_name as categoryName
+        c.category_id as categoryId,
+        c.category_name as categoryName
         from
-            category c
-                inner join
+        category c
+        inner join
+        (select
+        cib.category2id
+        from
+        category_in_brand cib
+        inner join
+        (select cp.category_in_brand_id from
+        (select
+        p.category_in_brand_id
+        from
+        product p
+        where
+        p.expression_check = "Y" and
+        <if test='loginMemberType != null and loginMemberType != ""'>
+            p.sell_classification = #{loginMemberType} and
+        </if>
+        p.status = "Y"
+        <if test='labelIdList != null and !labelIdList.isEmpty()'>
+            and p.product_id in
             (select
-                cib.category2id
+            product_id
             from
-                category_in_brand cib
-                inner join
-                (select
-                p.category_in_brand_id
-                from
-                product p
-                where
-                p.expression_check = "Y" and
-                <if test='loginMemberType != null and loginMemberType != ""'>
-                    p.sell_classification = #{loginMemberType} and
-                </if>
-                p.status = "Y"
-                <if test='labelIdList != null and !labelIdList.isEmpty()'>
-                    and p.product_id in
-                    (select
-                    product_id
-                    from
-                    label_of_product
-                    where
-                    label_id in
-                    <foreach collection="labelIdList" item="labelId" index="index" open="(" close=")" separator=",">
-                        #{labelId}
-                    </foreach>)
-                </if>
-                and (((localtime() between p.event_start_date and p.event_end_date) and p.event_price >= #{startRangePrice}
-                <if test='endRangePrice > 0'>
-                    and #{endRangePrice} > = p.event_price
-                </if>)
-                or (p.sell_price >= #{startRangePrice}
-                <if test='endRangePrice > 0'>
-                    and #{endRangePrice} >= p.sell_price
-                </if>))
-                group by
-                p.category_in_brand_id
-                order by
-                <if test="sort != 4">
-                    <choose>
-                        <when test="sort == 1">
-                            p.created_at desc
-                        </when>
-                        <when test="sort == 2">
-                            p.sell_price asc
-                        </when>
-                        <when test="sort == 3">
-                            p.sell_price desc
-                        </when>
-                    </choose>
-                </if>) b
-                on cib.category_in_brand_id = b.category_in_brand_id
-            group by
-                cib.category2id) cib
-                on
-            c.category_id = cib.category2id
+            label_of_product
+            where
+            label_id in
+            <foreach collection="labelIdList" item="labelId" index="index" open="(" close=")" separator=",">
+                #{labelId}
+            </foreach>)
+        </if>
+        and (((localtime() between p.event_start_date and p.event_end_date) and p.event_price >= #{startRangePrice}
+        <if test='endRangePrice > 0'>
+            and #{endRangePrice} > = p.event_price
+        </if>)
+        or (p.sell_price >= #{startRangePrice}
+        <if test='endRangePrice > 0'>
+            and #{endRangePrice} >= p.sell_price
+        </if>))
+        order by
+        <if test="sort != 4">
+            <choose>
+                <when test="sort == 1">
+                    p.created_at desc
+                </when>
+                <when test="sort == 2">
+                    p.sell_price asc
+                </when>
+                <when test="sort == 3">
+                    p.sell_price desc
+                </when>
+            </choose>
+        </if>
+        ) cp
+        group by cp.category_in_brand_id) b
+        on cib.category_in_brand_id = b.category_in_brand_id
+        group by
+        cib.category2id) cib
+        on
+        c.category_id = cib.category2id
     </select>
 
     <!-- 선택한 대분류 카테고리 제품들의 연관된 라벨 리스트 정보-->
-    <select id="getSelectUpCategoryProductsRelatedLabel" parameterType="Map" resultType="com.onnury.label.response.LabelResponseDto">
+    <select id="getSelectUpCategoryProductsRelatedLabel" parameterType="Map"
+            resultType="com.onnury.label.response.LabelResponseDto">
         select
-            l.label_id as labelId,
-            l.label_title as labelTitle
+        l.label_id as labelId,
+        l.label_title as labelTitle
         from
-            label l
-                inner join
-            (select
-                lop.label_id
-            from
-                label_of_product lop
-                    inner join
-                (select
-                    p.product_id
-                from
-                    product p
-                where
-                    p.expression_check = "Y" and
-                    <if test='loginMemberType != null and loginMemberType != ""'>
-                        p.sell_classification = #{loginMemberType} and
-                    </if>
-                    p.status = "Y"
-                    <if test='labelIdList != null and !labelIdList.isEmpty()'>
-                        and p.product_id in
-                        (select
-                            product_id
-                        from
-                            label_of_product
-                        where
-                            label_id in
-                        <foreach collection="labelIdList" item="labelId" index="index" open="(" close=")" separator=",">
-                            #{labelId}
-                        </foreach>)
-                    </if>
-                    and (((localtime() between p.event_start_date and p.event_end_date) and p.event_price >= #{startRangePrice}
-                    <if test='endRangePrice > 0'>
-                        and #{endRangePrice} >= p.event_price
-                    </if>)
-                    or (p.sell_price >= #{startRangePrice}
-                    <if test='endRangePrice > 0'>
-                        and #{endRangePrice} >= p.sell_price
-                    </if>))
-                group by
-                    p.product_id
-                order by
-                    <if test="sort != 4">
-                        <choose>
-                            <when test="sort == 1">
-                                p.created_at desc
-                            </when>
-                            <when test="sort == 2">
-                                p.sell_price asc
-                            </when>
-                            <when test="sort == 3">
-                                p.sell_price desc
-                            </when>
-                        </choose>
-                    </if>) b
-                on lop.product_id = b.product_id
-            group by
-                lop.label_id) lop2
-            on
-                l.label_id = lop2.label_id
+        label l
+        inner join
+        (select
+        lop.label_id
+        from
+        label_of_product lop
+        inner join
+        (select
+        p.product_id
+        from
+        product p
         where
-            localtime() between l.start_post_date and l.end_post_date;
+        p.expression_check = "Y" and
+        <if test='loginMemberType != null and loginMemberType != ""'>
+            p.sell_classification = #{loginMemberType} and
+        </if>
+        p.status = "Y"
+        <if test='labelIdList != null and !labelIdList.isEmpty()'>
+            and p.product_id in
+            (select
+            product_id
+            from
+            label_of_product
+            where
+            label_id in
+            <foreach collection="labelIdList" item="labelId" index="index" open="(" close=")" separator=",">
+                #{labelId}
+            </foreach>)
+        </if>
+        and (((localtime() between p.event_start_date and p.event_end_date) and p.event_price >= #{startRangePrice}
+        <if test='endRangePrice > 0'>
+            and #{endRangePrice} >= p.event_price
+        </if>)
+        or (p.sell_price >= #{startRangePrice}
+        <if test='endRangePrice > 0'>
+            and #{endRangePrice} >= p.sell_price
+        </if>))
+        group by
+        p.product_id
+        order by
+        <if test="sort != 4">
+            <choose>
+                <when test="sort == 1">
+                    p.created_at desc
+                </when>
+                <when test="sort == 2">
+                    p.sell_price asc
+                </when>
+                <when test="sort == 3">
+                    p.sell_price desc
+                </when>
+            </choose>
+        </if>
+        ) b
+        on lop.product_id = b.product_id
+        group by
+        lop.label_id) lop2
+        on
+        l.label_id = lop2.label_id
+        where
+        localtime() between l.start_post_date and l.end_post_date;
     </select>
 
     <!--    &lt;!&ndash; 당첨권 등록 &ndash;&gt;-->
-<!--    <insert id="insertPrize" parameterType="kbcp.svc.vo.PrizeVO" useGeneratedKeys="true" keyProperty="prizeSeq">-->
-<!--        &lt;!&ndash; insertPrize &ndash;&gt;-->
-<!--        insert into prize (-->
-<!--            event_seq,-->
-<!--            goods_seq,-->
-<!--            goods_id,-->
-<!--            tran_id,-->
-<!--            corp_code,-->
-<!--            customer_id,-->
-<!--            req_code,-->
-<!--            goods_id_no-->
-<!--        ) values (-->
-<!--            #{eventSeq},-->
-<!--            #{goodsSeq},-->
-<!--            #{goodsId},-->
-<!--            #{tranId},-->
-<!--            #{corpCode},-->
-<!--            #{customerId},-->
-<!--            #{reqCode},-->
-<!--            #{goodsIdNo}-->
-<!--        )-->
-<!--    </insert>-->
+    <!--    <insert id="insertPrize" parameterType="kbcp.svc.vo.PrizeVO" useGeneratedKeys="true" keyProperty="prizeSeq">-->
+    <!--        &lt;!&ndash; insertPrize &ndash;&gt;-->
+    <!--        insert into prize (-->
+    <!--            event_seq,-->
+    <!--            goods_seq,-->
+    <!--            goods_id,-->
+    <!--            tran_id,-->
+    <!--            corp_code,-->
+    <!--            customer_id,-->
+    <!--            req_code,-->
+    <!--            goods_id_no-->
+    <!--        ) values (-->
+    <!--            #{eventSeq},-->
+    <!--            #{goodsSeq},-->
+    <!--            #{goodsId},-->
+    <!--            #{tranId},-->
+    <!--            #{corpCode},-->
+    <!--            #{customerId},-->
+    <!--            #{reqCode},-->
+    <!--            #{goodsIdNo}-->
+    <!--        )-->
+    <!--    </insert>-->
 
-<!--    &lt;!&ndash;당첨권 조회(상품코드순번) &ndash;&gt;-->
-<!--    <select id="getPrizeByGoodsIdNo" parameterType="String" resultType="kbcp.svc.vo.PrizeVO">-->
-<!--        &lt;!&ndash; getPrizeByGoodsIdNo &ndash;&gt;-->
-<!--        select-->
-<!--            prize_seq-->
-<!--            ,event_seq-->
-<!--            ,customer_id-->
-<!--            ,corp_code-->
-<!--            ,goods_id-->
-<!--            ,tran_id-->
-<!--            ,status-->
-<!--        from prize-->
-<!--        <where>-->
-<!--            goods_id_no = #{goodsIdNo}-->
-<!--        </where>-->
-<!--        limit 1;-->
-<!--    </select>-->
+    <!--    &lt;!&ndash;당첨권 조회(상품코드순번) &ndash;&gt;-->
+    <!--    <select id="getPrizeByGoodsIdNo" parameterType="String" resultType="kbcp.svc.vo.PrizeVO">-->
+    <!--        &lt;!&ndash; getPrizeByGoodsIdNo &ndash;&gt;-->
+    <!--        select-->
+    <!--            prize_seq-->
+    <!--            ,event_seq-->
+    <!--            ,customer_id-->
+    <!--            ,corp_code-->
+    <!--            ,goods_id-->
+    <!--            ,tran_id-->
+    <!--            ,status-->
+    <!--        from prize-->
+    <!--        <where>-->
+    <!--            goods_id_no = #{goodsIdNo}-->
+    <!--        </where>-->
+    <!--        limit 1;-->
+    <!--    </select>-->
 
-<!--    &lt;!&ndash; 이벤트 조회(이벤트 seq) &ndash;&gt;-->
-<!--    <select id="getEventByEventSeq" parameterType="String" resultType="kbcp.svc.vo.EventVO">-->
-<!--        &lt;!&ndash; getEventByEventId &ndash;&gt;-->
-<!--        select-->
-<!--            event_seq-->
-<!--            , event_id-->
-<!--            , member_id-->
-<!--            , event_name-->
-<!--            , expired_date-->
-<!--            , top_text-->
-<!--            , file_img_nm-->
-<!--            , file_img_path-->
-<!--            , file_img_key-->
-<!--            , caution-->
-<!--            , btn_nm-->
-<!--            , btn_color-->
-<!--            , create_time-->
-<!--            , create_user-->
-<!--            , update_time-->
-<!--            , update_user-->
-<!--        from event-->
-<!--        <where>-->
-<!--            event_seq = #{eventSeq}-->
-<!--        </where>-->
-<!--    </select>-->
+    <!--    &lt;!&ndash; 이벤트 조회(이벤트 seq) &ndash;&gt;-->
+    <!--    <select id="getEventByEventSeq" parameterType="String" resultType="kbcp.svc.vo.EventVO">-->
+    <!--        &lt;!&ndash; getEventByEventId &ndash;&gt;-->
+    <!--        select-->
+    <!--            event_seq-->
+    <!--            , event_id-->
+    <!--            , member_id-->
+    <!--            , event_name-->
+    <!--            , expired_date-->
+    <!--            , top_text-->
+    <!--            , file_img_nm-->
+    <!--            , file_img_path-->
+    <!--            , file_img_key-->
+    <!--            , caution-->
+    <!--            , btn_nm-->
+    <!--            , btn_color-->
+    <!--            , create_time-->
+    <!--            , create_user-->
+    <!--            , update_time-->
+    <!--            , update_user-->
+    <!--        from event-->
+    <!--        <where>-->
+    <!--            event_seq = #{eventSeq}-->
+    <!--        </where>-->
+    <!--    </select>-->
 
-<!--    &lt;!&ndash; 상품 조회(이벤트 seq) &ndash;&gt;-->
-<!--    <select id="getGoodsListByEventSeq" parameterType="String" resultType="kbcp.site.kb.coupon.vo.GoodsListVO">-->
-<!--        &lt;!&ndash; getGoodsListByEventSeq &ndash;&gt;-->
-<!--        select-->
-<!--            goods.event_seq-->
-<!--            ,goods.goods_seq-->
-<!--            ,goods.goods_id-->
-<!--            ,goods.brand_name-->
-<!--            ,goods.goods_name-->
-<!--            ,goods.file_img_path-->
-<!--            ,goods.file_img_key-->
-<!--            ,goods.default_yn-->
-<!--            ,goods.goods_color-->
-<!--        from goods-->
-<!--        <where>-->
-<!--            goods.event_seq = #{eventSeq} and upper(delete_yn) = 'N'-->
-<!--        </where>-->
-<!--        order by goods.default_yn desc, goods.goods_ord asc;-->
-<!--    </select>-->
+    <!--    &lt;!&ndash; 상품 조회(이벤트 seq) &ndash;&gt;-->
+    <!--    <select id="getGoodsListByEventSeq" parameterType="String" resultType="kbcp.site.kb.coupon.vo.GoodsListVO">-->
+    <!--        &lt;!&ndash; getGoodsListByEventSeq &ndash;&gt;-->
+    <!--        select-->
+    <!--            goods.event_seq-->
+    <!--            ,goods.goods_seq-->
+    <!--            ,goods.goods_id-->
+    <!--            ,goods.brand_name-->
+    <!--            ,goods.goods_name-->
+    <!--            ,goods.file_img_path-->
+    <!--            ,goods.file_img_key-->
+    <!--            ,goods.default_yn-->
+    <!--            ,goods.goods_color-->
+    <!--        from goods-->
+    <!--        <where>-->
+    <!--            goods.event_seq = #{eventSeq} and upper(delete_yn) = 'N'-->
+    <!--        </where>-->
+    <!--        order by goods.default_yn desc, goods.goods_ord asc;-->
+    <!--    </select>-->
 
-<!--    &lt;!&ndash; 사용가능 쿠폰함 조회 &ndash;&gt;-->
-<!--    <select id="getCouponBoxListAvail" parameterType="kbcp.site.kb.api.vo.KbReqCouponBoxVO" resultType="kbcp.site.kb.coupon.vo.CouponListVO">-->
-<!--        &lt;!&ndash; getCouponBoxAvail &ndash;&gt;-->
-<!--        select-->
-<!--            prize.prize_seq-->
-<!--            ,prize.tran_id-->
-<!--            ,event.event_id-->
-<!--            ,prize.goods_id_no-->
-<!--            ,goods.goods_id-->
-<!--            ,goods.brand_name-->
-<!--            ,goods.goods_name-->
-<!--            ,goods.file_img_path-->
-<!--            ,goods.file_img_key-->
-<!--            ,goods.default_yn-->
-<!--            ,IF(prize.coupon_expired_date >= DATE_FORMAT(now(), '%Y%m%d'), 'N', 'Y') AS expired_yn-->
-<!--            ,prize.status-->
-<!--            ,(event.expired_date - DATEDIFF(now(), prize.create_time)) as run_date-->
-<!--            ,prize.coupon_expired_date-->
-<!--        from prize prize-->
-<!--            left outer join event event on event.event_seq = prize.event_seq-->
-<!--            left outer join goods goods on goods.goods_seq = prize.goods_seq-->
-<!--        <where>-->
-<!--            prize.create_time BETWEEN DATE_ADD(NOW(), INTERVAL -3 MONTH) AND NOW()-->
-<!--                and prize.customer_id = #{customer_id} and prize.corp_code = #{corp_code}-->
-<!--                and prize.status in ('0', '1', '3', '4')-->
-<!--        </where>-->
-<!--        order by prize.status, prize.create_time;-->
-<!--    </select>-->
+    <!--    &lt;!&ndash; 사용가능 쿠폰함 조회 &ndash;&gt;-->
+    <!--    <select id="getCouponBoxListAvail" parameterType="kbcp.site.kb.api.vo.KbReqCouponBoxVO" resultType="kbcp.site.kb.coupon.vo.CouponListVO">-->
+    <!--        &lt;!&ndash; getCouponBoxAvail &ndash;&gt;-->
+    <!--        select-->
+    <!--            prize.prize_seq-->
+    <!--            ,prize.tran_id-->
+    <!--            ,event.event_id-->
+    <!--            ,prize.goods_id_no-->
+    <!--            ,goods.goods_id-->
+    <!--            ,goods.brand_name-->
+    <!--            ,goods.goods_name-->
+    <!--            ,goods.file_img_path-->
+    <!--            ,goods.file_img_key-->
+    <!--            ,goods.default_yn-->
+    <!--            ,IF(prize.coupon_expired_date >= DATE_FORMAT(now(), '%Y%m%d'), 'N', 'Y') AS expired_yn-->
+    <!--            ,prize.status-->
+    <!--            ,(event.expired_date - DATEDIFF(now(), prize.create_time)) as run_date-->
+    <!--            ,prize.coupon_expired_date-->
+    <!--        from prize prize-->
+    <!--            left outer join event event on event.event_seq = prize.event_seq-->
+    <!--            left outer join goods goods on goods.goods_seq = prize.goods_seq-->
+    <!--        <where>-->
+    <!--            prize.create_time BETWEEN DATE_ADD(NOW(), INTERVAL -3 MONTH) AND NOW()-->
+    <!--                and prize.customer_id = #{customer_id} and prize.corp_code = #{corp_code}-->
+    <!--                and prize.status in ('0', '1', '3', '4')-->
+    <!--        </where>-->
+    <!--        order by prize.status, prize.create_time;-->
+    <!--    </select>-->
 
-<!--    &lt;!&ndash; 쿠폰함 이력 조회 &ndash;&gt;-->
-<!--    <select id="getCouponBoxListHistory" parameterType="kbcp.site.kb.coupon.vo.CouponInfoVO" resultType="kbcp.site.kb.coupon.vo.CouponListVO">-->
-<!--        &lt;!&ndash; getCouponBoxListHistory  &ndash;&gt;-->
-<!--        select-->
-<!--            prize.prize_seq-->
-<!--            ,prize.tran_id-->
-<!--            ,prize.goods_id-->
-<!--            ,prize.goods_id_no-->
-<!--            ,event.event_id-->
-<!--            ,goods.brand_name-->
-<!--            ,goods.goods_name-->
-<!--            ,goods.file_img_path-->
-<!--            ,goods.file_img_key-->
-<!--            ,IF(prize.coupon_expired_date >= DATE_FORMAT(now(), '%Y%m%d'), 'N', 'Y') AS expired_yn-->
-<!--            ,prize.status-->
-<!--            ,prize.coupon_expired_date-->
-<!--        from prize prize-->
-<!--            left outer join event event on event.event_seq = prize.event_seq-->
-<!--            left outer join goods goods on goods.goods_seq = prize.goods_seq-->
-<!--        <where>-->
-<!--            prize.coupon_time BETWEEN DATE_ADD(NOW(), INTERVAL -3 MONTH) AND NOW()-->
-<!--                and prize.customer_id = #{customerId} and prize.corp_code = #{corpCode}-->
-<!--                and prize.status in ('2', '4')-->
-<!--        </where>-->
-<!--        order by prize.create_time desc;-->
-<!--    </select>-->
+    <!--    &lt;!&ndash; 쿠폰함 이력 조회 &ndash;&gt;-->
+    <!--    <select id="getCouponBoxListHistory" parameterType="kbcp.site.kb.coupon.vo.CouponInfoVO" resultType="kbcp.site.kb.coupon.vo.CouponListVO">-->
+    <!--        &lt;!&ndash; getCouponBoxListHistory  &ndash;&gt;-->
+    <!--        select-->
+    <!--            prize.prize_seq-->
+    <!--            ,prize.tran_id-->
+    <!--            ,prize.goods_id-->
+    <!--            ,prize.goods_id_no-->
+    <!--            ,event.event_id-->
+    <!--            ,goods.brand_name-->
+    <!--            ,goods.goods_name-->
+    <!--            ,goods.file_img_path-->
+    <!--            ,goods.file_img_key-->
+    <!--            ,IF(prize.coupon_expired_date >= DATE_FORMAT(now(), '%Y%m%d'), 'N', 'Y') AS expired_yn-->
+    <!--            ,prize.status-->
+    <!--            ,prize.coupon_expired_date-->
+    <!--        from prize prize-->
+    <!--            left outer join event event on event.event_seq = prize.event_seq-->
+    <!--            left outer join goods goods on goods.goods_seq = prize.goods_seq-->
+    <!--        <where>-->
+    <!--            prize.coupon_time BETWEEN DATE_ADD(NOW(), INTERVAL -3 MONTH) AND NOW()-->
+    <!--                and prize.customer_id = #{customerId} and prize.corp_code = #{corpCode}-->
+    <!--                and prize.status in ('2', '4')-->
+    <!--        </where>-->
+    <!--        order by prize.create_time desc;-->
+    <!--    </select>-->
 
-<!--    &lt;!&ndash; 쿠폰정보 조회(쿠폰발급시) &ndash;&gt;-->
-<!--    <select id="getPrizeByCouponInfo" parameterType="kbcp.site.kb.coupon.vo.CouponInfoVO" resultType="kbcp.site.kb.coupon.vo.PrizeGoodsVO">-->
-<!--        &lt;!&ndash; getPrizeByCouponInfo &ndash;&gt;-->
-<!--        select-->
-<!--            prize.prize_seq-->
-<!--            ,prize.tran_id-->
-<!--            ,prize.status-->
-<!--            ,goods.goods_seq-->
-<!--            ,goods.goods_id-->
-<!--            ,goods.default_yn-->
-<!--            ,goods.statusUpdate_yn-->
-<!--            ,goods.expire_date-->
-<!--        from prize prize-->
-<!--            left outer join goods goods on goods.goods_seq = prize.goods_seq-->
-<!--        <where>-->
-<!--            prize.prize_seq = #{prizeSeq} and prize.corp_code = #{corpCode}-->
-<!--        </where>-->
-<!--    </select>-->
+    <!--    &lt;!&ndash; 쿠폰정보 조회(쿠폰발급시) &ndash;&gt;-->
+    <!--    <select id="getPrizeByCouponInfo" parameterType="kbcp.site.kb.coupon.vo.CouponInfoVO" resultType="kbcp.site.kb.coupon.vo.PrizeGoodsVO">-->
+    <!--        &lt;!&ndash; getPrizeByCouponInfo &ndash;&gt;-->
+    <!--        select-->
+    <!--            prize.prize_seq-->
+    <!--            ,prize.tran_id-->
+    <!--            ,prize.status-->
+    <!--            ,goods.goods_seq-->
+    <!--            ,goods.goods_id-->
+    <!--            ,goods.default_yn-->
+    <!--            ,goods.statusUpdate_yn-->
+    <!--            ,goods.expire_date-->
+    <!--        from prize prize-->
+    <!--            left outer join goods goods on goods.goods_seq = prize.goods_seq-->
+    <!--        <where>-->
+    <!--            prize.prize_seq = #{prizeSeq} and prize.corp_code = #{corpCode}-->
+    <!--        </where>-->
+    <!--    </select>-->
 
-<!--    &lt;!&ndash; 쿠폰상태 변경 &ndash;&gt;-->
-<!--    <update id="updatePrizeStatus" parameterType="kbcp.svc.vo.PrizeVO">-->
-<!--        update prize-->
-<!--        <trim prefix="SET" suffixOverrides=",">-->
-<!--            status = #{status, jdbcType=CHAR},-->
-<!--            coupon_time = now(),-->
-<!--            run_batch = #{runBatch},-->
-<!--            <if test='goodsSeq != null and goodsSeq != ""'>-->
-<!--                goods_seq = #{goodsSeq},-->
-<!--            </if>-->
-<!--            <if test='goodsSeqBefore != null and goodsSeqBefore != ""'>-->
-<!--                goods_seq_before = #{goodsSeqBefore},-->
-<!--            </if>-->
-<!--            <if test='couponNum != null and couponNum != ""'>-->
-<!--                coupon_num = #{couponNum},-->
-<!--            </if>-->
-<!--            <if test='couponExpiredDate != null and couponExpiredDate != ""'>-->
-<!--                coupon_expired_date = #{couponExpiredDate},-->
-<!--            </if>-->
-<!--        </trim>-->
-<!--        <where>-->
-<!--            prize_seq = #{prizeSeq}-->
-<!--        </where>-->
-<!--    </update>-->
+    <!--    &lt;!&ndash; 쿠폰상태 변경 &ndash;&gt;-->
+    <!--    <update id="updatePrizeStatus" parameterType="kbcp.svc.vo.PrizeVO">-->
+    <!--        update prize-->
+    <!--        <trim prefix="SET" suffixOverrides=",">-->
+    <!--            status = #{status, jdbcType=CHAR},-->
+    <!--            coupon_time = now(),-->
+    <!--            run_batch = #{runBatch},-->
+    <!--            <if test='goodsSeq != null and goodsSeq != ""'>-->
+    <!--                goods_seq = #{goodsSeq},-->
+    <!--            </if>-->
+    <!--            <if test='goodsSeqBefore != null and goodsSeqBefore != ""'>-->
+    <!--                goods_seq_before = #{goodsSeqBefore},-->
+    <!--            </if>-->
+    <!--            <if test='couponNum != null and couponNum != ""'>-->
+    <!--                coupon_num = #{couponNum},-->
+    <!--            </if>-->
+    <!--            <if test='couponExpiredDate != null and couponExpiredDate != ""'>-->
+    <!--                coupon_expired_date = #{couponExpiredDate},-->
+    <!--            </if>-->
+    <!--        </trim>-->
+    <!--        <where>-->
+    <!--            prize_seq = #{prizeSeq}-->
+    <!--        </where>-->
+    <!--    </update>-->
 
-<!--    &lt;!&ndash; 쿠폰 발급 이력 등록 &ndash;&gt;-->
-<!--    <insert id="insertCoupon" parameterType="kbcp.svc.vo.CouponVO" useGeneratedKeys="true" keyProperty="couponSeq">-->
-<!--        &lt;!&ndash; insertCoupon &ndash;&gt;-->
-<!--        insert into coupon (-->
-<!--            cmd-->
-<!--            ,prize_seq-->
-<!--            ,event_id-->
-<!--            ,tr_id-->
-<!--            ,member_id-->
-<!--            ,run_batch-->
-<!--            <if test='goodsId != null and goodsId != ""'>-->
-<!--                ,goods_id-->
-<!--            </if>-->
-<!--        ) values (-->
-<!--            #{cmd}-->
-<!--            ,#{prizeSeq}-->
-<!--            ,#{eventId}-->
-<!--            ,#{trId}-->
-<!--            ,#{memberId}-->
-<!--            ,#{runBatch}-->
-<!--            <if test='goodsId != null and goodsId != ""'>-->
-<!--                ,#{goodsId}-->
-<!--            </if>-->
-<!--        )-->
-<!--    </insert>-->
+    <!--    &lt;!&ndash; 쿠폰 발급 이력 등록 &ndash;&gt;-->
+    <!--    <insert id="insertCoupon" parameterType="kbcp.svc.vo.CouponVO" useGeneratedKeys="true" keyProperty="couponSeq">-->
+    <!--        &lt;!&ndash; insertCoupon &ndash;&gt;-->
+    <!--        insert into coupon (-->
+    <!--            cmd-->
+    <!--            ,prize_seq-->
+    <!--            ,event_id-->
+    <!--            ,tr_id-->
+    <!--            ,member_id-->
+    <!--            ,run_batch-->
+    <!--            <if test='goodsId != null and goodsId != ""'>-->
+    <!--                ,goods_id-->
+    <!--            </if>-->
+    <!--        ) values (-->
+    <!--            #{cmd}-->
+    <!--            ,#{prizeSeq}-->
+    <!--            ,#{eventId}-->
+    <!--            ,#{trId}-->
+    <!--            ,#{memberId}-->
+    <!--            ,#{runBatch}-->
+    <!--            <if test='goodsId != null and goodsId != ""'>-->
+    <!--                ,#{goodsId}-->
+    <!--            </if>-->
+    <!--        )-->
+    <!--    </insert>-->
 
-<!--    &lt;!&ndash; 쿠폰상태 변경 &ndash;&gt;-->
-<!--    <update id="updateCoupon" parameterType="kbcp.svc.vo.CouponVO">-->
-<!--        update coupon-->
-<!--        <trim prefix="SET" suffixOverrides=",">-->
-<!--            rsp_code = #{rspCode, jdbcType=CHAR},-->
-<!--            rsp_time = now(),-->
-<!--            <if test='couponNum != null and couponNum != ""'>-->
-<!--                coupon_num = #{couponNum, jdbcType=CHAR},-->
-<!--            </if>-->
-<!--            <if test='orderNum != null and orderNum != ""'>-->
-<!--                order_num = #{orderNum, jdbcType=CHAR},-->
-<!--            </if>-->
-<!--            <if test='rspMsg != null and rspMsg != ""'>-->
-<!--                rsp_msg = #{rspMsg, jdbcType=CHAR},-->
-<!--            </if>-->
-<!--        </trim>-->
-<!--        <where>-->
-<!--            coupon_seq = #{couponSeq}-->
-<!--        </where>-->
-<!--    </update>-->
+    <!--    &lt;!&ndash; 쿠폰상태 변경 &ndash;&gt;-->
+    <!--    <update id="updateCoupon" parameterType="kbcp.svc.vo.CouponVO">-->
+    <!--        update coupon-->
+    <!--        <trim prefix="SET" suffixOverrides=",">-->
+    <!--            rsp_code = #{rspCode, jdbcType=CHAR},-->
+    <!--            rsp_time = now(),-->
+    <!--            <if test='couponNum != null and couponNum != ""'>-->
+    <!--                coupon_num = #{couponNum, jdbcType=CHAR},-->
+    <!--            </if>-->
+    <!--            <if test='orderNum != null and orderNum != ""'>-->
+    <!--                order_num = #{orderNum, jdbcType=CHAR},-->
+    <!--            </if>-->
+    <!--            <if test='rspMsg != null and rspMsg != ""'>-->
+    <!--                rsp_msg = #{rspMsg, jdbcType=CHAR},-->
+    <!--            </if>-->
+    <!--        </trim>-->
+    <!--        <where>-->
+    <!--            coupon_seq = #{couponSeq}-->
+    <!--        </where>-->
+    <!--    </update>-->
 
-<!--    &lt;!&ndash; 쿠폰정보 상세조회(쿠폰상세조회시) &ndash;&gt;-->
-<!--    <select id="getCouponDetailByTranId" parameterType="String" resultType="kbcp.site.kb.coupon.vo.RspGetCouponDetailAdd">-->
-<!--        &lt;!&ndash; getCouponDetailByTranId &ndash;&gt;-->
-<!--        select-->
-<!--            DATE_FORMAT(prize.create_time, '%Y.%m.%d') as mod_date-->
-<!--            ,prize.run_batch-->
-<!--            ,prize.status-->
-<!--            ,goods.bacode_yn-->
-<!--            ,goods.brand_name-->
-<!--            ,goods.goods_name-->
-<!--            ,goods_before.brand_name as before_brand-->
-<!--            ,goods_before.goods_name as before_goods-->
-<!--        from prize prize-->
-<!--            left outer join goods goods on goods.goods_seq = prize.goods_seq-->
-<!--            left outer join goods goods_before on goods_before.goods_seq = prize.goods_seq_before-->
-<!--        <where>-->
-<!--            prize.tran_id = #{tranId}-->
-<!--        </where>-->
-<!--        limit 1;-->
-<!--    </select>-->
+    <!--    &lt;!&ndash; 쿠폰정보 상세조회(쿠폰상세조회시) &ndash;&gt;-->
+    <!--    <select id="getCouponDetailByTranId" parameterType="String" resultType="kbcp.site.kb.coupon.vo.RspGetCouponDetailAdd">-->
+    <!--        &lt;!&ndash; getCouponDetailByTranId &ndash;&gt;-->
+    <!--        select-->
+    <!--            DATE_FORMAT(prize.create_time, '%Y.%m.%d') as mod_date-->
+    <!--            ,prize.run_batch-->
+    <!--            ,prize.status-->
+    <!--            ,goods.bacode_yn-->
+    <!--            ,goods.brand_name-->
+    <!--            ,goods.goods_name-->
+    <!--            ,goods_before.brand_name as before_brand-->
+    <!--            ,goods_before.goods_name as before_goods-->
+    <!--        from prize prize-->
+    <!--            left outer join goods goods on goods.goods_seq = prize.goods_seq-->
+    <!--            left outer join goods goods_before on goods_before.goods_seq = prize.goods_seq_before-->
+    <!--        <where>-->
+    <!--            prize.tran_id = #{tranId}-->
+    <!--        </where>-->
+    <!--        limit 1;-->
+    <!--    </select>-->
 
-<!--    &lt;!&ndash; 상품 조회(상품 seq) &ndash;&gt;-->
-<!--    <select id="getGoodsByGoodsSeq" parameterType="String" resultType="kbcp.svc.vo.GoodsVO">-->
-<!--        &lt;!&ndash; getGoodsByGoodsSeq &ndash;&gt;-->
-<!--        select-->
-<!--            goods_seq-->
-<!--            ,goods_id-->
-<!--            ,statusUpdate_yn-->
-<!--            ,expire_date-->
-<!--        from goods-->
-<!--        <where>-->
-<!--            goods_seq = #{goodsSeq}-->
-<!--        </where>-->
-<!--    </select>-->
+    <!--    &lt;!&ndash; 상품 조회(상품 seq) &ndash;&gt;-->
+    <!--    <select id="getGoodsByGoodsSeq" parameterType="String" resultType="kbcp.svc.vo.GoodsVO">-->
+    <!--        &lt;!&ndash; getGoodsByGoodsSeq &ndash;&gt;-->
+    <!--        select-->
+    <!--            goods_seq-->
+    <!--            ,goods_id-->
+    <!--            ,statusUpdate_yn-->
+    <!--            ,expire_date-->
+    <!--        from goods-->
+    <!--        <where>-->
+    <!--            goods_seq = #{goodsSeq}-->
+    <!--        </where>-->
+    <!--    </select>-->
 
 </mapper>

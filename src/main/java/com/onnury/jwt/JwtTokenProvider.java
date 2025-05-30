@@ -162,8 +162,12 @@ public class JwtTokenProvider {
 
     // 토큰 정보를 검증하는 메서드
     public boolean validateToken(String token) {
+        log.info("validateToken 함수 진입 : 토큰 Provider 에서 검증할 토큰을 가지고 왔는지 확인");
+
         try {
+            log.info("Checking JWT Token");
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            log.info("Valid JWT Token");
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
             log.info("Invalid JWT Token", e);

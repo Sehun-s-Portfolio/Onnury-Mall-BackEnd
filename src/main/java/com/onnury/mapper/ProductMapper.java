@@ -31,7 +31,7 @@ public interface ProductMapper {
     List<NewReleaseProductDetailOptionDto> getNewReleaseProductDetailOptionList(Long productOptionId) throws Exception;
 
     // 선택한 대분류 카테고리 + 검색 조건이 적용된 제품 정보 리스트 조회
-    List<ProductPageMainProductResponseDto> getSelectUpCategoryAndConditionRelateProductList(
+    List<ReadyProductPageMainProductResponseDto> getSelectUpCategoryAndConditionRelateProductList(
             @Param("upCategoryId") Long upCategoryId, @Param("brandIdList") List<Long> brandIdList,
             @Param("searchBrandKeyword") String searchBrandKeyword, @Param("middleCategoryIdList") List<Long> middleCategoryIdList,
             @Param("loginMemberType") String loginMemberType, @Param("labelIdList") List<Long> labelIdList,

@@ -2251,50 +2251,105 @@ public class ProductQueryData {
 
         try {
             // 대분류 제품 페이지에 노출될 제품들 정보 리스트
-            List<ProductPageMainProductResponseDto> getPageMainProductList = productMapper.getSelectUpCategoryAndConditionRelateProductList(upCategoryId, brandIdList, "", middleCategoryIdList, loginMemberType, labelIdList, startRangePrice, endRangePrice, sort, (page * 20) - 20);
+            List<ReadyProductPageMainProductResponseDto> getReadyPageMainProductList = productMapper.getSelectUpCategoryAndConditionRelateProductList(upCategoryId, brandIdList, "", middleCategoryIdList, loginMemberType, labelIdList, startRangePrice, endRangePrice, sort, (page * 20) - 20);
 
-            getPageMainProductList.forEach(eachUpCategoryProduct -> {
-                try {
-                    List<LabelDataResponseDto> labelList = productMapper.getEachUpCategoryProductLabelInfo(eachUpCategoryProduct.getProductId());
-                    List<ProductOptionCreateResponseDto> productOptionList = productMapper.getEachUpCategoryProductOptionInfo(eachUpCategoryProduct.getProductId());
+            log.info("(1) 제품 리스트 호출 - 제품 조회 수량 : {}", getReadyPageMainProductList.size());
 
-                    if(!productOptionList.isEmpty()){
-                        productOptionList.forEach(eachProductOption -> {
-                            try {
-                                List<ProductDetailOptionCreateResponseDto> productDetailOptionList = productMapper.getEachUpCategoryProductDetailOptionInfo(eachProductOption.getProductOptionId());
-                                eachProductOption.setProductDetailOptionList(productDetailOptionList);
-                            } catch (Exception e) {
-                                throw new RuntimeException(e);
+            // 호출한 대분류 제품 리스트들에 연관된 라벨, 옵션, 이미지 정보들을 호출하여 통합 객체 리스트로 매핑
+            List<ProductPageMainProductResponseDto> getPageMainProductList = getReadyPageMainProductList.stream()
+                    .map(eachUpCategoryProduct -> {
+                        try {
+                            // 대분류 제품에 연관된 라벨 정보 리스트
+                            List<LabelDataResponseDto> labelList = productMapper.getEachUpCategoryProductLabelInfo(eachUpCategoryProduct.getProductId());
+                            // 대분류 제품에 연관된 옵션 정보 리스트
+                            List<ProductOptionCreateResponseDto> productOptionList = productMapper.getEachUpCategoryProductOptionInfo(eachUpCategoryProduct.getProductId());
+
+                            // 옵션 정보 리스트가 하나라도 존재할 경우 진입
+                            if (!productOptionList.isEmpty()) {
+                                // 옵션 정보 리스트 마다 가지고 있는 상세 옵션 정보 리스트추출
+                                productOptionList.forEach(eachProductOption -> {
+                                    try {
+                                        // 상세 옵션 정보 리스트 호출
+                                        List<ProductDetailOptionCreateResponseDto> productDetailOptionList = productMapper.getEachUpCategoryProductDetailOptionInfo(eachProductOption.getProductOptionId());
+                                        eachProductOption.setProductDetailOptionList(productDetailOptionList);
+                                    } catch (Exception e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                });
                             }
-                        });
-                    }
 
-                    List<MediaResponseDto> mediaList = productMapper.getEachUpCategoryProductMediaInfo(eachUpCategoryProduct.getProductId());
+                            // 대분류 제품에 연관된 이미지 정보 리스트 호출
+                            List<MediaResponseDto> mediaList = productMapper.getEachUpCategoryProductMediaInfo(eachUpCategoryProduct.getProductId());
 
-                    eachUpCategoryProduct.setLabelList(labelList);
-                    eachUpCategoryProduct.setProductOptionList(productOptionList);
-                    eachUpCategoryProduct.setMediaList(mediaList);
+                            // 통합 객체에 빌드하여 매핑
+                            return ProductPageMainProductResponseDto.builder()
+                                    .supplierId(eachUpCategoryProduct.getSupplierId())
+                                    .brandId(eachUpCategoryProduct.getBrandId())
+                                    .brand(eachUpCategoryProduct.getBrand())
+                                    .upCategoryId(eachUpCategoryProduct.getUpCategoryId())
+                                    .upCategory(eachUpCategoryProduct.getUpCategory())
+                                    .middleCategoryId(eachUpCategoryProduct.getMiddleCategoryId())
+                                    .middleCategory(eachUpCategoryProduct.getMiddleCategory())
+                                    .downCategoryId(eachUpCategoryProduct.getDownCategoryId())
+                                    .downCategory(eachUpCategoryProduct.getDownCategory())
+                                    .productId(eachUpCategoryProduct.getProductId())
+                                    .productName(eachUpCategoryProduct.getProductName())
+                                    .classificationCode(eachUpCategoryProduct.getClassificationCode())
+                                    .labelList(labelList)
+                                    .modelNumber(eachUpCategoryProduct.getModelNumber())
+                                    .deliveryType(eachUpCategoryProduct.getDeliveryType())
+                                    .sellClassification(eachUpCategoryProduct.getSellClassification())
+                                    .expressionCheck(eachUpCategoryProduct.getExpressionCheck())
+                                    .normalPrice(eachUpCategoryProduct.getNormalPrice())
+                                    .sellPrice(eachUpCategoryProduct.getSellPrice())
+                                    .deliveryPrice(eachUpCategoryProduct.getDeliveryPrice())
+                                    .purchasePrice(eachUpCategoryProduct.getPurchasePrice())
+                                    .eventStartDate(eachUpCategoryProduct.getEventStartDate())
+                                    .eventEndDate(eachUpCategoryProduct.getEventEndDate())
+                                    .eventDescription(eachUpCategoryProduct.getEventDescription())
+                                    .optionCheck(eachUpCategoryProduct.getOptionCheck())
+                                    .productOptionList(productOptionList)
+                                    .productDetailInfo(eachUpCategoryProduct.getProductDetailInfo())
+                                    .mediaList(mediaList)
+                                    .manufacturer(eachUpCategoryProduct.getManufacturer())
+                                    .madeInOrigin(eachUpCategoryProduct.getMadeInOrigin())
+                                    .consignmentStore(eachUpCategoryProduct.getConsignmentStore())
+                                    .memo(eachUpCategoryProduct.getMemo())
+                                    .status(eachUpCategoryProduct.getStatus())
+                                    .build();
 
-                } catch (Exception e) {
-                    LogUtil.logException(e, request);
-                    throw new RuntimeException(e);
-                }
-            });
+                        } catch (Exception e) {
+                            LogUtil.logException(e, request);
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .collect(Collectors.toList());
+
+            log.info("(2) 연관 정보들을 포함한 제품 리스트 호출 - 제품 조회 수량 : {}", getPageMainProductList.size());
 
             // 조회된 대분류 제품들의 총 갯수
             int totalCount = productMapper.getSelectUpCategoryProductsCount(loginMemberType, labelIdList, startRangePrice, endRangePrice, sort);
+            log.info("(3) 조회된 대분류 제품들의 총 갯수 호출 확인 : {}", totalCount);
+
             // 조회된 대분류 제품들의 연관된 브랜드 리스트 정보
             List<BrandDataResponseDto> brandList = productMapper.getSelectUpCategoryProductsRelatedBrand(loginMemberType, labelIdList, startRangePrice, endRangePrice, sort);
+            log.info("(4) 조회된 대분류 제품들의 연관된 브랜드 리스트 정보 확인 - 브랜드 리스트 수량 : {}", brandList.size());
+
             // 조회된 대분류 제품들의 연관된 중분류 카테고리 정보 리스트
             List<RelatedCategoryDataResponseDto> middleCategoryList = productMapper.getSelectUpCategoryProductsRelatedMiddleCategory(loginMemberType, labelIdList, startRangePrice, endRangePrice, sort);
+            log.info("(5) 조회된 대분류 제품들과 연관된 중분류 카테고리 정보 리스트 확인 - 연관 중분류 카테고리 정보 리스트 수량 : {}", middleCategoryList.size());
+
             // 조회된 대분류 제품들의 연관된 라벨 정보 리스트
             List<LabelResponseDto> labelList = productMapper.getSelectUpCategoryProductsRelatedLabel(loginMemberType, labelIdList, startRangePrice, endRangePrice, sort);
+            log.info("(6) 조회된 대분류 제품들의 연관된 라벨 정보 리스트 확인 - 연관 라벨 리스트 수량 : {}", labelList.size());
 
             // 조회한 제품들 중 가격 범위 최대치로 등록할 제품의 맥시멈 가격
             int maxPrice = getPageMainProductList.stream()
                     .map(ProductPageMainProductResponseDto::getSellPrice)
                     .max(Integer::compare)
                     .orElse(0);
+            log.info("(7) 조회한 제품들 중 가격 범위 최대치로 등록할 제품의 맥시멈 가격 확인 : {}", maxPrice);
+
 
             ////////////////////////////////////////////////////////////////////////////////////////
             //                     4번 정렬 (주문 판매순) 관련 추출 로직 추가해야함                      //

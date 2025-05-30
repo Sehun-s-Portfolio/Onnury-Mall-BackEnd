@@ -469,16 +469,9 @@ public class ProductService {
             HttpServletRequest request, Long upCategoryId, int sort, int page, int startRangePrice, int endRangePrice, List<Long> brandId, List<Long> labelId, List<Long> middleCategoryId) throws Exception {
         log.info("대분류 기준 제품 페이지의 정렬 기준 제품 리스트 호출 service");
 
-        log.info("(1) upCategoryId : {} - {}", upCategoryId, upCategoryId.getClass());
-        log.info("(2) sort : {}", sort);
-        log.info("(3) page : {}", page);
-        log.info("(4) startRangePrice : {}", startRangePrice);
-        log.info("(5) endRangePrice : {}", endRangePrice);
-        log.info("(6) brandId : {} - {}", brandId.toString(), brandId.getClass());
-        log.info("(7) labelId : {} - {}", labelId.toString(), labelId.getClass());
-        log.info("(8) middleCategoryId : {} - {}", middleCategoryId.toString(), middleCategoryId.getClass());
-
         if(request.getHeader("RefreshToken") != null) {
+            log.info("토큰 존재 시 진입");
+            
             // 정합성이 검증된 토큰인지 확인
             if (jwtTokenException.checkAccessToken(request)) {
                 log.info("토큰 정합성 검증 실패");
@@ -487,9 +480,11 @@ public class ProductService {
             }
             // 로그인 고객
             Member loginMember = jwtTokenProvider.getMemberFromAuthentication();
+            log.info("(0) 조회하고자 하는 회원 타입 확인 : {}", loginMember.getType());
 
             return productQueryData.upCategoryPageMainProducts(request, loginMember.getType(), upCategoryId, sort, page, startRangePrice, endRangePrice, brandId, labelId, middleCategoryId);
         } else {
+            log.info("토큰 미존재 시 진입");
             return productQueryData.upCategoryPageMainProducts(request, "C", upCategoryId, sort, page, startRangePrice, endRangePrice, brandId, labelId, middleCategoryId);
         }
     }
