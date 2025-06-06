@@ -74,4 +74,12 @@ public interface ProductMapper {
             @Param("startRangePrice") int startRangePrice, @Param("endRangePrice") int endRangePrice,
             @Param("sort") int sort) throws Exception;
 
+    //  중,소분류 카테고리에 해당되는 CategoryInBrand 아이디를 가지고 있는 제품 리스트 호출
+    List<Product> getProductsByMiddleAndDownCategoryList(
+            @Param("loginMemberType") String loginMemberType,
+            @Param("categoryInBrandIdList") List<Long> categoryInBrandIdList,
+            @Param("labelIdList") List<Long> labelIdList,
+            @Param("startRangePrice") int startRangePrice,
+            @Param("endRangePrice") int endRangePrice,
+            @Param("sort") int sort) throws Exception;
 }

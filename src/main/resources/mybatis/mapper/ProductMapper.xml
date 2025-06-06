@@ -529,6 +529,61 @@
         localtime() between l.start_post_date and l.end_post_date;
     </select>
 
+
+    <!-- 중,소분류 카테고리에 해당되는 CategoryInBrand 아이디를 가지고 있는 제품 리스트 호출 -->
+    <select id="getProductsByMiddleAndDownCategoryList" parameterType="Map"
+            resultType="com.onnury.product.domain.Product">
+        <!-- getProductsByMiddleAndDownCategoryList -->
+        select
+            *
+        from
+            product p
+        where
+            p.expression_chekc = 'Y'
+            and
+            p.status = 'Y'
+            <if test="loginMemberType == 'C'">
+                and p.sell_classification = #{loginMemberType}
+            </if>
+            <if test="categoryInBrandIdList != null and !categoryInBrandIdList.isEmpty()">
+                and p.category_in_brand_id in
+                <foreach collection="categoryInBrandIdList" item="categoryInBrandId" index="index" open="(" close=")" separator=",">
+                    #{categoryInBrandId}
+                </foreach>
+            </if>
+            <if test="labelIdList != null and !labelIdList.isEmpty()">
+                and p.product_id in
+                (select product_id from label_of_product where label_id in
+                <foreach collection="labelIdList" item="labelId" index="index" open="(" close=")"
+                         separator=",">
+                    #{labelId}
+                </foreach>)
+            </if>
+            and
+            (((localtime() between p.event_start_date and p.event_end_date) and p.event_price >= #{startRangePrice}
+            <if test='endRangePrice > 0'>
+                and #{endRangePrice} >= p.event_price
+            </if>)
+            or (p.sell_price >= #{startRangePrice}
+            <if test='endRangePrice > 0'>
+                and #{endRangePrice} >= p.sell_price
+            </if>))
+        order by
+            <if test="sort != 5">
+                <choose>
+                    <when test="sort == 1">
+                        p.created_at desc
+                    </when>
+                    <when test="sort == 2">
+                        p.sell_price asc
+                    </when>
+                    <when test="sort == 3">
+                        p.sell_price desc
+                    </when>
+                </choose>
+            </if>
+    </select>
+
     <!--    &lt;!&ndash; 당첨권 등록 &ndash;&gt;-->
     <!--    <insert id="insertPrize" parameterType="kbcp.svc.vo.PrizeVO" useGeneratedKeys="true" keyProperty="prizeSeq">-->
     <!--        &lt;!&ndash; insertPrize &ndash;&gt;-->

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.onnury.mapper.CategoryInBrandMapper">
+
+    <!-- 중,소분류 카테고리에 연관되는 CategoryInBrand 매핑 정보들 호출 -->
+    <select id="getMiddleOrDownCategoryrRelatedCategorInBrandIdList" parameterType="Map" resultType="Long">
+        <!-- getMiddleOrDownCategoryrRelatedCategorInBrandIdList -->
+        select
+            cib.category_in_brand_id
+        from
+            category_in_brand cib
+        where
+            <if test="categoryGroup != 0">
+                <choose>
+                    <when test="categoryGroup == 1">
+                        cib.category2id = #{categoryId}
+                        <if test="relatedDownCategoryIdList != null and !relatedDownCategoryIdList.isEmpty()">
+                            and cib.category3id in
+                            <foreach collection="relatedDownCategoryIdList" item="relatedDownCategoryId" index="index" open="(" close=")" separator=",">
+                                #{relatedDownCategoryId}
+                            </foreach>
+                        </if>
+                    </when>
+                    <when test="categoryGroup == 2">
+                        cib.category3id = #{categoryId}
+                    </when>
+                </choose>
+            </if>
+            <if test="brandIdList != null and !brandIdList.isEmpty()">
+                and cib.brand_id in
+                <foreach collection="brandIdList" item="brandId" index="index" open="(" close=")" separator=",">
+                    #{brandId}
+                </foreach>
+            </if>
+            <if test="searchKeyword != null and searchKeyword != ''">
+                and cib.brand_id in (select brand_id from brand where brand_title like concat("%", #{searchKeyword}, "%"))
+            </if>
+    </select>
+
+</mapper>

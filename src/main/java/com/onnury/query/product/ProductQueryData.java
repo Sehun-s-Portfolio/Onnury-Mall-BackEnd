@@ -18,9 +18,7 @@ import com.onnury.label.repository.LabelOfProductRepository;
 import com.onnury.label.response.LabelDataResponseDto;
 import com.onnury.label.response.LabelResponseDto;
 import com.onnury.label.response.NewReleaseProductLabelResponseDto;
-import com.onnury.mapper.LabelMapper;
-import com.onnury.mapper.MediaMapper;
-import com.onnury.mapper.ProductMapper;
+import com.onnury.mapper.*;
 import com.onnury.media.domain.Media;
 import com.onnury.media.repository.MediaRepository;
 import com.onnury.media.response.MediaResponseDto;
@@ -102,6 +100,12 @@ public class ProductQueryData {
 
     @Resource(name = "mediaMapper")
     private MediaMapper mediaMapper;
+
+    @Resource(name = "categoryMapper")
+    private CategoryMapper categoryMapper;
+
+    @Resource(name = "categoryInBrandMapper")
+    private CategoryInBrandMapper categoryInBrandMapper;
 
     // 새롭게 생성된 제품의 Classification Code 생성
     public String getProductClassificationCode() {
@@ -2530,83 +2534,23 @@ public class ProductQueryData {
 
     // 중분류, 소분류 기준 제품 페이지의 정렬 기준 제품 리스트
     public TotalProductPageMainProductResponseDto middleAndDownCategoryPageMainProducts(
-            String loginMemberType, Long categoryId, int sort, int page, int startRangePrice, int endRangePrice, List<Long> brandIdList, List<Long> labelIdList, List<Long> relatedDownCategoryIdList) {
+            String loginMemberType, Long categoryId, int sort, int page, int startRangePrice, int endRangePrice, List<Long> brandIdList, List<Long> labelIdList, List<Long> relatedDownCategoryIdList) throws Exception {
 
         // 정렬된 제품 수
         int totalCount = 0;
 
         // 요청된 카테고리 id에 따른 구분값 추출
-        Integer categoryGroup = jpaQueryFactory
-                .select(category.categoryGroup)
-                .from(category)
-                .where(category.categoryId.eq(categoryId))
-                .fetchOne();
+        Integer categoryGroup = categoryMapper.getCategoryGroupValue(categoryId);
 
         // 중,소분류 카테고리에 해당되는 CategoryInBrand 매핑 정보들 호출
-        List<Long> categoryInBrandIdList = jpaQueryFactory
-                .select(categoryInBrand.categoryInBrandId)
-                .from(categoryInBrand)
-                .where(eqMiddleAndDownCategoryId(categoryGroup, categoryId, relatedDownCategoryIdList)
-                        .and(eqCategoryProductBrand(brandIdList, "")))
-                .fetch();
+        List<Long> categoryInBrandIdList = categoryInBrandMapper.getMiddleOrDownCategoryrRelatedCategorInBrandIdList(categoryGroup, categoryId, relatedDownCategoryIdList, brandIdList, "");
 
-        // 중,소분류 카테고리에 해당되는 제품들의 id 리스트 생성
-        List<Product> productsByMiddleAndDownCategoryList = new ArrayList<>();
+        // 중,소분류 카테고리에 해당되는 제품 리스트 생성
+        List<Product> productsByMiddleAndDownCategoryList = productMapper.getProductsByMiddleAndDownCategoryList(loginMemberType, categoryInBrandIdList, labelIdList, startRangePrice, endRangePrice, sort);
 
-        // CategoryInBrand 매핑 정보들에서 정보들을 추출하여 관련된 제품 id 리스트 저장
-        categoryInBrandIdList.forEach(eachCategoryInBrandId -> {
-
-            // 고객 유형이 일반일 경우 C, A 타입의 신 제품들 추출
-            if (loginMemberType.equals("C")) {
-
-                productsByMiddleAndDownCategoryList.addAll(
-                        jpaQueryFactory
-                                .selectFrom(product)
-                                .where(product.expressionCheck.eq("Y")
-                                        .and(product.categoryInBrandId.eq(eachCategoryInBrandId))
-                                        .and(product.sellClassification.eq("C"))
-                                        .and(product.status.eq("Y"))
-                                        .and(eqLabelOfProduct(labelIdList))
-                                )
-                                .fetch()
-                );
-
-            } else if (loginMemberType.equals("B")) {
-
-                // 고객 유형이 기업일 경우 B, A 타입의 신 제품들 추출
-                productsByMiddleAndDownCategoryList.addAll(
-                        jpaQueryFactory
-                                .selectFrom(product)
-                                .where(product.expressionCheck.eq("Y")
-                                        .and(product.categoryInBrandId.eq(eachCategoryInBrandId))
-                                        .and(product.status.eq("Y"))
-                                        .and(eqLabelOfProduct(labelIdList))
-                                )
-                                .fetch()
-                );
-            }
-
-        });
-
-        List<Long> productsByMiddleAndDownCategory = new ArrayList<>();
-
-        if (endRangePrice != 0) {
-            productsByMiddleAndDownCategory = productsByMiddleAndDownCategoryList.stream()
-                    .filter(eachProduct ->
-                            (eachProduct.getEventStartDate().isBefore(LocalDateTime.now()) && eachProduct.getEventEndDate().isAfter(LocalDateTime.now()) && eachProduct.getEventPrice() >= startRangePrice && eachProduct.getEventPrice() <= endRangePrice)
-                                    || (eachProduct.getSellPrice() >= startRangePrice && eachProduct.getSellPrice() <= endRangePrice)
-                    )
-                    .map(Product::getProductId)
-                    .collect(Collectors.toList());
-        } else {
-
-            if (startRangePrice == 0) {
-                productsByMiddleAndDownCategory = productsByMiddleAndDownCategoryList.stream()
-                        .map(Product::getProductId)
-                        .collect(Collectors.toList());
-            }
-
-        }
+        ////////////////////////////////////////////////////////////////////////////////
+        // 누적 판매 수량 정렬 (sort = 4) 조건은 아직 구현하지 않았으므로 해당 조건 이후에 반영 //
+        ///////////////////////////////////////////////////////////////////////////////
 
         // 실제 제품 페이지에 노출될 제품들을 담을 리스트 생성
         List<Product> productPageMainProducts = new ArrayList<>();
@@ -2617,73 +2561,12 @@ public class ProductQueryData {
         int maxPrice = 0;
 
         // 해당되는 제품들의 id 리스트가 존재할 경우 진입
-        if (!productsByMiddleAndDownCategory.isEmpty()) {
+        if (!productsByMiddleAndDownCategoryList.isEmpty()) {
             // 총 관련 제품들 수량
-            totalCount = productsByMiddleAndDownCategory.size();
+            totalCount = productsByMiddleAndDownCategoryList.size();
 
             // 리스트에 해당되는 카테고리 제품들을 정렬 조건에 맞춰 리스트에 저장
             List<Product> products = new ArrayList<>();
-
-            // 기준 정렬에 따른 정렬
-            if (sort <= 3) { // 판매 가격 혹은 최신 순
-                products = jpaQueryFactory
-                        .selectFrom(product)
-                        .where(product.productId.in(productsByMiddleAndDownCategory))
-                        .groupBy(product.productId)
-                        .orderBy(orderBySort(sort))
-                        .fetch();
-            } else { // 판매 누적 순
-
-                // 판매 이력이 존재한 제품의 경우 우선 넣기
-                List<String> classificationCodeList = jpaQueryFactory
-                        .select(product.classificationCode)
-                        .from(product)
-                        .where(product.productId.in(productsByMiddleAndDownCategory))
-                        .groupBy(product.classificationCode)
-                        .fetch();
-
-                List<Tuple> orderInProducts = jpaQueryFactory
-                        .select(orderInProduct.productClassificationCode, orderInProduct.productTotalAmount.sum())
-                        .from(orderInProduct)
-                        .where(orderInProduct.productClassificationCode.in(classificationCodeList))
-                        .groupBy(orderInProduct.productClassificationCode)
-                        .orderBy(orderInProduct.productTotalAmount.sum().desc())
-                        .fetch();
-
-                if (!orderInProducts.isEmpty()) {
-                    products = orderInProducts
-                            .stream()
-                            .filter(Objects::nonNull)
-                            .map(eachOrderInProduct ->
-                                    jpaQueryFactory
-                                            .selectFrom(product)
-                                            .where(product.classificationCode.eq(eachOrderInProduct.get(orderInProduct.productClassificationCode)))
-                                            .fetchOne()
-                            )
-                            .collect(Collectors.toList());
-
-                    List<Long> remainOrderInfoProductIdList = products.stream()
-                            .map(Product::getProductId)
-                            .collect(Collectors.toList());
-
-                    products.addAll(
-                            jpaQueryFactory
-                                    .selectFrom(product)
-                                    .where(product.productId.notIn(remainOrderInfoProductIdList)
-                                            .and(product.productId.in(productsByMiddleAndDownCategory)))
-                                    .orderBy(product.createdAt.desc())
-                                    .fetch()
-                    );
-                } else {
-                    products = jpaQueryFactory
-                            .selectFrom(product)
-                            .where(product.productId.in(productsByMiddleAndDownCategory))
-                            .groupBy(product.productId)
-                            .orderBy(product.createdAt.desc())
-                            .fetch();
-                }
-
-            }
 
             assert products != null;
 
