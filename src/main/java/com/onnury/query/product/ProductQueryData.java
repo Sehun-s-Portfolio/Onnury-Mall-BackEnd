@@ -2639,39 +2639,45 @@ public class ProductQueryData {
             }
 
             // [ 필터링 조건용 라벨 데이터 추출 로직 ]
-            List<Long> relatedTotalLabelList = jpaQueryFactory
-                    .select(labelOfProduct.labelId)
-                    .from(labelOfProduct)
-                    .where(labelOfProduct.productId.in(
-                            products.stream()
-                                    .map(Product::getProductId)
-                                    .collect(Collectors.toList())
-                    ))
-                    .groupBy(labelOfProduct.labelId)
-                    .fetch();
+//            List<Long> relatedTotalLabelList = jpaQueryFactory
+//                    .select(labelOfProduct.labelId)
+//                    .from(labelOfProduct)
+//                    .where(labelOfProduct.productId.in(
+//                            products.stream()
+//                                    .map(Product::getProductId)
+//                                    .collect(Collectors.toList())
+//                    ))
+//                    .groupBy(labelOfProduct.labelId)
+//                    .fetch();
+//
+//            labelList = jpaQueryFactory
+//                    .selectFrom(label)
+//                    .where(label.labelId.in(relatedTotalLabelList)
+//                            .and((label.startPostDate.before(LocalDateTime.now()).and(label.endPostDate.after(LocalDateTime.now())))))
+//                    .fetch()
+//                    .stream()
+//                    .map(eachLabel ->
+//                            LabelResponseDto.builder()
+//                                    .labelId(eachLabel.getLabelId())
+//                                    .labelTitle(eachLabel.getLabelTitle())
+//                                    .build()
+//                    )
+//                    .collect(Collectors.toList());
 
-            labelList = jpaQueryFactory
-                    .selectFrom(label)
-                    .where(label.labelId.in(relatedTotalLabelList)
-                            .and((label.startPostDate.before(LocalDateTime.now()).and(label.endPostDate.after(LocalDateTime.now())))))
-                    .fetch()
-                    .stream()
-                    .map(eachLabel ->
-                            LabelResponseDto.builder()
-                                    .labelId(eachLabel.getLabelId())
-                                    .labelTitle(eachLabel.getLabelTitle())
-                                    .build()
-                    )
+            List<Long> productIdList = productsByMiddleAndDownCategoryList.stream()
+                    .map(Product::getProductId)
                     .collect(Collectors.toList());
 
-            if (products.size() >= 20) {
-                if ((page * 20) <= products.size()) {
-                    productPageMainProducts = products.subList((page * 20) - 20, page * 20);
+            labelList = labelMapper.getMiddleAndDownCategoryProductsRelatedLabelList(productIdList);
+
+            if (productsByMiddleAndDownCategoryList.size() >= 20) {
+                if ((page * 20) <= productsByMiddleAndDownCategoryList.size()) {
+                    productPageMainProducts = productsByMiddleAndDownCategoryList.subList((page * 20) - 20, page * 20);
                 } else {
-                    productPageMainProducts = products.subList((page * 20) - 20, products.size());
+                    productPageMainProducts = productsByMiddleAndDownCategoryList.subList((page * 20) - 20, productsByMiddleAndDownCategoryList.size());
                 }
             } else {
-                productPageMainProducts = products.subList((page * 20) - 20, products.size());
+                productPageMainProducts = productsByMiddleAndDownCategoryList.subList((page * 20) - 20, productsByMiddleAndDownCategoryList.size());
             }
 
         }
