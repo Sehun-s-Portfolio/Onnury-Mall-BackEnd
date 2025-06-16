@@ -40,4 +40,8 @@
             </if>
     </select>
 
+    <select id="getRelatedCategoryAndBrandIds" parameterType="Map" resultType="Long">
+
+    </select>
+
 </mapper>

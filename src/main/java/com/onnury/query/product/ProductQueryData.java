@@ -2568,9 +2568,6 @@ public class ProductQueryData {
             // 총 관련 제품들 수량
             totalCount = productMapper.getProductsCountByMiddleAndDownCategory(loginMemberType, categoryInBrandIdList, labelIdList, startRangePrice, endRangePrice, sort);
 
-            // 리스트에 해당되는 카테고리 제품들을 정렬 조건에 맞춰 리스트에 저장
-            List<Product> products = new ArrayList<>();
-
             // 조회한 제품들 중 가격 범위 최대치로 등록할 제품의 맥시멈 가격
             maxPrice = productsByMiddleAndDownCategoryList.stream()
                     .map(eachProduct -> {
@@ -2584,90 +2581,19 @@ public class ProductQueryData {
                     .orElse(0);
 
             // [ 필터링 조건용 브랜드 데이터 추출 로직 ]
-//            List<CategoryInBrand> relatedCategoryInBrandList = jpaQueryFactory
-//                    .selectFrom(categoryInBrand)
-//                    .where(categoryInBrand.categoryInBrandId.in(
-//                            products.stream()
-//                                    .map(Product::getCategoryInBrandId)
-//                                    .collect(Collectors.toList())
-//                    ))
-//                    .fetch();
-//
-//            List<Long> relatedBrandIdList = relatedCategoryInBrandList.stream()
-//                    .map(CategoryInBrand::getBrandId)
-//                    .distinct()
-//                    .collect(Collectors.toList());
-//
-//            brandList = jpaQueryFactory
-//                    .selectFrom(brand)
-//                    .where(brand.brandId.in(relatedBrandIdList))
-//                    .fetch()
-//                    .stream()
-//                    .map(eachBrand ->
-//                            BrandDataResponseDto.builder()
-//                                    .brandId(eachBrand.getBrandId())
-//                                    .brandTitle(eachBrand.getBrandTitle())
-//                                    .build()
-//                    )
-//                    .collect(Collectors.toList());
-
             brandList = brandMapper.getMiddleAndDownProductsBrandList(categoryInBrandIdList);
-
 
             // [ 중분류를 선택했을 경우 중분류에 속한 소분류 카테고리 데이터 추출 로직 ]
             // # 소분류를 선택했을 시, 해당 카테고리 데이터는 없음
             if (categoryGroup == 1) {
-//                List<Long> relatedCategoryIdList = relatedCategoryInBrandList.stream()
-//                        .map(CategoryInBrand::getCategory3Id)
-//                        .distinct()
-//                        .collect(Collectors.toList());
-//
-//                relatedCategoryList = jpaQueryFactory
-//                        .selectFrom(category)
-//                        .where(category.categoryId.in(relatedCategoryIdList))
-//                        .fetch()
-//                        .stream()
-//                        .map(eachRelatedUnderCategory ->
-//                                RelatedCategoryDataResponseDto.builder()
-//                                        .categoryId(eachRelatedUnderCategory.getCategoryId())
-//                                        .categoryName(eachRelatedUnderCategory.getCategoryName())
-//                                        .build()
-//                        )
-//                        .collect(Collectors.toList());
-
                 relatedCategoryList = categoryMapper.getMiddleAndDownProductsRelatedCategoryList(categoryInBrandIdList);
             }
-
-            // [ 필터링 조건용 라벨 데이터 추출 로직 ]
-//            List<Long> relatedTotalLabelList = jpaQueryFactory
-//                    .select(labelOfProduct.labelId)
-//                    .from(labelOfProduct)
-//                    .where(labelOfProduct.productId.in(
-//                            products.stream()
-//                                    .map(Product::getProductId)
-//                                    .collect(Collectors.toList())
-//                    ))
-//                    .groupBy(labelOfProduct.labelId)
-//                    .fetch();
-//
-//            labelList = jpaQueryFactory
-//                    .selectFrom(label)
-//                    .where(label.labelId.in(relatedTotalLabelList)
-//                            .and((label.startPostDate.before(LocalDateTime.now()).and(label.endPostDate.after(LocalDateTime.now())))))
-//                    .fetch()
-//                    .stream()
-//                    .map(eachLabel ->
-//                            LabelResponseDto.builder()
-//                                    .labelId(eachLabel.getLabelId())
-//                                    .labelTitle(eachLabel.getLabelTitle())
-//                                    .build()
-//                    )
-//                    .collect(Collectors.toList());
 
             List<Long> productIdList = productsByMiddleAndDownCategoryList.stream()
                     .map(Product::getProductId)
                     .collect(Collectors.toList());
 
+            // [ 필터링 조건용 라벨 데이터 추출 ]
             labelList = labelMapper.getMiddleAndDownCategoryProductsRelatedLabelList(productIdList);
 
             if (productsByMiddleAndDownCategoryList.size() >= 20) {
@@ -2808,6 +2734,8 @@ public class ProductQueryData {
             List<Product> products = new ArrayList<>();
 
             if (sort <= 3) {
+
+                // ## 6월 17일 이후로 작업 진행
 
                 if (!relatedCategoryAndBrandIds.isEmpty()) {
                     if (!brandIdList.isEmpty()) {

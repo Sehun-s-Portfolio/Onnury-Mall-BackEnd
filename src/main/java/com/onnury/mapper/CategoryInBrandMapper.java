@@ -2,6 +2,7 @@ package com.onnury.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.security.core.parameters.P;
 
 import java.util.List;
 
@@ -13,5 +14,12 @@ public interface CategoryInBrandMapper {
             @Param("categoryGroup") int categoryGroup, @Param("categoryId") Long categoryId,
             @Param("relatedDownCategoryIdList") List<Long> relatedDownCategoryIdList, @Param("brandIdList") List<Long> brandIdList,
             @Param("searchKeyword") String searchKeyword
+    ) throws Exception;
+
+    // 제품과 연관된 카테고리 및 브랜드 매핑 정보들의 id들을 담을 리스트
+    List<Long> getRelatedCategoryAndBrandIds(
+            @Param("") List<Long> brandIdList,
+            @Param("") List<Long> relatedMiddleCategoryIdList,
+            @Param("") String filterKeyword
     ) throws Exception;
 }

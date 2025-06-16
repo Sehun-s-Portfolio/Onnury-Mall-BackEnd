@@ -493,7 +493,7 @@ public class ProductService {
     // 중분류, 소분류 기준 제품 페이지의 정렬 기준 제품 리스트 호출 service (정렬 기준 : 1 - 최신(기본) , 2 - 낮은 가격 순 , 3 - 높은 가격 순 , 4 - 누적 판매 순 (# 추후 반영))
     //@Async("threadPoolTaskExecutor")
     public TotalProductPageMainProductResponseDto middleAndDownCategoryPageMainProducts(
-            HttpServletRequest request, Long categoryId, int sort, int page, int startRangePrice, int endRangePrice, List<Long> brandId, List<Long> labelId, List<Long> relatedDownCategoryId) {
+            HttpServletRequest request, Long categoryId, int sort, int page, int startRangePrice, int endRangePrice, List<Long> brandId, List<Long> labelId, List<Long> relatedDownCategoryId) throws Exception {
         log.info("중분류, 소분류 기준 제품 페이지의 정렬 기준 제품 리스트 호출 service");
         if (request.getHeader("RefreshToken") != null) {
             // 정합성이 검증된 토큰인지 확인
