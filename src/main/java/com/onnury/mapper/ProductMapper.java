@@ -90,4 +90,16 @@ public interface ProductMapper {
                                                 @Param("startRangePrice") int startRangePrice,
                                                 @Param("endRangePrice") int endRangePrice,
                                                 @Param("sort") int sort) throws Exception;
+
+    // 카테고리 및 브랜드 매핑 정보들의 id들과 연관된 제품들을 담을 리스트
+    List<Product> getCategoryAndBrandIdsRelatedProducts(
+            @Param("brandIdList") List<Long> brandIdList,
+            @Param("relatedMiddleCategoryIdList") List<Long> relatedMiddleCategoryIdList,
+            @Param("filterKeyword") String filterKeyword,
+            @Param("labelIdList") List<Long> labelIdList,
+            @Param("startRangePrice") int startRangePrice,
+            @Param("endRangePrice") int endRangePrice,
+            @Param("sort") int sort,
+            @Param("loginMemberType") String loginMemberType
+    ) throws Exception;
 }

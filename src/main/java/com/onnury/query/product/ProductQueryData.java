@@ -2735,7 +2735,7 @@ public class ProductQueryData {
 
             if (sort <= 3) {
 
-                // ## 6월 17일 이후로 작업 진행
+                // ## 6월 18일 이후로 작업 진행
 
                 if (!relatedCategoryAndBrandIds.isEmpty()) {
                     if (!brandIdList.isEmpty()) {

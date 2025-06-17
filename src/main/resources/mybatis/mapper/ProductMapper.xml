@@ -639,4 +639,86 @@
         </if>
     </select>
 
+    <!-- 카테고리 및 브랜드 매핑 정보들의 id들과 연관된 제품들을 담을 리스트 -->
+    <select id="getCategoryAndBrandIdsRelatedProducts" parameterType="Map" resultType="Long">
+        select
+            p.*
+        from
+            product p
+        where
+            p.expression_check = "Y" and
+            p.category_in_brand_id in
+            (select
+                cib.category_in_brand_id
+            from
+                category_in_brand cib
+            where
+                cib.category_in_brand_id > 0
+                <if test="relatedMiddleCategoryIdList != null and !relatedMiddleCategoryIdList.isEmpty()">
+                    and cib.category2id in
+                    <foreach collection="relatedMiddleCategoryIdList" item="categoryId" index="index" open="(" close=")"
+                             separator=",">
+                        #{categoryId}
+                    </foreach>
+                </if>
+                <if test="brandIdList != null and !brandIdList.isEmpty()">
+                    and cib.brand_id in
+                    (select
+                        b.brand_id
+                    from
+                        brand b
+                    where
+                        b.brand_id in
+                        (<foreach collection="brandIdList" item="brandId" index="index" open="(" close=")"
+                                  separator=",">#{brandId}
+                        </foreach>)
+                        <if test="filterKeyword != null and filterKeyword != ''">
+                          and b.brand_title like concat("%", #{filterKeyword}, "%")
+                        </if>
+                </if>
+                <if test="(brandIdList == null or brandIdList.isEmpty()) and (filterKeyword != null or filterKeyword != '')">
+                    and cib.brand_id in
+                    (select
+                    b.brand_id
+                    from
+                    brand b
+                    where
+                    b.brand_title like concat("%", #{filterKeyword}, "%")
+                </if>)
+            <if test="filterKeyword != null or filterKeyword != ''">
+                and p.product_name like concat("%", #{filterKeyword}, "%")
+            </if>
+            <if test="labelIdList != null and !labelIdList.isEmpty()">
+                and p.product_id in
+                (select
+                     lop.product_id
+                 from
+                     label_of_product lop
+                 where
+                     lop.label_id in
+                     (<foreach collection="labelIdList" item="labelId" index="index" open="(" close=")"
+                               separator=",">#{labelId}
+                     </foreach>))
+            </if>
+            <if test="loginMemberType == 'C'">
+                and p.sell_classification = 'C'
+            </if>
+            and (p.sell_price between #{startRangePrice} and #{endRangePrice})
+                or ((localtime() between p.event_start_date and p.event_end_date) and (p.event_price between #{startRangePrice} and #{endRangePrice}))
+        order by
+        <if test="sort != 4">
+            <choose>
+                <when test="sort == 1">
+                    p.created_at desc
+                </when>
+                <when test="sort == 2">
+                    p.sell_price asc
+                </when>
+                <when test="sort == 3">
+                    p.sell_price desc
+                </when>
+            </choose>
+        </if>
+    </select>
+
 </mapper>
