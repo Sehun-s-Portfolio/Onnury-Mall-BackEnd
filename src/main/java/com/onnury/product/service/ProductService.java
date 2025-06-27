@@ -505,9 +505,9 @@ public class ProductService {
             // 로그인 고객
             Member loginMember = jwtTokenProvider.getMemberFromAuthentication();
 
-            return productQueryData.middleAndDownCategoryPageMainProducts(loginMember.getType(), categoryId, sort, page, startRangePrice, endRangePrice, brandId, labelId, relatedDownCategoryId);
+            return productQueryData.middleAndDownCategoryPageMainProducts(request, loginMember.getType(), categoryId, sort, page, startRangePrice, endRangePrice, brandId, labelId, relatedDownCategoryId);
         } else {
-            return productQueryData.middleAndDownCategoryPageMainProducts("C", categoryId, sort, page, startRangePrice, endRangePrice, brandId, labelId, relatedDownCategoryId);
+            return productQueryData.middleAndDownCategoryPageMainProducts(request, "C", categoryId, sort, page, startRangePrice, endRangePrice, brandId, labelId, relatedDownCategoryId);
         }
     }
 

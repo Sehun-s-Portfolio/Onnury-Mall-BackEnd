@@ -87,7 +87,7 @@ public interface ProductMapper {
             @Param("sort") int sort) throws Exception;
 
     // 중/소분류 기준 제품 페이지 메인 제품 리스트 호출
-    List<Product> middleAndDownCategoryPageMainProducts(
+    List<ReadyProductPageMainProductResponseDtoV2> middleAndDownCategoryPageMainProducts(
             @Param("loginMemberType") String loginMemberType,
             @Param("categoryId") Long categoryId,
             @Param("relatedDownCategoryIdList") List<Long> relatedDownCategoryIdList,
