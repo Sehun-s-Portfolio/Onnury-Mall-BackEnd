@@ -5,33 +5,27 @@
 
 <mapper namespace="com.onnury.mapper.CategoryMapper">
 
-    <!-- 중분류, 소분류 기준 제품 페이지 제품 리스트 조회에 필요한 요청 카테고리 그룹값 조회 -->
-    <select id="getCategoryGroupValue" parameterType = "Long" resultType="Integer">
-        <!-- getCategoryGroupValue -->
-        select category_group from category where caategory_id = #{categoryId};
-    </select>
-
-    <!-- 필터링 조건으로 노출시킬 중,소분류 제품들이 가지고 있는 카테고리 정보 리스트 -->
-    <select id="getMiddleAndDownProductsRelatedCategoryList" parameterType="Map"
+    <!-- 중분류 제품 리스트 페이지에 같이 노출될 연관 하위 카테고리 리스트 정보 -->
+    <select id="getMiddleCategoryRelatedDownCategoryList" parameterType="Map"
             resultType="com.onnury.category.response.RelatedCategoryDataResponseDto">
         select
-        c.category_id as categoryId,
-        c.category_name as categoryName
+            c.category_id as categoryId,
+            c.category_name as categoryName
         from
-        category c
+            category c
         where
-        c.category_id in
-        (select
-        category3id
-         from
-        category_in_brand
-        where
-        category_in_brand_id in
-        <foreach collection="categoryInBrandIdList" item="categoryInBrandId" index="index" open="(" close=")" separator=",">
-            #{categoryInBrandId}
-        </foreach>
-        group by
-        category3id);
+            c.category_id in
+            (select
+                cib.category3id
+            from
+                category_in_brand cib
+            where
+                cib.category_in_brand_id in
+                <foreach collection="relatedCategoryInBrandIdList" item="relatedCategoryInBrandId" index="index" open="(" close=")" separator=",">
+                    #{relatedCategoryInBrandId}
+                </foreach>
+            group by
+                cib.category3id)
     </select>
 
 </mapper>

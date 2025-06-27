@@ -5,29 +5,27 @@
 
 <mapper namespace="com.onnury.mapper.BrandMapper">
 
-    <!-- 필터링 조건으로 노출시킬 중,소분류 제품들이 가지고 있는 브랜드 id 리스트 -->
-    <select id="getMiddleAndDownProductsBrandList" parameterType="Map"
+    <!-- 중/소분류 제품 리스트 페이지에 같이 노출될 연관 브랜드 리스트 정보 -->
+    <select id="getMiddleAndDownCategoryProductsRelatedBrandList" parameterType="Map"
             resultType="com.onnury.brand.response.BrandDataResponseDto">
         select
-            b.brand_id,
-            b.brand_title,
-            b.status,
-            null as img_url
+            b.brand_id as brandId,
+            b.brand_title as brandTitle
         from
             brand b
         where
             b.brand_id in
             (select
-                 brand_id
-             from
-                 category_in_brand
-             where
-                 category_in_brand_id in
-                 <foreach collection="categoryInBrandIdList" item="categoryInBrandId" index="index" open="(" close=")" separator=",">
-                    #{categoryInBrandId}
+                cib.brand_id
+            from
+                category_in_brand cib
+            where
+                cib.category_in_brand_id in
+                <foreach collection="relatedCategoryInBrandIdList" item="relatedCategoryInBrandId" index="index" open="(" close=")" separator=",">
+                    #{relatedCategoryInBrandId}
                 </foreach>
-             group by
-                 brand_id);
+            group by
+                cib.brand_id)
     </select>
 
 </mapper>

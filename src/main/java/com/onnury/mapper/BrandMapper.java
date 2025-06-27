@@ -1,21 +1,14 @@
 package com.onnury.mapper;
 
 import com.onnury.brand.response.BrandDataResponseDto;
-import com.onnury.category.response.RelatedCategoryDataResponseDto;
-import com.onnury.label.response.LabelDataResponseDto;
-import com.onnury.label.response.LabelResponseDto;
-import com.onnury.media.response.MediaResponseDto;
-import com.onnury.product.domain.Product;
-import com.onnury.product.response.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
-
 @Mapper
 public interface BrandMapper {
-
-    // 필터링 조건으로 노출시킬 중,소분류 제품들의 브랜드 정보 리스트
-    List<BrandDataResponseDto> getMiddleAndDownProductsBrandList(List<Long> categoryInBrandIdList) throws Exception;
+    // 중/소분류 제품 리스트 페이지에 같이 노출될 연관 브랜드 리스트 정보
+    List<BrandDataResponseDto> getMiddleAndDownCategoryProductsRelatedBrandList(
+            @Param("relatedCategoryInBrandIdList") List<Long> relatedCategoryInBrandIdList) throws Exception;
 }

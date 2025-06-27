@@ -529,38 +529,59 @@
         localtime() between l.start_post_date and l.end_post_date;
     </select>
 
-
-    <!-- 중,소분류 카테고리에 해당되는 CategoryInBrand 아이디를 가지고 있는 제품 리스트 호출 -->
-    <select id="getProductsByMiddleAndDownCategoryList" parameterType="Map"
-            resultType="com.onnury.product.domain.Product">
-        <!-- getProductsByMiddleAndDownCategoryList -->
+    <!-- 중/소분류 제품 리스트 데이터 총 갯수 호출 -->
+    <select id="middleAndDownCategoryPageMainProductsCount" parameterType="Map"
+            resultType="Integer">
         select
-            *
+            count(*)
         from
             product p
         where
-            p.expression_chekc = 'Y'
-            and
+            p.expression_check = 'Y' and
             p.status = 'Y'
             <if test="loginMemberType == 'C'">
-                and p.sell_classification = #{loginMemberType}
+                and p.sell_classification = 'C'
             </if>
-            <if test="categoryInBrandIdList != null and !categoryInBrandIdList.isEmpty()">
-                and p.category_in_brand_id in
-                <foreach collection="categoryInBrandIdList" item="categoryInBrandId" index="index" open="(" close=")" separator=",">
-                    #{categoryInBrandId}
+            and p.category_in_brand_id in
+            (select
+            cib.category_in_brand_id
+            from
+            category_in_brand cib
+            where
+            if((select c.category_group from category c where c.category_id = #{categoryId}) = 1,
+            cib.category2id = #{categoryId}
+            <if test="!relatedDownCategoryIdList.isEmpty() and relatedDownCategoryIdList != null">and cib.category3id in
+                <foreach collection="
+                relatedDownCategoryIdList" item="relatedDownCategoryId" index="index" open=
+                        "(" close=")" separator=",">
+                    #{relatedDownCategoryId}
                 </foreach>
-            </if>
-            <if test="labelIdList != null and !labelIdList.isEmpty()">
-                and p.product_id in
-                (select product_id from label_of_product where label_id in
-                <foreach collection="labelIdList" item="labelId" index="index" open="(" close=")"
-                         separator=",">
-                    #{labelId}
-                </foreach>)
-            </if>
-            and
-            (((localtime() between p.event_start_date and p.event_end_date) and p.event_price >= #{startRangePrice}
+            </if>,
+                        cib.category3id = #{categoryId})
+                    <if test="!brandIdList.isEmpty() or searchKeyword != ''">
+                        <choose>
+                            <when test="!brandIdList.isEmpty() and searchKeyword != ''">
+                                and cib.brand_id in
+                                    (select b.brand_id from brand b where b.brand_id in
+                                    <foreach collection="brandIdList" item="brandId" index="index" open="(" close=")" separator=",">
+                                        #{brandId}
+                                    </foreach>
+                                    and b.brand_title like concat("%", #{searchKeyword},"%"))
+                            </when>
+                            <when test="!brandIdList.isEmpty() and searchKeyword == ''">
+                                and cib.brand_id in
+                                (select b.brand_id from brand b where b.brand_id in
+                                <foreach collection="brandIdList" item="brandId" index="index" open="(" close=")" separator=",">
+                                    #{brandId}
+                                </foreach>)
+                            </when>
+                            <when test="brandIdList.isEmpty() and searchKeyword != ''">
+                                and cib.brand_id in
+                                (select b.brand_id from brand b where b.brand_title like concat("%", #{searchKeyword},"%"))
+                            </when>
+                        </choose>
+                    </if>)
+            and (((localtime() between p.event_start_date and p.event_end_date) and p.event_price >= #{startRangePrice}
             <if test='endRangePrice > 0'>
                 and #{endRangePrice} >= p.event_price
             </if>)
@@ -568,8 +589,15 @@
             <if test='endRangePrice > 0'>
                 and #{endRangePrice} >= p.sell_price
             </if>))
+            <if test="!labelIdList.isEmpty() and labelIdList != null">
+                and p.product_id in
+                    (select lop.product_id from label_of_product lop where lop.label_id in
+                    <foreach collection="labelIdList" item="labelId" index="index" open="(" close=")" separator=",">
+                        #{labelId}
+                    </foreach>)
+            </if>
         order by
-            <if test="sort != 5">
+            <if test="sort <= 3">
                 <choose>
                     <when test="sort == 1">
                         p.created_at desc
@@ -584,141 +612,134 @@
             </if>
     </select>
 
-
-    <!-- 중,소분류 카테고리에 해당되는 CategoryInBrand 아이디를 가지고 있는 제품 리스트 총 갯수 -->
-    <select id="getProductsCountByMiddleAndDownCategory" parameterType="Map"
-            resultType="Integer">
-        <!-- getProductsCountByMiddleAndDownCategory -->
+    <!-- 중/소분류 제품 리스트 데이터 1차 호출 -->
+    <select id="middleAndDownCategoryPageMainProducts" parameterType="Map"
+            resultType="com.onnury.product.response.ReadyProductPageMainProductResponseDtoV2">
         select
-        count(*)
-        from
-        product p
-        where
-        p.expression_chekc = 'Y'
-        and
-        p.status = 'Y'
-        <if test="loginMemberType == 'C'">
-            and p.sell_classification = #{loginMemberType}
-        </if>
-        <if test="categoryInBrandIdList != null and !categoryInBrandIdList.isEmpty()">
-            and p.category_in_brand_id in
-            <foreach collection="categoryInBrandIdList" item="categoryInBrandId" index="index" open="(" close=")" separator=",">
-                #{categoryInBrandId}
-            </foreach>
-        </if>
-        <if test="labelIdList != null and !labelIdList.isEmpty()">
-            and p.product_id in
-            (select product_id from label_of_product where label_id in
-            <foreach collection="labelIdList" item="labelId" index="index" open="(" close=")"
-                     separator=",">
-                #{labelId}
-            </foreach>)
-        </if>
-        and
-        (((localtime() between p.event_start_date and p.event_end_date) and p.event_price >= #{startRangePrice}
-        <if test='endRangePrice > 0'>
-            and #{endRangePrice} >= p.event_price
-        </if>)
-        or (p.sell_price >= #{startRangePrice}
-        <if test='endRangePrice > 0'>
-            and #{endRangePrice} >= p.sell_price
-        </if>))
-        order by
-        <if test="sort != 5">
-            <choose>
-                <when test="sort == 1">
-                    p.created_at desc
-                </when>
-                <when test="sort == 2">
-                    p.sell_price asc
-                </when>
-                <when test="sort == 3">
-                    p.sell_price desc
-                </when>
-            </choose>
-        </if>
-    </select>
-
-    <!-- 카테고리 및 브랜드 매핑 정보들의 id들과 연관된 제품들을 담을 리스트 -->
-    <select id="getCategoryAndBrandIdsRelatedProducts" parameterType="Map" resultType="Long">
-        select
-            p.*
+            p.product_id as productId,
+            p.supplier_id as supplierId,
+            b.brand_id as brandId,
+            b.brand_title as brand,
+            b.category_in_brand_id as categoryInBrandId,
+            b.category1id as upCategoryId,
+            b.up_category as upCategory,
+            b.category2id as middleCategoryId,
+            b.middle_category as middleCategory,
+            b.category3id as downCategoryId,
+            b.down_category as downCategory,
+            p.product_name as productName,
+            p.classification_code as classificationCode,
+            p.model_number as modelNumber,
+            p.delivery_type as deliveryType,
+            p.sell_classification as sellClassification,
+            p.expression_check as expressionCheck,
+            p.normal_price as normalPrice,
+            if(localtime() between p.event_start_date and p.event_end_date, p.event_price, p.sell_price) as sellPrice,
+            p.delivery_price as deliveryPrice,
+            p.purchase_price as purchasePrice,
+            p.event_start_date as eventStartDate,
+            p.event_end_date as eventEndDate,
+            p.event_description as eventDescription,
+            p.option_check as optionCheck,
+            (select content from product_detail_info where product_id = p.product_id) as productDetailInfo,
+            p.manufacturer as manufacturer,
+            p.made_in_origin as madeInOrigin,
+            p.consignment_store as consignmentStore,
+            p.memo as memo,
+            p.status as status
         from
             product p
-        where
-            p.expression_check = "Y" and
-            p.category_in_brand_id in
+                inner join
             (select
-                cib.category_in_brand_id
+                cib.category_in_brand_id,
+                cib.brand_id,
+                (select brand_title from brand where brand_id = cib.brand_id) as brand_title,
+                cib.category1id,
+                (select category_name from category where category_id = cib.category1id) as up_category,
+                cib.category2id,
+                (select category_name from category where category_id = cib.category2id) as middle_category,
+                cib.category3id,
+                (select category_name from category where category_id = cib.category3id) as down_category
             from
-                category_in_brand cib
-            where
-                cib.category_in_brand_id > 0
-                <if test="relatedMiddleCategoryIdList != null and !relatedMiddleCategoryIdList.isEmpty()">
-                    and cib.category2id in
-                    <foreach collection="relatedMiddleCategoryIdList" item="categoryId" index="index" open="(" close=")"
-                             separator=",">
-                        #{categoryId}
-                    </foreach>
-                </if>
-                <if test="brandIdList != null and !brandIdList.isEmpty()">
-                    and cib.brand_id in
-                    (select
-                        b.brand_id
-                    from
-                        brand b
-                    where
-                        b.brand_id in
-                        (<foreach collection="brandIdList" item="brandId" index="index" open="(" close=")"
-                                  separator=",">#{brandId}
-                        </foreach>)
-                        <if test="filterKeyword != null and filterKeyword != ''">
-                          and b.brand_title like concat("%", #{filterKeyword}, "%")
-                        </if>
-                </if>
-                <if test="(brandIdList == null or brandIdList.isEmpty()) and (filterKeyword != null or filterKeyword != '')">
-                    and cib.brand_id in
-                    (select
-                    b.brand_id
-                    from
-                    brand b
-                    where
-                    b.brand_title like concat("%", #{filterKeyword}, "%")
-                </if>)
-            <if test="filterKeyword != null or filterKeyword != ''">
-                and p.product_name like concat("%", #{filterKeyword}, "%")
-            </if>
-            <if test="labelIdList != null and !labelIdList.isEmpty()">
-                and p.product_id in
-                (select
-                     lop.product_id
-                 from
-                     label_of_product lop
-                 where
-                     lop.label_id in
-                     (<foreach collection="labelIdList" item="labelId" index="index" open="(" close=")"
-                               separator=",">#{labelId}
-                     </foreach>))
-            </if>
+                category_in_brand cib) b
+                on
+            p.category_in_brand_id = b.category_in_brand_id
+        where
+            p.expression_check = 'Y' and
+            p.status = 'Y'
             <if test="loginMemberType == 'C'">
                 and p.sell_classification = 'C'
             </if>
-            and (p.sell_price between #{startRangePrice} and #{endRangePrice})
-                or ((localtime() between p.event_start_date and p.event_end_date) and (p.event_price between #{startRangePrice} and #{endRangePrice}))
+            and p.category_in_brand_id in
+            (select
+            cib.category_in_brand_id
+            from
+            category_in_brand cib
+            where
+            if((select c.category_group from category c where c.category_id = #{categoryId}) = 1,
+            cib.category2id = #{categoryId}
+            <if test="!relatedDownCategoryIdList.isEmpty() and relatedDownCategoryIdList != null">and cib.category3id in
+                <foreach collection="
+                    relatedDownCategoryIdList" item="relatedDownCategoryId" index="index" open=
+                        "(" close=")" separator=",">
+                    #{relatedDownCategoryId}
+                </foreach>
+            </if>,
+            cib.category3id = #{categoryId})
+            <if test="!brandIdList.isEmpty() or searchKeyword != ''">
+                <choose>
+                    <when test="!brandIdList.isEmpty() and searchKeyword != ''">
+                        and cib.brand_id in
+                        (select b.brand_id from brand b where b.brand_id in
+                        <foreach collection="brandIdList" item="brandId" index="index" open="(" close=")" separator=",">
+                            #{brandId}
+                        </foreach>
+                        and b.brand_title like concat("%", #{searchKeyword},"%"))
+                    </when>
+                    <when test="!brandIdList.isEmpty() and searchKeyword == ''">
+                        and cib.brand_id in
+                        (select b.brand_id from brand b where b.brand_id in
+                        <foreach collection="brandIdList" item="brandId" index="index" open="(" close=")" separator=",">
+                            #{brandId}
+                        </foreach>)
+                    </when>
+                    <when test="brandIdList.isEmpty() and searchKeyword != ''">
+                        and cib.brand_id in
+                        (select b.brand_id from brand b where b.brand_title like concat("%", #{searchKeyword},"%"))
+                    </when>
+                </choose>
+            </if>)
+            and (((localtime() between p.event_start_date and p.event_end_date) and p.event_price >= #{startRangePrice}
+            <if test='endRangePrice > 0'>
+                and #{endRangePrice} >= p.event_price
+            </if>)
+            or (p.sell_price >= #{startRangePrice}
+            <if test='endRangePrice > 0'>
+                and #{endRangePrice} >= p.sell_price
+            </if>))
+            <if test="!labelIdList.isEmpty() and labelIdList != null">
+                and p.product_id in
+                (select lop.product_id from label_of_product lop where lop.label_id in
+                <foreach collection="labelIdList" item="labelId" index="index" open="(" close=")" separator=",">
+                    #{labelId}
+                </foreach>)
+            </if>
         order by
-        <if test="sort != 4">
-            <choose>
-                <when test="sort == 1">
-                    p.created_at desc
-                </when>
-                <when test="sort == 2">
-                    p.sell_price asc
-                </when>
-                <when test="sort == 3">
-                    p.sell_price desc
-                </when>
-            </choose>
-        </if>
+            <if test="sort <= 3">
+                <choose>
+                    <when test="sort == 1">
+                        p.created_at desc
+                    </when>
+                    <when test="sort == 2">
+                        p.sell_price asc
+                    </when>
+                    <when test="sort == 3">
+                        p.sell_price desc
+                    </when>
+                </choose>
+            </if>
+        limit 20
+        offset #{page};
     </select>
 
 </mapper>
