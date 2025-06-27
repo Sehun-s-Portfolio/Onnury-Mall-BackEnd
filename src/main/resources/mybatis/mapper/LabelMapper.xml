@@ -22,4 +22,28 @@
                 l.label_id = lop.label_id;
         </select>
 
+    <!-- 즁/소분류 제품 리스트 페이지에 같이 노출될 라벨 리스트 정보 -->
+    <select id="getMiddleAndDownCategoryProductsRelatedLabelList" parameterType="Map" resultType="com.onnury.label.response.LabelResponseDto">
+        <!-- getMiddleAndDownCategoryProductsRelatedLabelList -->
+        select
+            l.label_id as labelId,
+            l.label_title as labelTitle
+        from
+            label l
+        where
+            (localtime() between l.start_post_date and l.end_post_date) and
+            l.label_id in
+            (select
+                lop.label_id
+            from
+                label_of_product lop
+            where
+                lop.product_id in
+                <foreach collection="productIdList" item="productId" index="index" open="(" close=")" separator=",">
+                    #{productId}
+                </foreach>
+            group by
+                lop.label_id)
+    </select>
+
 </mapper>

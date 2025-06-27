@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.onnury.mapper.CategoryMapper">
+
+    <!-- 중분류 제품 리스트 페이지에 같이 노출될 연관 하위 카테고리 리스트 정보 -->
+    <select id="getMiddleCategoryRelatedDownCategoryList" parameterType="Map"
+            resultType="com.onnury.category.response.RelatedCategoryDataResponseDto">
+        select
+            c.category_id as categoryId,
+            c.category_name as categoryName
+        from
+            category c
+        where
+            c.category_id in
+            (select
+                cib.category3id
+            from
+                category_in_brand cib
+            where
+                cib.category_in_brand_id in
+                <foreach collection="relatedCategoryInBrandIdList" item="relatedCategoryInBrandId" index="index" open="(" close=")" separator=",">
+                    #{relatedCategoryInBrandId}
+                </foreach>
+            group by
+                cib.category3id)
+    </select>
+
+</mapper>

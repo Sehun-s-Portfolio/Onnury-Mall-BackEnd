@@ -74,4 +74,28 @@ public interface ProductMapper {
             @Param("startRangePrice") int startRangePrice, @Param("endRangePrice") int endRangePrice,
             @Param("sort") int sort) throws Exception;
 
+    // 중/소분류 기준 제품 페이지 메인 제품 총 갯수
+    int middleAndDownCategoryPageMainProductsCount(
+            @Param("loginMemberType") String loginMemberType,
+            @Param("categoryId") Long categoryId,
+            @Param("relatedDownCategoryIdList") List<Long> relatedDownCategoryIdList,
+            @Param("brandIdList") List<Long> brandIdList,
+            @Param("searchKeyword") String searchKeyword,
+            @Param("labelIdList") List<Long> labelIdList,
+            @Param("startRangePrice") int startRangePrice,
+            @Param("endRangePrice") int endRangePrice,
+            @Param("sort") int sort) throws Exception;
+
+    // 중/소분류 기준 제품 페이지 메인 제품 리스트 호출
+    List<Product> middleAndDownCategoryPageMainProducts(
+            @Param("loginMemberType") String loginMemberType,
+            @Param("categoryId") Long categoryId,
+            @Param("relatedDownCategoryIdList") List<Long> relatedDownCategoryIdList,
+            @Param("brandIdList") List<Long> brandIdList,
+            @Param("searchKeyword") String searchKeyword,
+            @Param("labelIdList") List<Long> labelIdList,
+            @Param("startRangePrice") int startRangePrice,
+            @Param("endRangePrice") int endRangePrice,
+            @Param("sort") int sort,
+            @Param("page") int page) throws Exception;
 }
