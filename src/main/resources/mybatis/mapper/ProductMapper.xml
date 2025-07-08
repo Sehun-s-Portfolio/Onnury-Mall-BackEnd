@@ -597,7 +597,7 @@
                     </foreach>)
             </if>
         order by
-            <if test="sort <= 3">
+            <if test="sort != 4">
                 <choose>
                     <when test="sort == 1">
                         p.created_at desc
@@ -725,7 +725,7 @@
                 </foreach>)
             </if>
         order by
-            <if test="sort <= 3">
+            <if test="sort != 4">
                 <choose>
                     <when test="sort == 1">
                         p.created_at desc
