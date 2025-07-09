@@ -289,9 +289,7 @@
         </if>
         and (((localtime() between p.event_start_date and p.event_end_date) and p.event_price >= #{startRangePrice}
         <if test='endRangePrice > 0'>and #{endRangePrice} >= p.event_price</if>)
-        or (p.sell_price >= #{startRangePrice} <if test='endRangePrice > 0'>and #{endRangePrice} >= p.sell_price</if>))
-        group by
-        p.product_id;
+        or (p.sell_price >= #{startRangePrice} <if test='endRangePrice > 0'>and #{endRangePrice} >= p.sell_price</if>));
     </select>
 
     <!-- 조회한 제품들 중 가격 범위 최대치로 등록할 제품의 맥시멈 가격 -->
