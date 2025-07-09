@@ -228,6 +228,208 @@
         #{page};
     </select>
 
+    <!-- 대분류 제품들 총 갯수 -->
+    <select id="getAllUpCategoryProducts" parameterType="Map"
+            resultType="Integer">
+        select
+        count(*)
+        from
+        product p
+        inner join
+        (select
+        cib.category_in_brand_id,
+        cib.brand_id,
+        (select brand_title from brand where brand_id = cib.brand_id) as brand_title,
+        cib.category1id,
+        (select category_name from category where category_id = cib.category1id) as up_category,
+        cib.category2id,
+        (select category_name from category where category_id = cib.category2id) as middle_category,
+        cib.category3id,
+        (select category_name from category where category_id = cib.category3id) as down_category
+        from
+        category_in_brand cib
+        where
+        cib.category1id = #{upCategoryId}
+        <if test='brandIdList != null and !brandIdList.isEmpty()'>
+            and cib.brand_id in
+            <foreach collection="brandIdList" item="brandId" index="index" open="(" close=")" separator=",">
+                #{brandId}
+            </foreach>
+        </if>
+        <if test='searchBrandKeyword != null and searchBrandKeyword != ""'>
+            and cib.brand_title like concat("%", #{searchBrandKeyword}, "%")
+        </if>
+        <if test='middleCategoryIdList != null and !middleCategoryIdList.isEmpty()'>
+            and cib.category2id in
+            <foreach collection="middleCategoryIdList" item="middleCategoryId" index="index" open="(" close=")"
+                     separator=",">
+                #{middleCategoryId}
+            </foreach>
+        </if>
+        ) b
+        on
+        p.category_in_brand_id = b.category_in_brand_id
+        where
+        p.expression_check = "Y" and
+        <if test='loginMemberType != null and loginMemberType != ""'>
+            p.sell_classification = #{loginMemberType} and
+        </if>
+        p.status = "Y"
+        <if test='labelIdList != null and !labelIdList.isEmpty()'>
+            and p.product_id in
+            (select
+            product_id
+            from
+            label_of_product
+            where
+            label_id in
+            <foreach collection="labelIdList" item="labelId" index="index" open="(" close=")" separator=",">
+                #{labelId}
+            </foreach>)
+        </if>
+        and (((localtime() between p.event_start_date and p.event_end_date) and p.event_price >= #{startRangePrice}
+        <if test='endRangePrice > 0'>and #{endRangePrice} >= p.event_price</if>)
+        or (p.sell_price >= #{startRangePrice} <if test='endRangePrice > 0'>and #{endRangePrice} >= p.sell_price</if>))
+        group by
+        p.product_id;
+    </select>
+
+    <!-- 조회한 제품들 중 가격 범위 최대치로 등록할 제품의 맥시멈 가격 -->
+    <select id="getMaxPriceInUpCategoryProducts" parameterType="Map"
+            resultType="Integer">
+        select
+        if(localtime() between p.event_start_date and p.event_end_date, p.event_price, p.sell_price) as sellPrice
+        from
+        product p
+        inner join
+        (select
+        cib.category_in_brand_id,
+        cib.brand_id,
+        (select brand_title from brand where brand_id = cib.brand_id) as brand_title,
+        cib.category1id,
+        (select category_name from category where category_id = cib.category1id) as up_category,
+        cib.category2id,
+        (select category_name from category where category_id = cib.category2id) as middle_category,
+        cib.category3id,
+        (select category_name from category where category_id = cib.category3id) as down_category
+        from
+        category_in_brand cib
+        where
+        cib.category1id = #{upCategoryId}
+        <if test='brandIdList != null and !brandIdList.isEmpty()'>
+            and cib.brand_id in
+            <foreach collection="brandIdList" item="brandId" index="index" open="(" close=")" separator=",">
+                #{brandId}
+            </foreach>
+        </if>
+        <if test='searchBrandKeyword != null and searchBrandKeyword != ""'>
+            and cib.brand_title like concat("%", #{searchBrandKeyword}, "%")
+        </if>
+        <if test='middleCategoryIdList != null and !middleCategoryIdList.isEmpty()'>
+            and cib.category2id in
+            <foreach collection="middleCategoryIdList" item="middleCategoryId" index="index" open="(" close=")"
+                     separator=",">
+                #{middleCategoryId}
+            </foreach>
+        </if>
+        ) b
+        on
+        p.category_in_brand_id = b.category_in_brand_id
+        where
+        p.expression_check = "Y" and
+        <if test='loginMemberType != null and loginMemberType != ""'>
+            p.sell_classification = #{loginMemberType} and
+        </if>
+        p.status = "Y"
+        <if test='labelIdList != null and !labelIdList.isEmpty()'>
+            and p.product_id in
+            (select
+            product_id
+            from
+            label_of_product
+            where
+            label_id in
+            <foreach collection="labelIdList" item="labelId" index="index" open="(" close=")" separator=",">
+                #{labelId}
+            </foreach>)
+        </if>
+        and (((localtime() between p.event_start_date and p.event_end_date) and p.event_price >= #{startRangePrice}
+        <if test='endRangePrice > 0'>and #{endRangePrice} >= p.event_price</if>)
+        or (p.sell_price >= #{startRangePrice} <if test='endRangePrice > 0'>and #{endRangePrice} >= p.sell_price</if>))
+        group by p.product_id
+        order by sellPrice desc
+        limit 1;
+    </select>
+
+    <!-- 추출해낸 대분류 제품 리스트에 연관된 브랜드 및 카테고리 id 정보들 추출 -->
+    <select id="getUpCategoryProductsRelatedBrandsAndDownCategories" parameterType="Map"
+            resultType="com.onnury.product.response.ProductRelatedBrandAndCategoryInfoDto">
+        select
+            p.product_id as productId,
+            b.brand_id as brandId,
+            b.category1id as upCategoryId,
+            b.category2id as middleCategoryId,
+            b.category3id as downCategoryId
+        from
+            product p
+        inner join
+            (select
+            cib.category_in_brand_id,
+            cib.brand_id,
+            (select brand_title from brand where brand_id = cib.brand_id) as brand_title,
+            cib.category1id,
+            (select category_name from category where category_id = cib.category1id) as up_category,
+            cib.category2id,
+            (select category_name from category where category_id = cib.category2id) as middle_category,
+            cib.category3id,
+            (select category_name from category where category_id = cib.category3id) as down_category
+            from
+            category_in_brand cib
+            where
+            cib.category1id = #{upCategoryId}
+            <if test='brandIdList != null and !brandIdList.isEmpty()'>
+                and cib.brand_id in
+                <foreach collection="brandIdList" item="brandId" index="index" open="(" close=")" separator=",">
+                    #{brandId}
+                </foreach>
+            </if>
+            <if test='searchBrandKeyword != null and searchBrandKeyword != ""'>
+                and cib.brand_title like concat("%", #{searchBrandKeyword}, "%")
+            </if>
+            <if test='middleCategoryIdList != null and !middleCategoryIdList.isEmpty()'>
+                and cib.category2id in
+                <foreach collection="middleCategoryIdList" item="middleCategoryId" index="index" open="(" close=")"
+                         separator=",">
+                    #{middleCategoryId}
+                </foreach>
+            </if>
+            ) b
+        on
+            p.category_in_brand_id = b.category_in_brand_id
+        where
+            p.expression_check = "Y" and
+            <if test='loginMemberType != null and loginMemberType != ""'>
+                p.sell_classification = #{loginMemberType} and
+            </if>
+            p.status = "Y"
+            <if test='labelIdList != null and !labelIdList.isEmpty()'>
+                and p.product_id in
+                (select
+                product_id
+                from
+                label_of_product
+                where
+                label_id in
+                <foreach collection="labelIdList" item="labelId" index="index" open="(" close=")" separator=",">
+                    #{labelId}
+                </foreach>)
+            </if>
+            and (((localtime() between p.event_start_date and p.event_end_date) and p.event_price >= #{startRangePrice}
+            <if test='endRangePrice > 0'>and #{endRangePrice} >= p.event_price</if>)
+            or (p.sell_price >= #{startRangePrice} <if test='endRangePrice > 0'>and #{endRangePrice} >= p.sell_price</if>))
+        group by p.product_id, b.brand_id, b.category1id, b.category2id, b.category3id;
+    </select>
+
     <!-- 각 대분류 제품이 가지고 있는 라벨 정보 -->
     <select id="getEachUpCategoryProductLabelInfo" parameterType="Long"
             resultType="com.onnury.label.response.LabelDataResponseDto">
@@ -371,9 +573,12 @@
                 </if>) cp
             group by cp.category_in_brand_id) b
         on cib.category_in_brand_id = b.category_in_brand_id
-        group by
-        cib.brand_id) cib
-        on b.brand_id = cib.brand_id;
+        group by cib.brand_id) cib
+        on b.brand_id = cib.brand_id
+        where b.brand_id in
+            <foreach collection="relatedBrandIdList" item="relatedBrandId" index="index" open="(" close=")" separator=",">
+                #{relatedBrandId}
+            </foreach>
     </select>
 
     <!-- 선택한 대분류 카테고리 제품들이 해당되는 중분류 카테고리 정보 리스트 -->
@@ -440,8 +645,11 @@
         on cib.category_in_brand_id = b.category_in_brand_id
         group by
         cib.category2id) cib
-        on
-        c.category_id = cib.category2id
+        on c.category_id = cib.category2id
+        where c.category_id in
+            <foreach collection="relatedMiddleCategoryIdList" item="relatedMiddleCategoryId" index="index" open="(" close=")" separator=",">
+                #{relatedMiddleCategoryId}
+            </foreach>
     </select>
 
     <!-- 선택한 대분류 카테고리 제품들의 연관된 라벨 리스트 정보-->

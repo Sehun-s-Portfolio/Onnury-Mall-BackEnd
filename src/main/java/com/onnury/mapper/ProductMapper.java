@@ -38,6 +38,27 @@ public interface ProductMapper {
             @Param("startRangePrice") int startRangePrice, @Param("endRangePrice") int endRangePrice,
             @Param("sort") int sort, @Param("page") int page) throws Exception;
 
+    // 대분류 제품들 총 갯수
+    int getAllUpCategoryProducts(
+            @Param("upCategoryId") Long upCategoryId, @Param("brandIdList") List<Long> brandIdList,
+            @Param("searchBrandKeyword") String searchBrandKeyword, @Param("middleCategoryIdList") List<Long> middleCategoryIdList,
+            @Param("loginMemberType") String loginMemberType, @Param("labelIdList") List<Long> labelIdList,
+            @Param("startRangePrice") int startRangePrice, @Param("endRangePrice") int endRangePrice) throws Exception;
+
+    // 조회한 제품들 중 가격 범위 최대치로 등록할 제품의 맥시멈 가격
+    int getMaxPriceInUpCategoryProducts(
+            @Param("upCategoryId") Long upCategoryId, @Param("brandIdList") List<Long> brandIdList,
+            @Param("searchBrandKeyword") String searchBrandKeyword, @Param("middleCategoryIdList") List<Long> middleCategoryIdList,
+            @Param("loginMemberType") String loginMemberType, @Param("labelIdList") List<Long> labelIdList,
+            @Param("startRangePrice") int startRangePrice, @Param("endRangePrice") int endRangePrice) throws Exception;
+
+    // 선택한 대분류 제품들에 해당되는 브랜드, 카테고리, 제품 id 리스트 정보
+    List<ProductRelatedBrandAndCategoryInfoDto> getUpCategoryProductsRelatedBrandsAndDownCategories(
+            @Param("upCategoryId") Long upCategoryId, @Param("brandIdList") List<Long> brandIdList,
+            @Param("searchBrandKeyword") String searchBrandKeyword, @Param("middleCategoryIdList") List<Long> middleCategoryIdList,
+            @Param("loginMemberType") String loginMemberType, @Param("labelIdList") List<Long> labelIdList,
+            @Param("startRangePrice") int startRangePrice, @Param("endRangePrice") int endRangePrice
+    ) throws Exception;
 
     // 각 대분류 제품이 가지고 있는 라벨 정보
     List<LabelDataResponseDto> getEachUpCategoryProductLabelInfo(Long productId) throws Exception;
@@ -58,12 +79,14 @@ public interface ProductMapper {
 
     // 선택한 대분류 카테고리 제품들이 해당되는 브랜드 리스트
     List<BrandDataResponseDto> getSelectUpCategoryProductsRelatedBrand(
+            @Param("relatedBrandIdList") List<Long> relatedBrandIdList,
             @Param("loginMemberType") String loginMemberType, @Param("labelIdList") List<Long> labelIdList,
             @Param("startRangePrice") int startRangePrice, @Param("endRangePrice") int endRangePrice,
             @Param("sort") int sort) throws Exception;
 
     // 선택한 대분류 카테고리 제품들이 해당되는 중분류 카테고리 정보 리스트
     List<RelatedCategoryDataResponseDto> getSelectUpCategoryProductsRelatedMiddleCategory(
+            @Param("relatedMiddleCategoryIdList") List<Long> relatedMiddleCategoryIdList,
             @Param("loginMemberType") String loginMemberType, @Param("labelIdList") List<Long> labelIdList,
             @Param("startRangePrice") int startRangePrice, @Param("endRangePrice") int endRangePrice,
             @Param("sort") int sort) throws Exception;

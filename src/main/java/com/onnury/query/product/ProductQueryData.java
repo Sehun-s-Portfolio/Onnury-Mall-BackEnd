@@ -1939,8 +1939,6 @@ public class ProductQueryData {
             // 대분류 제품 페이지에 노출될 제품들 정보 리스트
             List<ReadyProductPageMainProductResponseDto> getReadyPageMainProductList = productMapper.getSelectUpCategoryAndConditionRelateProductList(upCategoryId, brandIdList, "", middleCategoryIdList, loginMemberType, labelIdList, startRangePrice, endRangePrice, sort, (page * 20) - 20);
 
-            log.info("(1) 제품 리스트 호출 - 제품 조회 수량 : {}", getReadyPageMainProductList.size());
-
             // 호출한 대분류 제품 리스트들에 연관된 라벨, 옵션, 이미지 정보들을 호출하여 통합 객체 리스트로 매핑
             List<ProductPageMainProductResponseDto> getPageMainProductList = getReadyPageMainProductList.stream()
                     .map(eachUpCategoryProduct -> {
@@ -2011,31 +2009,30 @@ public class ProductQueryData {
                     })
                     .collect(Collectors.toList());
 
-            log.info("(2) 연관 정보들을 포함한 제품 리스트 호출 - 제품 조회 수량 : {}", getPageMainProductList.size());
+            // 선택한 대분류 제품들에 해당되는 브랜드, 카테고리, 제품 id 리스트 정보
+            List<ProductRelatedBrandAndCategoryInfoDto> getReadyBrandAndCategoryInfoList = productMapper.getUpCategoryProductsRelatedBrandsAndDownCategories(upCategoryId, brandIdList, "", middleCategoryIdList, loginMemberType, labelIdList, startRangePrice, endRangePrice);
+
+            List<Long> relatedBrandIdList = getReadyBrandAndCategoryInfoList.stream().map(ProductRelatedBrandAndCategoryInfoDto::getBrandId).distinct().collect(Collectors.toList());
+            List<Long> relatedMiddleCategoryIdList = getReadyBrandAndCategoryInfoList.stream().map(ProductRelatedBrandAndCategoryInfoDto::getMiddleCategoryId).distinct().collect(Collectors.toList());
 
             // 조회된 대분류 제품들의 총 갯수
-            int totalCount = productMapper.getSelectUpCategoryProductsCount(loginMemberType, labelIdList, startRangePrice, endRangePrice, sort);
-            log.info("(3) 조회된 대분류 제품들의 총 갯수 호출 확인 : {}", totalCount);
+            int totalCount = productMapper.getAllUpCategoryProducts(upCategoryId, brandIdList, "", middleCategoryIdList, loginMemberType, labelIdList, startRangePrice, endRangePrice);
 
             // 조회된 대분류 제품들의 연관된 브랜드 리스트 정보
-            List<BrandDataResponseDto> brandList = productMapper.getSelectUpCategoryProductsRelatedBrand(loginMemberType, labelIdList, startRangePrice, endRangePrice, sort);
-            log.info("(4) 조회된 대분류 제품들의 연관된 브랜드 리스트 정보 확인 - 브랜드 리스트 수량 : {}", brandList.size());
+            List<BrandDataResponseDto> brandList = productMapper.getSelectUpCategoryProductsRelatedBrand(relatedBrandIdList, loginMemberType, labelIdList, startRangePrice, endRangePrice, sort);
 
             // 조회된 대분류 제품들의 연관된 중분류 카테고리 정보 리스트
-            List<RelatedCategoryDataResponseDto> middleCategoryList = productMapper.getSelectUpCategoryProductsRelatedMiddleCategory(loginMemberType, labelIdList, startRangePrice, endRangePrice, sort);
-            log.info("(5) 조회된 대분류 제품들과 연관된 중분류 카테고리 정보 리스트 확인 - 연관 중분류 카테고리 정보 리스트 수량 : {}", middleCategoryList.size());
+            List<RelatedCategoryDataResponseDto> middleCategoryList = productMapper.getSelectUpCategoryProductsRelatedMiddleCategory(relatedMiddleCategoryIdList, loginMemberType, labelIdList, startRangePrice, endRangePrice, sort);
 
             // 조회된 대분류 제품들의 연관된 라벨 정보 리스트
             List<LabelResponseDto> labelList = productMapper.getSelectUpCategoryProductsRelatedLabel(loginMemberType, labelIdList, startRangePrice, endRangePrice, sort);
-            log.info("(6) 조회된 대분류 제품들의 연관된 라벨 정보 리스트 확인 - 연관 라벨 리스트 수량 : {}", labelList.size());
 
             // 조회한 제품들 중 가격 범위 최대치로 등록할 제품의 맥시멈 가격
-            int maxPrice = getPageMainProductList.stream()
-                    .map(ProductPageMainProductResponseDto::getSellPrice)
-                    .max(Integer::compare)
-                    .orElse(0);
-            log.info("(7) 조회한 제품들 중 가격 범위 최대치로 등록할 제품의 맥시멈 가격 확인 : {}", maxPrice);
-
+            int maxPrice = productMapper.getMaxPriceInUpCategoryProducts(upCategoryId, brandIdList, "", middleCategoryIdList, loginMemberType, labelIdList, startRangePrice, endRangePrice);
+//            int maxPrice = getPageMainProductList.stream()
+//                    .map(ProductPageMainProductResponseDto::getSellPrice)
+//                    .max(Integer::compare)
+//                    .orElse(0);
 
             ////////////////////////////////////////////////////////////////////////////////////////
             //                     4번 정렬 (주문 판매순) 관련 추출 로직 추가해야함                      //
