@@ -327,76 +327,61 @@
     <select id="getSelectUpCategoryProductsRelatedBrand" parameterType="Map"
             resultType="com.onnury.brand.response.BrandDataResponseDto">
         select
-        b.brand_id as brandId,
-        b.brand_title as brandTitle,
-        b.status as status,
-        concat(b.brand_title, " - 이미지 호출 안함") as imgUrl
+            b.brand_id as brandId,
+            b.brand_title as brandTitle,
+            b.status as status,
+            concat(b.brand_title, " - 이미지 호출 안함") as imgUrl
         from
-        brand b
-        inner join
-        (select
-        cib.brand_id
-        from
-        category_in_brand cib
-        inner join
-        (select cp.category_in_brand_id from
-        (select
-        p.category_in_brand_id
-        from
-        product p
-        where
-        p.expression_check = "Y" and
-        <if test='loginMemberType != null and loginMemberType != ""'>p.sell_classification = #{loginMemberType} and
-        </if>
-        p.status = "Y"
-        <if test='
-        labelIdList != null and !labelIdList.isEmpty()'>and p.product_id in
-            (select
-            product_id
-            from
-            label_of_product
-            where
-            label_id in
-            <foreach collection="
-            labelIdList" item="labelId" index="index" open="(" close=")" separator=",">
-                #{labelId}
-            </foreach>)
-        </if>
-        and (((localtime() between p.event_start_date and p.event_end_date) and p.event_price >= #{startRangePrice}
-        <if test='endRangePrice > 0'>
-            and #{endRangePrice} >= p.event_price
-        </if>)
-        or (p.sell_price >= #{startRangePrice}
-        <if test='endRangePrice > 0'>
-            and #{endRangePrice} >= p.sell_price
-        </if>))
-        order by
-        <if test="sort != 4">
-            <choose>
-                <when test="sort == 1">
-                    p.created_at desc
-                </when>
-                <when test="sort == 2">
-                    p.sell_price asc
-                </when>
-                <when test="sort == 3">
-                    p.sell_price desc
-                </when>
-            </choose>
-        </if>
-        ) cp
-        group by cp.category_in_brand_id) b
+            brand b
+                inner join
+            (select cib.brand_id from category_in_brand cib inner join
+                (select cp.category_in_brand_id from
+                (select p.category_in_brand_id from product p where p.expression_check = "Y" and
+                <if test='loginMemberType != null and loginMemberType != ""'>p.sell_classification = #{loginMemberType} and</if>
+                p.status = "Y"
+                <if test='labelIdList != null and !labelIdList.isEmpty()'>
+                    and p.product_id in
+                    (select product_id from label_of_product where label_id in
+                    <foreach collection="
+                    labelIdList" item="labelId" index="index" open="(" close=")" separator=",">
+                        #{labelId}
+                    </foreach>)
+                </if>
+                and (((localtime() between p.event_start_date and p.event_end_date) and p.event_price >= #{startRangePrice}
+                <if test='endRangePrice > 0'>
+                    and #{endRangePrice} >= p.event_price
+                </if>)
+                or (p.sell_price >= #{startRangePrice}
+                <if test='endRangePrice > 0'>
+                    and #{endRangePrice} >= p.sell_price
+                </if>))
+            order by
+                <if test="sort != 4">
+                    <choose>
+                        <when test="sort == 1">
+                            p.created_at desc
+                        </when>
+                        <when test="sort == 2">
+                            p.sell_price asc
+                        </when>
+                        <when test="sort == 3">
+                            p.sell_price desc
+                        </when>
+                    </choose>
+                </if>) cp
+            group by cp.category_in_brand_id) b
         on cib.category_in_brand_id = b.category_in_brand_id
         group by
         cib.brand_id) cib
+        on b.brand_id = cib.brand_id;
     </select>
 
     <!-- 선택한 대분류 카테고리 제품들이 해당되는 중분류 카테고리 정보 리스트 -->
     <select id="getSelectUpCategoryProductsRelatedMiddleCategory" parameterType="Map"
             resultType="com.onnury.category.response.RelatedCategoryDataResponseDto">
         select
-        c.category_id as categoryId,
-        c.category_name as categoryName
+            c.category_id as categoryId,
+            c.category_name as categoryName
         from
         category c
         inner join
