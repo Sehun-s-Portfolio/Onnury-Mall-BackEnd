@@ -75,7 +75,7 @@ dependencies {
 
 ### 1. 🔐 **통합 인증/인가 시스템**
 
-**기술적 특징:**
+**기술 설명:**
 
 - JWT(JSON Web Token) 기반 stateless 인증 아키텍처
 - Spring Security와 연동한 세밀한 권한 관리 (RBAC)
@@ -192,7 +192,7 @@ public class SecurityConfig {
 
 ### 2. 💳 **복합 결제 시스템 (온누리상품권 + 신용카드) + Redis 활용**
 
-**기술적 특징:**
+**기술 설명:**
 
 - 온누리상품권과 신용카드의 복합 결제 처리
 - 복수 PG사 연동 (EasyPay, BizPlay) 및 Failover 처리
@@ -359,7 +359,7 @@ public class CompoundPayService {
 
 ### 3. 📦 **상품 관리 시스템 (계층형 카테고리 & QueryDSL 최적화)**
 
-**기술적 특징:**
+**기술 설명:**
 
 - 3-depth 계층형 카테고리 구조 (대/중/소분류)
 - **실제 구현된 QueryDSL 기반 동적 검색 시스템**
@@ -565,7 +565,7 @@ public class ProductQueryData {
 
 ### 4. 🛒 **장바구니 & 주문 관리 시스템**
 
-**기술적 특징:**
+**기술 설명:**
 
 - 실시간 장바구니 동기화 및 세션 관리
 - 상품 옵션별 수량 관리 및 재고 연동
@@ -701,7 +701,7 @@ public class Cart extends TimeStamped {
 
 ### 5. 📊 **관리자 시스템 & Spring Batch 자동화**
 
-**기술적 특징:**
+**기술 설명:**
 
 - Spring Batch를 통한 자동화된 운영 업무
 - QueryDSL 기반 대용량 데이터 처리
@@ -814,7 +814,7 @@ public class AsyncConfig {
 
 ### 6. 💬 **고객 서비스 시스템 (문의/마이페이지)**
 
-**기술적 특징:**
+**기술 설명:**
 
 - 실시간 문의 등록 및 관리자 답변 시스템
 - 파일 첨부 지원 및 안전한 파일 관리
