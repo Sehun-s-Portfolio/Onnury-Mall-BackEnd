@@ -14,6 +14,7 @@
 6. [Spring Batch 자동화 처리 시퀀스](#6-spring-batch-자동화-처리-시퀀스)
 7. [상품 검색 및 카테고리 관리 시퀀스](#7-상품-검색-및-카테고리-관리-시퀀스)
 8. [관리자 시스템 운영 시퀀스](#8-관리자-시스템-운영-시퀀스)
+9. [CI/CD 배포 파이프라인 시퀀스](#9-cicd-배포-파이프라인-시퀀스)
 
 ---
 
@@ -770,4 +771,174 @@ sequenceDiagram
 
 ---
 
-> **🏆 아키텍처 핵심 가치**: 이 시스템은 대용량 트래픽 처리, 복합 결제 시스템, 실시간 데이터 처리, 자동화된 운영 관리 등 현대적인 전자상거래 플랫폼의 핵심 요구사항을 모두 만족하는 확장 가능하고 안정적인 엔터프라이즈급 아키텍처입니다.
+## 9. CI/CD 배포 파이프라인 시퀀스
+
+### 9.1 GitHub Actions 자동 배포 프로세스
+
+```mermaid
+sequenceDiagram
+    participant DEV as 개발자
+    participant GITHUB as GitHub Repository
+    participant ACTIONS as GitHub Actions
+    participant SERVER as 배포 서버
+    participant APP as Spring Boot App
+    participant DB as Database
+
+    Note over DEV, DB: CI/CD 자동 배포 파이프라인 (dev 브랜치)
+
+    %% 코드 푸시 및 트리거
+    DEV->>GITHUB: git push origin dev
+    GITHUB->>ACTIONS: Deploy 워크플로우 트리거
+
+    %% GitHub Actions 초기화
+    ACTIONS->>ACTIONS: Ubuntu 런너 초기화
+    ACTIONS->>ACTIONS: SSH 액션 설정
+
+    Note over ACTIONS: 환경변수 설정
+    ACTIONS->>ACTIONS: APPLICATION_PROPERTIES 로드
+    ACTIONS->>ACTIONS: APPLICATION_DEV_PROPERTIES 로드
+    ACTIONS->>ACTIONS: APPLICATION_PROD_PROPERTIES 로드
+    ACTIONS->>ACTIONS: APPLICATION_YML 로드
+
+    %% 서버 접속 및 배포 시작
+    ACTIONS->>SERVER: SSH 접속 (Host, Username, Password)
+    SERVER->>SERVER: 배포 디렉토리 진입<br/>/home/onnury/web/Onnury-Mall-BackEnd
+
+    %% 기존 설정 파일 정리
+    Note over SERVER: 기존 설정 파일 삭제
+    SERVER->>SERVER: rm application.properties
+    SERVER->>SERVER: rm application-dev.properties
+    SERVER->>SERVER: rm application-prod.properties
+    SERVER->>SERVER: rm application.yml
+
+    %% 소스 코드 업데이트
+    SERVER->>GITHUB: git pull origin dev
+    GITHUB-->>SERVER: 최신 소스 코드 다운로드
+
+    %% 설정 파일 재생성
+    Note over SERVER: 암호화된 설정 파일 생성
+    SERVER->>SERVER: 새 application.properties 생성
+    SERVER->>SERVER: 새 application-dev.properties 생성
+    SERVER->>SERVER: 새 application-prod.properties 생성
+    SERVER->>SERVER: 새 application.yml 생성
+
+    %% 애플리케이션 빌드
+    Note over SERVER: Gradle 빌드 프로세스
+    SERVER->>SERVER: ./gradlew clean
+    SERVER->>SERVER: ./gradlew build
+    SERVER->>SERVER: JAR 파일 생성 완료
+
+    %% 기존 애플리케이션 종료
+    Note over SERVER, APP: 무중단 배포를 위한 프로세스 관리
+    SERVER->>APP: 8091 포트 프로세스 확인
+    alt 기존 프로세스 존재
+        SERVER->>APP: sudo fuser -k -n tcp 8091
+        APP-->>SERVER: 기존 애플리케이션 종료
+    else 프로세스 없음
+        SERVER->>SERVER: 프로세스 없음 (정상)
+    end
+
+    %% 새 애플리케이션 시작
+    Note over SERVER, APP: 새 버전 배포 시작
+    SERVER->>APP: nohup java -jar 실행<br/>- 서버 모드<br/>- 메모리: 5GB<br/>- GC: G1GC<br/>- 프로파일: dev
+    APP->>DB: 데이터베이스 연결 초기화
+    DB-->>APP: 연결 확인
+
+    %% 배포 완료 확인
+    APP->>APP: Spring Boot 애플리케이션 시작
+    APP->>SERVER: 8091 포트 바인딩 성공
+
+    %% 헬스 체크 (암시적)
+    Note over APP: 애플리케이션 상태 확인
+    APP->>DB: 헬스 체크 쿼리
+    DB-->>APP: 정상 응답
+
+    SERVER-->>ACTIONS: 배포 스크립트 완료
+    ACTIONS-->>GITHUB: 배포 상태 업데이트
+    GITHUB-->>DEV: 배포 완료 알림
+
+    Note over DEV, DB: ✅ 자동 배포 파이프라인 완료
+```
+
+### 9.2 배포 환경 및 설정 관리
+
+```mermaid
+graph TB
+    subgraph "GitHub Secrets"
+        SECRET_HOST[HOST]
+        SECRET_USER[USER_NAME]
+        SECRET_PASS[PASSWORD]
+        SECRET_PORT[PORT]
+        SECRET_APP_PROPS[APPLICATION_PROPERTIES]
+        SECRET_DEV_PROPS[APPLICATION_DEV_PROPERTIES]
+        SECRET_PROD_PROPS[APPLICATION_PROD_PROPERTIES]
+        SECRET_YML[APPLICATION_YML]
+    end
+
+    subgraph "배포 서버"
+        SERVER_DIR[/home/onnury/web/Onnury-Mall-BackEnd]
+        PROPS_DIR[src/main/resources/]
+        BUILD_DIR[build/libs/]
+        JAR_FILE[*SNAPSHOT.jar]
+    end
+
+    subgraph "애플리케이션 구성"
+        JVM_OPTS[-server -Xmx5g -XX:+UseG1GC]
+        SPRING_PROFILE[-Dspring.profiles.active=dev]
+        SERVER_NAME[-Dsvr.nm=DEV]
+        ENCODING[-Dfile.encoding=UTF-8]
+        PORT_8091[8091 포트]
+    end
+
+    SECRET_HOST --> SERVER_DIR
+    SECRET_APP_PROPS --> PROPS_DIR
+    SECRET_DEV_PROPS --> PROPS_DIR
+    SECRET_PROD_PROPS --> PROPS_DIR
+    SECRET_YML --> PROPS_DIR
+
+    SERVER_DIR --> BUILD_DIR
+    BUILD_DIR --> JAR_FILE
+
+    JVM_OPTS --> JAR_FILE
+    SPRING_PROFILE --> JAR_FILE
+    SERVER_NAME --> JAR_FILE
+    ENCODING --> JAR_FILE
+    JAR_FILE --> PORT_8091
+```
+
+### 9.3 CI/CD 파이프라인 특징
+
+#### ✅ **보안 강화**
+
+- GitHub Secrets를 통한 민감 정보 암호화 관리
+- SSH 키 기반 서버 접속
+- 설정 파일의 분리된 환경 관리
+
+#### ⚡ **무중단 배포**
+
+- 기존 프로세스 우아한 종료
+- 백그라운드 프로세스로 새 애플리케이션 시작
+- 포트 충돌 방지 메커니즘
+
+#### 🏗️ **빌드 최적화**
+
+- Gradle clean build를 통한 깨끗한 빌드
+- JAR 파일 기반 실행 환경
+- JVM 튜닝 옵션 적용 (G1GC, 5GB 힙 메모리)
+
+#### 📋 **환경 분리**
+
+- development, production 프로파일 지원
+- 환경별 설정 파일 관리
+- 서버 식별자를 통한 환경 구분
+
+#### 🔄 **자동화된 배포 플로우**
+
+1. **트리거**: dev 브랜치 푸시 시 자동 실행
+2. **빌드**: 최신 코드 다운로드 및 Gradle 빌드
+3. **배포**: 기존 서비스 종료 후 새 버전 시작
+4. **검증**: 애플리케이션 정상 시작 확인
+
+---
+
+> **🏆 아키텍처 핵심 가치**: 이 시스템은 대용량 트래픽 처리, 복합 결제 시스템, 실시간 데이터 처리, 자동화된 운영 관리, 그리고 자동화된 CI/CD 파이프라인까지 현대적인 전자상거래 플랫폼의 핵심 요구사항을 모두 만족하는 확장 가능하고 안정적인 엔터프라이즈급 아키텍처입니다.
